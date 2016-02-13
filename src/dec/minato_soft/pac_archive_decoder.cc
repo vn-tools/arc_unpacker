@@ -8,16 +8,6 @@
 using namespace au;
 using namespace au::dec::minato_soft;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
-    };
-}
-
 static const bstr magic = "PAC\x00"_b;
 
 static int init_huffman(
@@ -85,7 +75,7 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         entry->path = algo::sjis_to_utf8(table_stream.read_to_zero(0x40)).str();
         entry->offset = table_stream.read_le<u32>();
         entry->size_orig = table_stream.read_le<u32>();
@@ -101,7 +91,7 @@ std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->size_orig != entry->size_comp)
         data = algo::pack::zlib_inflate(data);

@@ -18,10 +18,8 @@ namespace
         CompressedFile = 0x00000001,
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         bool compressed;
     };
 }
@@ -56,7 +54,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->compressed = true;
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
@@ -73,7 +71,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v2(
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         const auto type = static_cast<EntryType>(
             input_file.stream.read_le<u32>());
         entry->path = algo::sjis_to_utf8(
@@ -120,7 +118,7 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)

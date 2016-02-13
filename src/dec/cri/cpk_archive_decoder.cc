@@ -57,12 +57,6 @@ namespace
         u32 flags;
         std::string name;
     };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
 }
 
 static bstr decrypt_utf_packet(const bstr &input)
@@ -382,7 +376,7 @@ std::unique_ptr<dec::ArchiveMeta> CpkArchiveDecoder::read_meta_impl(
     for (const auto &kv : toc)
     {
         const auto &toc_entry = kv.second;
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = toc_entry.dir_name;
         entry->path /= toc_entry.file_name;
         entry->offset = toc_entry.file_offset;
@@ -398,7 +392,7 @@ std::unique_ptr<io::File> CpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     auto data = input_file.stream
         .seek(entry->offset)
         .read(entry->size);

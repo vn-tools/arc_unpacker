@@ -11,7 +11,7 @@ static const bstr magic = "PL10"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         bstr data;
         size_t x, y;
@@ -41,7 +41,7 @@ std::unique_ptr<dec::ArchiveMeta> Pl10ImageArchiveDecoder::read_meta_impl(
     const auto height = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<dec::ArchiveMeta>();
 
-    auto base_entry = std::make_unique<ArchiveEntryImpl>();
+    auto base_entry = std::make_unique<CustomArchiveEntry>();
     base_entry->x = input_file.stream.read_le<u32>();
     base_entry->y = input_file.stream.read_le<u32>();
     base_entry->width = input_file.stream.read_le<u32>();
@@ -66,7 +66,7 @@ std::unique_ptr<dec::ArchiveMeta> Pl10ImageArchiveDecoder::read_meta_impl(
         for (const auto i : algo::range(output.size()))
             output[i] += last_entry->data[i];
 
-        auto sub_entry = std::make_unique<ArchiveEntryImpl>();
+        auto sub_entry = std::make_unique<CustomArchiveEntry>();
         sub_entry->x = last_entry->x;
         sub_entry->y = last_entry->y;
         sub_entry->width = last_entry->width;
@@ -85,7 +85,7 @@ std::unique_ptr<io::File> Pl10ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     res::PixelFormat fmt;
     if (entry->channels == 3)
         fmt = res::PixelFormat::BGR888;

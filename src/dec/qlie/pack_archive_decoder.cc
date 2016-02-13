@@ -19,18 +19,15 @@ static const bstr compression_magic = "1PC\xFF"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr key1;
         bstr key2;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         bstr path_orig;
-        size_t size_comp;
-        size_t size_orig;
-        size_t offset;
         bool encrypted;
         bool compressed;
         u32 seed;
@@ -82,7 +79,7 @@ static void decrypt_file_data_with_external_keys(
     bstr &data,
     const u32 seed,
     const bstr &file_name,
-    const ArchiveMetaImpl &meta)
+    const CustomArchiveMeta &meta)
 {
     u32 mt_mutator = 0x85F532;
     u32 mt_seed = 0x33F641;
@@ -145,7 +142,7 @@ static void decrypt_file_data(
     bstr &data,
     const u32 seed,
     const bstr &file_name,
-    const ArchiveMetaImpl &meta)
+    const CustomArchiveMeta &meta)
 {
     if (meta.key1.empty() && meta.key2.empty())
         decrypt_file_data_basic(data, seed);
@@ -305,7 +302,7 @@ bool PackArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
 
     if (!fkey_path.empty())
         meta->key1 = get_fkey(fkey_path);
@@ -366,7 +363,7 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     table_stream.seek(0);
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
 
         size_t name_size = table_stream.read_le<u16>();
         entry->path_orig = table_stream.read(name_size);
@@ -404,8 +401,8 @@ std::unique_ptr<io::File> PackArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     auto data = input_file.stream
         .seek(entry->offset)

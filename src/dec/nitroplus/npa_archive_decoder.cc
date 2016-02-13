@@ -17,7 +17,7 @@ namespace
         File = 2
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::shared_ptr<NpaPlugin> plugin;
         u32 key1, key2;
@@ -25,12 +25,9 @@ namespace
         bool files_are_compressed;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         bstr path_orig;
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 
     struct TableEntry final
@@ -40,7 +37,7 @@ namespace
 }
 
 static void decrypt_file_name(
-    const ArchiveMetaImpl &meta, bstr &name, size_t file_index)
+    const CustomArchiveMeta &meta, bstr &name, size_t file_index)
 {
     u32 tmp = meta.plugin->file_name_key(meta.key1, meta.key2);
     for (const auto char_pos : algo::range(name.size()))
@@ -59,7 +56,7 @@ static void decrypt_file_name(
 }
 
 static void decrypt_file_data(
-    const ArchiveMetaImpl &meta, const ArchiveEntryImpl &entry, bstr &data)
+    const CustomArchiveMeta &meta, const CustomArchiveEntry &entry, bstr &data)
 {
     u32 key = meta.plugin->data_key;
     for (const auto i : algo::range(entry.path_orig.size()))
@@ -83,7 +80,7 @@ bool NpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> NpaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->plugin = plugin_manager.get();
 
     input_file.stream.seek(magic.size());
@@ -100,7 +97,7 @@ std::unique_ptr<dec::ArchiveMeta> NpaArchiveDecoder::read_meta_impl(
 
     for (const auto i : algo::range(total_entry_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
 
         const auto name_size = input_file.stream.read_le<u32>();
         entry->path_orig = input_file.stream.read(name_size);
@@ -129,8 +126,8 @@ std::unique_ptr<io::File> NpaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
 
     if (meta->files_are_encrypted)

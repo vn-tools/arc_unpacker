@@ -4,15 +4,6 @@
 using namespace au;
 using namespace au::dec::leaf;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("pak"))
@@ -41,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     input_file.stream.seek(0x20);
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         input_file.stream.skip(2);
         auto name = input_file.stream.read(12);
         for (auto &c : name)
@@ -65,7 +56,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

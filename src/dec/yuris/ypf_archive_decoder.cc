@@ -13,13 +13,10 @@ static const bstr magic = "YPF\x00"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u8 type;
         bool compressed;
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
     };
 }
 
@@ -124,7 +121,7 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
         const auto name = table_stream.read(name_size);
         names.push_back(name);
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->type = table_stream.read<u8>();
         entry->compressed = table_stream.read<u8>() == 1;
         entry->size_orig = table_stream.read_le<u32>();
@@ -146,7 +143,7 @@ std::unique_ptr<io::File> YpfArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->compressed)
         data = algo::pack::zlib_inflate(data);

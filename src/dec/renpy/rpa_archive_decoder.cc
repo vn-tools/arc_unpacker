@@ -78,10 +78,8 @@ namespace
         std::vector<int> numbers;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         bstr prefix;
     };
 }
@@ -274,7 +272,7 @@ std::unique_ptr<dec::ArchiveMeta> RpaArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = context.strings[i * 2 ].str();
         entry->prefix = context.strings[i * 2 + 1];
         entry->offset = context.numbers[i * 2] ^ key;
@@ -290,7 +288,7 @@ std::unique_ptr<io::File> RpaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, entry->prefix + data);
 }

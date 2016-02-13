@@ -10,10 +10,8 @@ static const auto magic = "LIN2"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         u16 type;
     };
 }
@@ -31,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> Link2ArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         const auto name_size = input_file.stream.read_le<u16>();
         entry->path
             = algo::unxor(input_file.stream.read(name_size), 0xFF).c_str();
@@ -49,7 +47,7 @@ std::unique_ptr<io::File> Link2ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
 
     bstr data;

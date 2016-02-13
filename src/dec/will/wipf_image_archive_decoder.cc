@@ -12,13 +12,10 @@ static const bstr magic = "WIPF"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        size_t offset;
         size_t width;
         size_t height;
-        size_t size_comp;
-        size_t size_orig;
         size_t depth;
         std::unique_ptr<res::Image> mask;
     };
@@ -71,7 +68,7 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 }
 
 static std::unique_ptr<res::Image> read_image(
-    io::File &input_file, const ArchiveEntryImpl &entry)
+    io::File &input_file, const CustomArchiveEntry &entry)
 {
     input_file.stream.seek(entry.offset);
 
@@ -122,7 +119,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(io::File &input_file)
     auto offset = input_file.stream.pos() + file_count * 24;
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
         input_file.stream.skip(12);
@@ -161,9 +158,9 @@ std::unique_ptr<dec::ArchiveMeta> WipfImageArchiveDecoder::read_meta_impl(
 
     for (const auto i : algo::range(meta->entries.size()))
     {
-        auto sprite_entry = static_cast<ArchiveEntryImpl*>(
+        auto sprite_entry = static_cast<CustomArchiveEntry*>(
             meta->entries[i].get());
-        const auto mask_entry = static_cast<const ArchiveEntryImpl*>(
+        const auto mask_entry = static_cast<const CustomArchiveEntry*>(
             mask_meta->entries.at(i).get());
         sprite_entry->mask = read_image(*mask_file, *mask_entry);
     }
@@ -176,7 +173,7 @@ std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto image = read_image(input_file, *entry);
     if (entry->mask)
         image->apply_mask(*entry->mask);

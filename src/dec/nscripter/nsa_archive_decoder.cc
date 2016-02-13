@@ -17,12 +17,9 @@ namespace
         COMPRESSION_LZSS = 2,
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         CompressionType compression_type;
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 }
 
@@ -53,7 +50,7 @@ std::unique_ptr<dec::ArchiveMeta> NsaArchiveDecoder::read_meta_impl(
     const auto offset_to_data = input_file.stream.read_be<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = input_file.stream.read_to_zero().str();
         entry->compression_type =
             static_cast<CompressionType>(input_file.stream.read<u8>());
@@ -71,7 +68,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto data = input_file.stream
         .seek(entry->offset)
         .read(entry->size_comp);

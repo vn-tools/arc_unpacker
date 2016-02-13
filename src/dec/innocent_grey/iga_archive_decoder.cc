@@ -16,12 +16,6 @@ namespace
         size_t data_offset;
         size_t data_size;
     };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
 }
 
 static u32 read_integer(io::BaseByteStream &input_stream)
@@ -79,7 +73,7 @@ std::unique_ptr<dec::ArchiveMeta> IgaArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto &spec : entry_specs)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         input_file.stream.seek(names_start + spec->name_offset);
         std::string name;
         for (const auto i : algo::range(spec->name_size))
@@ -98,7 +92,7 @@ std::unique_ptr<io::File> IgaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     for (const auto i : algo::range(data.size()))

@@ -8,16 +8,6 @@ using namespace au::dec::yumemiru;
 static const bstr magic1 = "yanepkDx"_b;
 static const bstr magic2 = "PackDat3"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
-    };
-}
-
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
@@ -35,7 +25,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(0x100).str();
         entry->offset = input_file.stream.read_le<u32>();
         entry->size_orig = input_file.stream.read_le<u32>();
@@ -51,7 +41,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     if (entry->size_orig != entry->size_comp)
         throw err::NotSupportedError("Compressed archives are not supported");

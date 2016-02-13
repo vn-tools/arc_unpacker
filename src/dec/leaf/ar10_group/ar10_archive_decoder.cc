@@ -9,15 +9,9 @@ static const bstr magic = "ar10"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         u8 archive_key;
-    };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
     };
 }
 
@@ -32,12 +26,12 @@ std::unique_ptr<dec::ArchiveMeta> Ar10ArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_le<u32>();
     const auto offset_to_data = input_file.stream.read_le<u32>();
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->archive_key = input_file.stream.read<u8>();
-    ArchiveEntryImpl *last_entry = nullptr;
+    PlainArchiveEntry *last_entry = nullptr;
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
         entry->offset = input_file.stream.read_le<u32>() + offset_to_data;
@@ -57,8 +51,8 @@ std::unique_ptr<io::File> Ar10ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
 
     input_file.stream.seek(entry->offset);
     const auto data_size = input_file.stream.read_le<u32>();

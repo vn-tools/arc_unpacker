@@ -20,7 +20,7 @@ namespace
         size_t width, height;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         std::vector<Chunk> chunks;
     };
@@ -58,7 +58,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2TextureArchiveDecoder::read_meta_impl(
     int i =0;
     for (const auto image_chunk_count : image_chunk_counts)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         for (const auto j : algo::range(image_chunk_count))
         {
             Chunk chunk;
@@ -86,7 +86,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     int min_x = 0, min_y = 0, max_x = 0, max_y = 0;
     for (const auto &chunk : entry->chunks)
     {

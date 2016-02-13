@@ -8,10 +8,8 @@ using namespace au::dec::twilight_frontier;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         size_t format;
         size_t channel_count;
         size_t sample_rate;
@@ -44,7 +42,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1AudioArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         if (!input_file.stream.read<u8>())
             continue;
 
@@ -71,7 +69,7 @@ std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     res::Audio audio;
     audio.channel_count = entry->channel_count;
     audio.bits_per_sample = entry->bits_per_sample;

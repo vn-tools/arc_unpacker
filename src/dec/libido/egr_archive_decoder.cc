@@ -9,7 +9,7 @@ using namespace au::dec::libido;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t offset;
         size_t width, height;
@@ -28,7 +28,7 @@ std::unique_ptr<dec::ArchiveMeta> EgrArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
         if (input_file.stream.read_le<u32>() != entry->width * entry->height)
@@ -47,7 +47,7 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     res::Palette palette(256);
     for (const auto i : algo::range(palette.size()))

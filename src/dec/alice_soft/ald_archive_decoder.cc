@@ -5,15 +5,6 @@
 using namespace au;
 using namespace au::dec::alice_soft;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static u32 read_24_le(io::BaseByteStream &input_stream)
 {
     return (input_stream.read<u8>() << 8)
@@ -44,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> AldArchiveDecoder::read_meta_impl(
         const auto header_size = input_file.stream.read_le<u32>();
         if (input_file.stream.left() >= header_size)
         {
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<PlainArchiveEntry>();
             entry->size = input_file.stream.read_le<u32>();
             input_file.stream.skip(8);
             const auto name = input_file.stream.read_to_zero(header_size - 16);
@@ -62,7 +53,7 @@ std::unique_ptr<io::File> AldArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

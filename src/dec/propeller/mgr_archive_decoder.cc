@@ -8,7 +8,7 @@ using namespace au::dec::propeller;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t offset;
     };
@@ -64,7 +64,7 @@ std::unique_ptr<dec::ArchiveMeta> MgrArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(entry_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->offset = entry_count == 1
             ? input_file.stream.pos()
             : input_file.stream.read_le<u32>();
@@ -80,7 +80,7 @@ std::unique_ptr<io::File> MgrArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     const auto size_orig = input_file.stream.read_le<u32>();
     const auto size_comp = input_file.stream.read_le<u32>();

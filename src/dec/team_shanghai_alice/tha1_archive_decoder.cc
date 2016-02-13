@@ -12,16 +12,13 @@ static const bstr magic = "THA1"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         size_t encryption_version;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry  final : dec::CompressedArchiveEntry
     {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
         u8 decryptor_id;
     };
 }
@@ -136,11 +133,11 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
     table_data = decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
-    ArchiveEntryImpl *last_entry = nullptr;
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    CustomArchiveEntry *last_entry = nullptr;
+    auto meta = std::make_unique<CustomArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
 
         entry->path = table_stream.read_to_zero().str();
         table_stream.skip(3 - entry->path.str().size() % 4);
@@ -172,8 +169,8 @@ std::unique_ptr<io::File> Tha1ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = decrypt(

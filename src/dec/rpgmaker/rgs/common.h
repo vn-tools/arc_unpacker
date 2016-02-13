@@ -7,10 +7,8 @@ namespace dec {
 namespace rpgmaker {
 namespace rgs {
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         u32 key;
     };
 
@@ -18,6 +16,6 @@ namespace rgs {
 
     std::unique_ptr<io::File> read_file_impl(
         io::File &input_file,
-        const ArchiveEntryImpl &entry);
+        const CustomArchiveEntry &entry);
 
 } } } }

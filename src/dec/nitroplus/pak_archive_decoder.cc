@@ -11,12 +11,9 @@ static const bstr magic = "\x02\x00\x00\x00"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         bool compressed;
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
     };
 }
 
@@ -46,7 +43,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const auto file_data_offset = input_file.stream.pos();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         const auto file_name_size = table_stream.read_le<u32>();
         entry->path = algo::sjis_to_utf8(
             table_stream.read(file_name_size)).str();
@@ -66,7 +63,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     const auto data = entry->compressed
         ? algo::pack::zlib_inflate(input_file.stream.read(entry->size_comp))

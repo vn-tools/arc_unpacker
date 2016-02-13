@@ -19,12 +19,6 @@ namespace
         u32 key1;
         u32 key2;
     };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
 }
 
 static std::unique_ptr<dec::ArchiveMeta> read_meta(
@@ -49,7 +43,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<dec::PlainArchiveEntry>();
         entry->path = table_stream.read_to_zero(16).str();
         entry->offset = table_stream.read_le<u32>() + file_data_start;
         entry->size = table_stream.read_le<u32>();
@@ -111,7 +105,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

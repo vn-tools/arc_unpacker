@@ -13,11 +13,8 @@ static const bstr magic = "MRG\x00"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        u32 offset;
-        u32 size_orig;
-        u32 size_comp;
         u8 filter;
     };
 }
@@ -63,11 +60,11 @@ std::unique_ptr<dec::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
     }
 
     io::MemoryStream table_stream(table_data);
-    ArchiveEntryImpl *last_entry = nullptr;
+    CustomArchiveEntry *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = table_stream.read_to_zero(0x0E).str();
         entry->size_orig = table_stream.read_le<u32>();
         entry->filter = table_stream.read<u8>();
@@ -95,7 +92,7 @@ std::unique_ptr<io::File> MrgArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     if (entry->filter)

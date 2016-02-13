@@ -11,15 +11,13 @@ using namespace au::dec::twilight_frontier;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::vector<res::Palette> palettes;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         size_t width, height;
         size_t depth;
     };
@@ -43,7 +41,7 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     const auto palette_count = input_file.stream.read<u8>();
     for (const auto i : algo::range(palette_count))
     {
@@ -55,7 +53,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     size_t i = 0;
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
@@ -75,8 +73,8 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     auto chunk_size = 0;
     if (entry->depth == 32 || entry->depth == 24)

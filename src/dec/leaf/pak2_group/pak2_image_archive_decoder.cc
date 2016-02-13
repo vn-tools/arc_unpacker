@@ -13,7 +13,7 @@ static const bstr end_magic = "\xAF\xF6\x4D\x4E"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t color_offset, mask_offset, size;
         size_t width, height, bpp;
@@ -31,14 +31,14 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
 
     input_file.stream.seek(0);
-    ArchiveEntryImpl *last_entry = nullptr;
+    CustomArchiveEntry *last_entry = nullptr;
     while (input_file.stream.left())
     {
         input_file.stream.skip(4);
         const auto entry_magic = input_file.stream.read(4);
         if (entry_magic == magic)
         {
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<CustomArchiveEntry>();
             input_file.stream.skip(18);
             entry->bpp = input_file.stream.read_le<u16>();
             input_file.stream.skip(8);
@@ -80,7 +80,7 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     res::PixelFormat format;
     if (entry->bpp == 8)
         format = res::PixelFormat::Gray8;

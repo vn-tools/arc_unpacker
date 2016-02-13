@@ -11,11 +11,9 @@ static const bstr magic = "LNK\x00"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
         bool compressed;
-        size_t offset;
-        size_t size;
     };
 }
 
@@ -34,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> LnkArchiveDecoder::read_meta_impl(
     const auto file_data_start = input_file.stream.pos() + (file_count << 5);
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->offset = input_file.stream.read_le<u32>() + file_data_start;
         const u32 tmp = input_file.stream.read_le<u32>();
         entry->compressed = tmp & 1;
@@ -51,7 +49,7 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto output_file = std::make_unique<io::File>(entry->path, ""_b);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 

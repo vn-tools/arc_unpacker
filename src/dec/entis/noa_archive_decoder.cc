@@ -14,24 +14,22 @@ static const bstr magic3 = "ERISA-Archive file"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::string key;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         u32 encryption;
         bstr extra;
     };
 }
 
-static std::unique_ptr<ArchiveMetaImpl> read_meta(
+static std::unique_ptr<CustomArchiveMeta> read_meta(
     io::BaseByteStream &input_stream, const io::path root = "")
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     common::SectionReader section_reader(input_stream);
     for (const auto &section : section_reader.get_sections("DirEntry"))
     {
@@ -39,7 +37,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
         const auto entry_count = input_stream.read_le<u32>();
         for (const auto i : algo::range(entry_count))
         {
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<CustomArchiveEntry>();
             entry->size = input_stream.read_le<u64>();
             const auto flags = input_stream.read_le<u32>();
             entry->encryption = input_stream.read_le<u32>();
@@ -114,8 +112,8 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     input_file.stream.seek(entry->offset);
 

@@ -7,15 +7,6 @@ using namespace au::dec::ism;
 
 static const bstr magic = "ISM ARCHIVED"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool IsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -30,7 +21,7 @@ std::unique_ptr<dec::ArchiveMeta> IsaArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(12).str();
         input_file.stream.skip(4);
         entry->offset = input_file.stream.read_le<u32>();
@@ -47,7 +38,7 @@ std::unique_ptr<io::File> IsaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

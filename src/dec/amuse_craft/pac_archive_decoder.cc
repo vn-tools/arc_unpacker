@@ -7,15 +7,6 @@ using namespace au::dec::amuse_craft;
 
 static const bstr magic = "PAC\x20"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static int detect_version(io::BaseByteStream &input_stream)
 {
     try
@@ -55,7 +46,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<dec::PlainArchiveEntry>();
         auto path = input_file.stream.read_to_zero(name_size).str();
         std::replace(path.begin(), path.end(), '_', '/');
         entry->path = path;
@@ -99,9 +90,8 @@ std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    const auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
 

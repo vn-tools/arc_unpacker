@@ -15,16 +15,9 @@ static const bstr jpeg_magic = "\xFF\xD8\xFF\xE0"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         size_t encryption_version;
-    };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 }
 
@@ -65,7 +58,7 @@ static bstr decompress(const bstr &input, size_t size_orig)
 static std::unique_ptr<io::File> read_file(
     io::File &input_file, const dec::ArchiveEntry &e, u8 encryption_version)
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const dec::CompressedArchiveEntry*>(&e);
 
     input_file.stream.seek(entry->offset);
     io::MemoryStream uncompressed_stream(
@@ -123,11 +116,11 @@ std::unique_ptr<dec::ArchiveMeta> PbgzArchiveDecoder::read_meta_impl(
             decrypt(input_file.stream.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
             table_size_orig));
 
-    ArchiveEntryImpl *last_entry = nullptr;
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    CompressedArchiveEntry *last_entry = nullptr;
+    auto meta = std::make_unique<CustomArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         entry->path = table_stream.read_to_zero().str();
         entry->offset = table_stream.read_le<u32>();
         entry->size_orig = table_stream.read_le<u32>();
@@ -151,7 +144,7 @@ std::unique_ptr<io::File> PbgzArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
     return ::read_file(input_file, e, meta->encryption_version);
 }
 

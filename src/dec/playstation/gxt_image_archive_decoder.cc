@@ -30,10 +30,8 @@ namespace
         LinearStrided = 0x0C'00'00'00,
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         int palette_index;
         TextureType texture_type;
         TextureBaseFormat texture_base_format;
@@ -70,7 +68,7 @@ std::unique_ptr<dec::ArchiveMeta> GxtImageArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(texture_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->offset = input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
         entry->palette_index = input_file.stream.read_le<u32>();
@@ -92,7 +90,7 @@ std::unique_ptr<io::File> GxtImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     if (entry->palette_index != -1)
         throw err::NotSupportedError("Paletted entries are not supported");

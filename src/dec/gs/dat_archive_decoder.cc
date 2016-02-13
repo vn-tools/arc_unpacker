@@ -9,16 +9,6 @@ using namespace au::dec::gs;
 
 static const bstr magic = "GsSYMBOL5BINDATA"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
-    };
-}
-
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -47,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         table_stream.seek(i * 0x18);
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         entry->path = algo::format("%05d.dat", i);
         entry->offset = table_stream.read_le<u32>() + data_offset;
         entry->size_comp = table_stream.read_le<u32>();
@@ -63,7 +53,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = algo::pack::lzss_decompress(data, entry->size_orig);
     auto output_file = std::make_unique<io::File>(entry->path, data);

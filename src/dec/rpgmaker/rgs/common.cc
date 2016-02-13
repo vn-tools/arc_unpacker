@@ -11,7 +11,7 @@ u32 rgs::advance_key(const u32 key)
 }
 
 std::unique_ptr<io::File> rgs::read_file_impl(
-    io::File &arc_file, const ArchiveEntryImpl &entry)
+    io::File &arc_file, const CustomArchiveEntry &entry)
 {
     auto output_file = std::make_unique<io::File>();
     output_file->path = entry.path;

@@ -8,15 +8,6 @@ using namespace au::dec::cri;
 
 static const bstr magic = "AFS2"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool Afs2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
@@ -30,11 +21,11 @@ std::unique_ptr<dec::ArchiveMeta> Afs2ArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u32>() - 1;
     input_file.stream.skip(4);
     input_file.stream.skip((file_count + 1) * 2);
-    ArchiveEntryImpl *last_entry = nullptr;
+    PlainArchiveEntry *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = algo::format("%d.dat", i);
         entry->offset = input_file.stream.read_le<u32>();
         if (last_entry)
@@ -54,7 +45,7 @@ std::unique_ptr<io::File> Afs2ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

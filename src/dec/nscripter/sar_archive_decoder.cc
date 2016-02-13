@@ -4,15 +4,6 @@
 using namespace au;
 using namespace au::dec::nscripter;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool SarArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.path.has_extension("sar");
@@ -26,7 +17,7 @@ std::unique_ptr<dec::ArchiveMeta> SarArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = input_file.stream.read_to_zero().str();
         entry->offset = input_file.stream.read_be<u32>() + offset_to_data;
         entry->size = input_file.stream.read_be<u32>();
@@ -41,7 +32,7 @@ std::unique_ptr<io::File> SarArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

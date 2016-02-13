@@ -9,11 +9,8 @@ static const bstr magic = "PACKDAT\x2E"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
         bool encrypted;
     };
 }
@@ -32,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> PackdatArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(32).str();
         entry->offset = input_file.stream.read_le<u32>();
         entry->encrypted = (input_file.stream.read_le<u32>() & 0x10000) != 0;
@@ -49,7 +46,7 @@ std::unique_ptr<io::File> PackdatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     if (entry->size_comp != entry->size_orig)

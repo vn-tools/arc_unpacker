@@ -5,15 +5,6 @@
 using namespace au;
 using namespace au::dec::french_bread;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool PArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     Logger dummy_logger;
@@ -21,7 +12,7 @@ bool PArchiveDecoder::is_recognized_impl(io::File &input_file) const
     auto meta = read_meta(dummy_logger, input_file);
     if (!meta->entries.size())
         return false;
-    auto last_entry = static_cast<ArchiveEntryImpl*>(
+    auto last_entry = static_cast<PlainArchiveEntry*>(
         meta->entries[meta->entries.size() - 1].get());
     return last_entry->offset + last_entry->size == input_file.stream.size();
 }
@@ -38,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> PArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         auto name = input_file.stream.read(60).str();
         for (const auto j : algo::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;
@@ -56,7 +47,7 @@ std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto key = entry->path.str();
     const auto encrypted_block_size = std::min<size_t>(0x2173, entry->size);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);

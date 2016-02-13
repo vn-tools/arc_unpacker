@@ -19,12 +19,6 @@ namespace
             const Logger &logger, io::File &input_file) const override;
     };
 
-    struct ArchiveEntryImpl final : ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-
     class TestArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
@@ -99,7 +93,7 @@ std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = input_file.stream.read_to_zero().str();
         entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.pos();
@@ -115,7 +109,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     const ArchiveMeta &,
     const ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

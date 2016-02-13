@@ -22,7 +22,7 @@ namespace
         bool has_data;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         std::vector<TextureInfo> texture_info_list;
     };
@@ -196,7 +196,7 @@ std::unique_ptr<dec::ArchiveMeta> AnmArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto &kv : map)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = kv.first;
         entry->texture_info_list = kv.second;
         meta->entries.push_back(std::move(entry));
@@ -210,7 +210,7 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     size_t width = 0;
     size_t height = 0;
     for (const auto &texture_info : entry->texture_info_list)

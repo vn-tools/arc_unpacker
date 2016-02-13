@@ -21,7 +21,7 @@ std::unique_ptr<dec::ArchiveMeta> RgssadArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
+        auto entry = std::make_unique<rgs::CustomArchiveEntry>();
 
         const auto name_size = input_file.stream.read_le<u32>() ^ key;
         key = rgs::advance_key(key);
@@ -52,7 +52,7 @@ std::unique_ptr<io::File> RgssadArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     return rgs::read_file_impl(
-        input_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
+        input_file, *static_cast<const rgs::CustomArchiveEntry*>(&e));
 }
 
 static auto _ = dec::register_decoder<RgssadArchiveDecoder>("rpgmaker/rgssad");

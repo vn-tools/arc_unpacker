@@ -14,7 +14,7 @@ static const bstr magic = "MCA "_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t offset;
     };
@@ -66,7 +66,7 @@ std::unique_ptr<dec::ArchiveMeta> McaArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = algo::format("%03d.png", i);
         entry->offset = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
@@ -80,7 +80,7 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     const auto encryption_type = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);

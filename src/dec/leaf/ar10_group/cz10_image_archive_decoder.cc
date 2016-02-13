@@ -14,9 +14,8 @@ static const bstr magic = "cz10"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset, size;
         size_t width, height, channels;
     };
 }
@@ -90,7 +89,7 @@ std::unique_ptr<dec::ArchiveMeta> Cz10ImageArchiveDecoder::read_meta_impl(
     auto current_offset = input_file.stream.pos() + image_count * 16;
     for (const auto i : algo::range(image_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_file.stream.read_le<u16>();
         entry->height = input_file.stream.read_le<u16>();
         input_file.stream.skip(4);
@@ -110,7 +109,7 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto data = decompress(
         input_file.stream.seek(entry->offset).read(entry->size),
         entry->width,

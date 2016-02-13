@@ -13,25 +13,22 @@ static const bstr magic = "WARC\x20"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
-        ArchiveMetaImpl(const warc::Plugin plugin, const int warc_version);
+        CustomArchiveMeta(const warc::Plugin plugin, const int warc_version);
         const warc::Plugin plugin;
         const int warc_version;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
         u64 time;
         u32 flags;
         bool suspicious;
     };
 }
 
-ArchiveMetaImpl::ArchiveMetaImpl(
+CustomArchiveMeta::CustomArchiveMeta(
     const warc::Plugin plugin, const int warc_version)
     : plugin(plugin), warc_version(warc_version)
 {
@@ -61,10 +58,10 @@ std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(table_data);
 
     std::set<io::path> known_names;
-    auto meta = std::make_unique<ArchiveMetaImpl>(*plugin, warc_version);
+    auto meta = std::make_unique<CustomArchiveMeta>(*plugin, warc_version);
     while (table_stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         auto name = table_stream.read_to_zero(plugin->entry_name_size).str();
         for (auto &c : name)
         {
@@ -94,8 +91,8 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
 
     const bstr head = input_file.stream.read(4);

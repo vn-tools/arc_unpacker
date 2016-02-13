@@ -13,11 +13,8 @@ static const bstr magic = "TACTICS_ARC_FILE"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        size_t size_comp;
-        size_t size_orig;
-        size_t offset;
         bstr key;
     };
 }
@@ -41,7 +38,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->offset = table_stream.read_le<u32>() + data_start;
         entry->size_comp = table_stream.read_le<u32>();
         entry->size_orig = table_stream.read_le<u32>();
@@ -61,7 +58,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
     auto meta = std::make_unique<dec::ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->size_comp = input_file.stream.read_le<u32>();
         if (!entry->size_comp)
             break;
@@ -115,7 +112,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->key.size())
         for (const auto i : algo::range(data.size()))

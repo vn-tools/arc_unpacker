@@ -10,15 +10,13 @@ using namespace au::dec::kaguya;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         common::Params params;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         bool encrypted;
     };
 }
@@ -26,7 +24,7 @@ namespace
 std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     auto params_file = VirtualFileSystem::get_by_name("params.dat");
     if (params_file)
     {
@@ -66,7 +64,7 @@ std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
         if (!entry_size)
             break;
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         const auto flags = input_file.stream.read_le<u16>();
         entry->encrypted = flags & 4;
         input_file.stream.skip(7);
@@ -101,8 +99,8 @@ std::unique_ptr<io::File> BaseLinkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto output_file = std::make_unique<io::File>(entry->path, ""_b);
     output_file->stream.write(
         input_file.stream.seek(entry->offset), entry->size);

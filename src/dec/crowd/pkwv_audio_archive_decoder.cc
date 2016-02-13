@@ -19,10 +19,8 @@ namespace
         size_t block_align;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         FormatInfo fmt;
     };
 }
@@ -59,7 +57,7 @@ std::unique_ptr<dec::ArchiveMeta> PkwvAudioArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->fmt = fmt_list.at(input_file.stream.read_le<u16>());
         entry->path = input_file.stream.read_to_zero(10).str();
         entry->size = input_file.stream.read_le<u32>();
@@ -75,7 +73,7 @@ std::unique_ptr<io::File> PkwvAudioArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     res::Audio audio;
     audio.codec = entry->fmt.codec;
     audio.channel_count = entry->fmt.channel_count;

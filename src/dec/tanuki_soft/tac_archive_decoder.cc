@@ -12,13 +12,10 @@ using namespace au::dec::tanuki_soft;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u64 hash;
         bool compressed;
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
     };
 
     struct Directory final
@@ -92,7 +89,7 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(entry_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->hash = table_stream.read_le<u64>();
         entry->compressed = table_stream.read_le<u32>() != 0;
         entry->size_orig = table_stream.read_le<u32>();
@@ -108,7 +105,7 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
         {
             if (i + dir->start_index >= meta->entries.size())
                 throw err::CorruptDataError("Corrupt file table");
-            auto entry = static_cast<ArchiveEntryImpl*>(
+            auto entry = static_cast<CustomArchiveEntry*>(
                 meta->entries[dir->start_index + i].get());
             entry->hash = (entry->hash << 16) | dir->hash;
         }
@@ -123,7 +120,7 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream
         .seek(entry->offset)
         .read(entry->size_comp);

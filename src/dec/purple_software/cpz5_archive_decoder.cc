@@ -28,17 +28,15 @@ namespace
         size_t data_start;
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         cpz5::Plugin plugin;
         u32 main_key;
         std::array<u32, 4> hash;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         u32 key;
     };
 
@@ -52,7 +50,7 @@ namespace
     };
 }
 
-static std::unique_ptr<ArchiveMetaImpl> read_meta(
+static std::unique_ptr<CustomArchiveMeta> read_meta(
     const cpz5::Plugin &plugin, const Header &header, const bstr &table_data)
 {
     if (!header.dir_table_size || !header.file_table_size)
@@ -100,7 +98,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
             - prev_dir->file_table_offset;
     }
 
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->plugin = plugin;
     meta->main_key = header.main_key;
     meta->hash = hash;
@@ -120,7 +118,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
 
         for (const auto i : algo::range(dir->file_count))
         {
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<CustomArchiveEntry>();
             const auto entry_offset = file_table_stream.pos();
             const auto entry_size = file_table_stream.read_le<u32>();
             const auto relative_offset = file_table_stream.read_le<u64>();
@@ -256,8 +254,8 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
     cpz5::decrypt_3(

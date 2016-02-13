@@ -36,12 +36,12 @@ namespace
         u64 timestamp;
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         Xp3DecryptFunc decrypt_func;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         std::unique_ptr<InfoChunk> info_chunk;
         std::vector<std::unique_ptr<SegmChunk>> segm_chunks;
@@ -127,7 +127,7 @@ static std::unique_ptr<TimeChunk> read_time_chunk(
     return time_chunk;
 }
 
-static std::unique_ptr<ArchiveEntryImpl> read_entry(
+static std::unique_ptr<CustomArchiveEntry> read_entry(
     const Logger &logger, io::BaseByteStream &input_stream)
 {
     if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
@@ -136,7 +136,7 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
     const auto entry_size = input_stream.read_le<u64>();
     io::MemoryStream entry_stream(input_stream.read(entry_size));
 
-    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto entry = std::make_unique<CustomArchiveEntry>();
     while (entry_stream.left())
     {
         const auto chunk_magic = entry_stream.read(4);
@@ -200,7 +200,7 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
         table_data = algo::pack::zlib_inflate(table_data);
     io::MemoryStream table_stream(table_data);
 
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->decrypt_func = plugin_manager.get()
         .create_decrypt_func(input_file.path);
 
@@ -215,8 +215,8 @@ std::unique_ptr<io::File> Xp3ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     bstr data;
     for (const auto &segm_chunk : entry->segm_chunks)

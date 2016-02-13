@@ -12,7 +12,7 @@ static const bstr magic = "S25\x00"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t width, height;
         size_t offset;
@@ -20,7 +20,7 @@ namespace
     };
 }
 
-static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
+static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
 {
     bstr output(entry.width * 4);
     auto output_ptr = output.get<u8>();
@@ -109,7 +109,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
 }
 
 static res::Image read_plain(
-    io::File &input_file, const ArchiveEntryImpl &entry)
+    io::File &input_file, const CustomArchiveEntry &entry)
 {
     bstr data;
     data.reserve(entry.width * entry.height * 4);
@@ -158,7 +158,7 @@ std::unique_ptr<dec::ArchiveMeta> S25ImageArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto offset : offsets)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         input_file.stream.seek(offset);
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
@@ -178,7 +178,7 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     if (entry->flags & 0x80000000)
         throw err::NotSupportedError("Flagged S25 images are supported");
     const auto image = read_plain(input_file, *entry);

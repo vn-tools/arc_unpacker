@@ -41,12 +41,6 @@ namespace
         Acorn          = 13,
         Unknown        = 255,
     };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
 }
 
 bool GzipArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -78,7 +72,7 @@ std::unique_ptr<dec::ArchiveMeta> GzipArchiveDecoder::read_meta_impl(
             input_file.stream.skip(extra_field_size);
         }
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = "";
 
         if (flags & Flags::FileName)
@@ -108,7 +102,7 @@ std::unique_ptr<io::File> GzipArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     return std::make_unique<io::File>(
         entry->path,

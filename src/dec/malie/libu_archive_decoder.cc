@@ -12,15 +12,9 @@ static const auto magic = "LIBU"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         LibPlugin plugin;
-    };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
     };
 
     // Rather than decrypting to bstr, the decryption is implemented as stream,
@@ -167,7 +161,7 @@ bool LibuArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> LibuArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
 
     const auto maybe_magic = input_file.stream.seek(0).read(magic.size());
     meta->plugin = maybe_magic == magic
@@ -181,7 +175,7 @@ std::unique_ptr<dec::ArchiveMeta> LibuArchiveDecoder::read_meta_impl(
     camellia_stream.skip(4);
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = algo::utf16_to_utf8(camellia_stream.read(68)).str(true);
         entry->size = camellia_stream.read_le<u32>();
         entry->offset = camellia_stream.read_le<u32>();
@@ -197,8 +191,8 @@ std::unique_ptr<io::File> LibuArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     return std::make_unique<io::File>(
         entry->path,
         std::make_unique<CamelliaStream>(

@@ -13,7 +13,7 @@ static const bstr magic = "NEKOPACK4A"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         u32 offset;
         u32 size_comp;
@@ -37,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
         if (!name_size)
             break;
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(name_size).str();
         u32 key = 0;
         for (const u8 &c : entry->path.str())
@@ -55,7 +55,7 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream
         .seek(entry->offset)
         .read(entry->size_comp - 4);

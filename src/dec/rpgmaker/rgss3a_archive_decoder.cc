@@ -20,7 +20,7 @@ std::unique_ptr<dec::ArchiveMeta> Rgss3aArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
+        auto entry = std::make_unique<rgs::CustomArchiveEntry>();
         entry->offset = input_file.stream.read_le<u32>() ^ key;
         if (!entry->offset)
             break;
@@ -46,7 +46,7 @@ std::unique_ptr<io::File> Rgss3aArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     return rgs::read_file_impl(
-        input_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
+        input_file, *static_cast<const rgs::CustomArchiveEntry*>(&e));
 }
 
 static auto _ = dec::register_decoder<Rgss3aArchiveDecoder>("rpgmaker/rgss3a");

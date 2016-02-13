@@ -8,15 +8,6 @@ using namespace au::dec::aoi;
 
 static const bstr magic = "VF"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool VfsArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.seek(0).read(magic.size()) != magic)
@@ -41,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
         for (const auto i : algo::range(file_count))
         {
             const auto entry_offset = input_file.stream.pos();
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<PlainArchiveEntry>();
             entry->path = input_file.stream.read_to_zero(0x13).str();
             entry->offset = input_file.stream.read_le<u32>();
             entry->size = input_file.stream.read_le<u32>();
@@ -57,7 +48,7 @@ std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
         for (const auto i : algo::range(file_count))
         {
             const auto entry_offset = input_file.stream.pos();
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<PlainArchiveEntry>();
 
             const auto name_offset
                 = names_offset + input_file.stream.read_le<u32>() * 2;
@@ -94,10 +85,9 @@ std::unique_ptr<io::File> VfsArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    return std::make_unique<io::File>(
-        entry->path,
-        input_file.stream.seek(entry->offset).read(entry->size));
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> VfsArchiveDecoder::get_linked_formats() const

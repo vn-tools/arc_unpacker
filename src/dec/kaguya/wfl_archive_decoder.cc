@@ -12,12 +12,9 @@ static const auto magic = "WFL1"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u16 type;
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 }
 
@@ -46,7 +43,7 @@ std::unique_ptr<dec::ArchiveMeta> WflArchiveDecoder::read_meta_impl(
         const auto name_size = input_file.stream.read_le<u32>();
         if (!name_size)
             break;
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = algo::sjis_to_utf8(algo::unxor(
             input_file.stream.read(name_size), 0xFF).str()).str(true);
         entry->type = input_file.stream.read_le<u16>();
@@ -67,7 +64,7 @@ std::unique_ptr<io::File> WflArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto data_comp
         = input_file.stream.seek(entry->offset).read(entry->size_comp);
     const auto data_orig = entry->type == 1

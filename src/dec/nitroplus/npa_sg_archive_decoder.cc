@@ -9,15 +9,6 @@ using namespace au::dec::nitroplus;
 
 static const bstr key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static void decrypt(bstr &data)
 {
     for (const auto i : algo::range(data.size()))
@@ -44,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> NpaSgArchiveDecoder::read_meta_impl(
     const auto file_count = table_stream.read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         const auto name_size = table_stream.read_le<u32>();
         entry->path = algo::utf16_to_utf8(table_stream.read(name_size)).str();
         entry->size = table_stream.read_le<u32>();
@@ -63,7 +54,7 @@ std::unique_ptr<io::File> NpaSgArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     decrypt(data);
     return std::make_unique<io::File>(entry->path, data);

@@ -6,15 +6,6 @@ using namespace au::dec::leaf;
 
 static const bstr magic = "LAC\x00"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool LacArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -29,7 +20,7 @@ std::unique_ptr<dec::ArchiveMeta> LacArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         auto name = input_file.stream.read_to_zero(32).str();
         for (auto &c : name)
             c ^= 0xFF;
@@ -47,9 +38,8 @@ std::unique_ptr<io::File> LacArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    const auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
 

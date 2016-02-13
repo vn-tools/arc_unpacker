@@ -14,15 +14,6 @@ using namespace au::dec::cat_system;
 
 static const bstr magic = "HG-3"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static u8 convert_value(u8 value)
 {
     const bool carry = (value & 1) != 0;
@@ -160,7 +151,7 @@ std::unique_ptr<dec::ArchiveMeta> Hg3ImageArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->offset = input_file.stream.pos() + 8;
         entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
@@ -180,7 +171,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     io::MemoryStream data_stream(data);
 

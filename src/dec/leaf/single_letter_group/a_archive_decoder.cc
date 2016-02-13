@@ -12,10 +12,8 @@ static const bstr magic = "\x1E\xAF"_b; // LEAF in hexspeak
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         u8 flags;
     };
 }
@@ -78,7 +76,7 @@ std::unique_ptr<dec::ArchiveMeta> AArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(23).str();
         entry->flags = input_file.stream.read<u8>();
         entry->size = input_file.stream.read_le<u32>();
@@ -94,7 +92,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
 
     bstr data;

@@ -11,15 +11,6 @@ using namespace au::dec::eagls;
 
 static const bstr key = "1qaz2wsx3edc4rfv5tgb6yhn7ujm8ik,9ol.0p;/-@:^[]"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static io::path get_path_to_index(const io::path &path_to_data)
 {
     io::path index_path(path_to_data);
@@ -50,7 +41,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = algo::sjis_to_utf8(data_stream.read_to_zero(20)).str();
         if (entry->path.str().empty())
             break;
@@ -62,7 +53,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
 
     // According to Crass min_offset is calculated differently for some games.
     for (auto &entry : meta->entries)
-        static_cast<ArchiveEntryImpl*>(entry.get())->offset -= min_offset;
+        static_cast<PlainArchiveEntry*>(entry.get())->offset -= min_offset;
 
     return meta;
 }
@@ -73,7 +64,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

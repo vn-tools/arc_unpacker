@@ -5,15 +5,6 @@
 using namespace au;
 using namespace au::dec::real_live;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool NwkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.path.has_extension("nwk");
@@ -26,7 +17,7 @@ std::unique_ptr<dec::ArchiveMeta> NwkArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.read_le<u32>();
         const auto file_id = input_file.stream.read_le<u32>();
@@ -42,10 +33,10 @@ std::unique_ptr<io::File> NwkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(
-        io::path(entry->path).change_extension("nwa"),
-        input_file.stream.seek(entry->offset).read(entry->size));
+        io::path(entry->path).change_extension("nwa"), data);
 }
 
 std::vector<std::string> NwkArchiveDecoder::get_linked_formats() const

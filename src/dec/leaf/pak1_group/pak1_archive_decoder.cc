@@ -11,10 +11,8 @@ using namespace au::dec::leaf;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         bool compressed;
     };
 }
@@ -115,7 +113,7 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     auto meta = read_meta(dummy_logger, input_file);
     if (!meta->entries.size())
         return false;
-    auto last_entry = static_cast<const ArchiveEntryImpl*>(
+    auto last_entry = static_cast<const CustomArchiveEntry*>(
         meta->entries[meta->entries.size() - 1].get());
     return last_entry->offset + last_entry->size == input_file.stream.size();
 }
@@ -127,7 +125,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(16)).str();
         entry->size = input_file.stream.read_le<u32>();
@@ -151,7 +149,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
             "Please choose PAK version with --pak-version switch.");
     }
 
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)

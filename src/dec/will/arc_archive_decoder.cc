@@ -9,12 +9,6 @@ using namespace au::dec::will;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-
     struct Directory final
     {
         std::string extension;
@@ -36,7 +30,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
         input_file.stream.seek(dir.offset);
         for (const auto i : algo::range(dir.file_count))
         {
-            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto entry = std::make_unique<dec::PlainArchiveEntry>();
             const auto name = input_file.stream.read_to_zero(name_size).str();
             entry->path = name + "." + dir.extension;
             entry->size = input_file.stream.read_le<u32>();
@@ -97,7 +91,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     if (entry->path.has_extension("wsc") || entry->path.has_extension("scr"))
     {

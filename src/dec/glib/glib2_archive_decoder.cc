@@ -18,17 +18,15 @@ namespace
         size_t table_size;
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::shared_ptr<glib2::IPlugin> plugin;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
         std::array<u32, 4> content_keys[4];
         bool is_file;
-        size_t offset;
-        size_t size;
     };
 }
 
@@ -77,13 +75,13 @@ static Header read_header(
     return header;
 }
 
-static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
+static std::unique_ptr<CustomArchiveEntry> read_table_entry(
     io::BaseByteStream &table_stream,
-    const std::vector<std::unique_ptr<ArchiveEntryImpl>> &entries,
+    const std::vector<std::unique_ptr<CustomArchiveEntry>> &entries,
     size_t file_names_start,
     size_t file_headers_start)
 {
-    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto entry = std::make_unique<CustomArchiveEntry>();
 
     auto file_name_offset = table_stream.read_le<u32>() + file_names_start;
     table_stream.skip(4);
@@ -175,12 +173,12 @@ std::unique_ptr<dec::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
     size_t file_headers_start = table_stream.read_le<u32>() + 0x10;
     size_t file_headers_size = table_stream.read_le<u32>();
 
-    std::vector<std::unique_ptr<ArchiveEntryImpl>> entries;
+    std::vector<std::unique_ptr<CustomArchiveEntry>> entries;
     for (const auto i : algo::range(file_count))
         entries.push_back(read_table_entry(
             table_stream, entries, file_names_start, file_headers_start));
 
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->plugin = plugin;
     for (auto &entry : entries)
         if (entry->is_file)
@@ -194,8 +192,8 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto output_file = std::make_unique<io::File>();
     output_file->path = entry->path;
 

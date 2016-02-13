@@ -10,7 +10,7 @@ static const bstr magic = "AN20"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t offset;
         size_t x, y;
@@ -58,7 +58,7 @@ std::unique_ptr<dec::ArchiveMeta> An20ImageArchiveDecoder::read_meta_impl(
     const auto base_height = input_file.stream.read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->x = input_file.stream.read_le<u32>();
         entry->y = input_file.stream.read_le<u32>();
         entry->width = input_file.stream.read_le<u32>();
@@ -77,7 +77,7 @@ std::unique_ptr<io::File> An20ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     res::Image image(
         entry->width,
         entry->height,

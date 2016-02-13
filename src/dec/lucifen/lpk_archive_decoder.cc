@@ -25,7 +25,7 @@ namespace
         IsEncrypted2  = 0b0001'0000,
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         LpkPlugin plugin;
         LpkFlags flags;
@@ -33,12 +33,9 @@ namespace
         bstr prefix;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u8 flags;
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 }
 
@@ -79,7 +76,7 @@ bool LpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->plugin = plugin_manager.get();
 
     u32 key1 = meta->plugin.base_key.key1;
@@ -169,7 +166,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     for (const auto &mini_entry : mini_entries)
     {
         input_stream.seek(mini_entry.offset);
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->flags = input_stream.read<u8>();
         entry->path = mini_entry.name;
         entry->offset = input_stream.read_le<u32>();
@@ -190,8 +187,8 @@ std::unique_ptr<io::File> LpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     auto data = input_file.stream
         .seek(entry->offset)

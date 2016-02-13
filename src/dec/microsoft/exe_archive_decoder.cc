@@ -9,12 +9,6 @@ using namespace au::dec::microsoft;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-
     struct DosHeader final
     {
         DosHeader(io::BaseByteStream &input_stream);
@@ -453,7 +447,7 @@ void ResourceCrawler::process_entry(size_t offset, const std::string &path)
     args.input_stream.seek(args.base_offset + offset);
     ImageResourceDataEntry resource_entry(args.input_stream);
 
-    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto entry = std::make_unique<dec::PlainArchiveEntry>();
     entry->path = path;
     entry->offset = args.rva_helper.rva_to_offset(
         resource_entry.offset_to_data);
@@ -541,7 +535,7 @@ std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

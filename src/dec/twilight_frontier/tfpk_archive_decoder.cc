@@ -22,15 +22,13 @@ namespace
         Th145,
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         TfpkVersion version;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t size;
-        size_t offset;
         bstr key;
     };
 
@@ -155,8 +153,8 @@ std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 
 static bstr read_file_content(
     io::File &input_file,
-    const ArchiveMetaImpl &meta,
-    const ArchiveEntryImpl &entry,
+    const CustomArchiveMeta &meta,
+    const CustomArchiveEntry &entry,
     size_t max_size)
 {
     input_file.stream.seek(entry.offset);
@@ -352,7 +350,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
 
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->version = input_file.stream.read<u8>() == 0
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
@@ -375,7 +373,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
     const auto file_count = reader.read_block()->read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         const auto b1 = reader.read_block();
         const auto b2 = reader.read_block();
         const auto b3 = reader.read_block();
@@ -417,7 +415,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
 
     auto table_end = reader.pos();
     for (auto &entry : meta->entries)
-        static_cast<ArchiveEntryImpl*>(entry.get())->offset += table_end;
+        static_cast<CustomArchiveEntry*>(entry.get())->offset += table_end;
 
     return std::move(meta);
 }
@@ -428,8 +426,8 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto data = read_file_content(input_file, *meta, *entry, entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

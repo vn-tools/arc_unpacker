@@ -8,15 +8,6 @@ using namespace au::dec::liar_soft;
 
 static const bstr magic = "LG\x01\x00"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool LwgArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -37,7 +28,7 @@ std::unique_ptr<dec::ArchiveMeta> LwgArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         input_file.stream.skip(9);
         entry->offset = file_data_start + input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
@@ -55,7 +46,7 @@ std::unique_ptr<io::File> LwgArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

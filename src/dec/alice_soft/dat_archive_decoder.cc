@@ -7,15 +7,6 @@
 using namespace au;
 using namespace au::dec::alice_soft;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     Logger dummy_logger;
@@ -38,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const auto header_size = (input_file.stream.read_le<u16>() - 1) * 256;
     auto meta = std::make_unique<ArchiveMeta>();
 
-    ArchiveEntryImpl *last_entry = nullptr;
+    PlainArchiveEntry *last_entry = nullptr;
     bool finished = false;
     for (const auto i : algo::range((header_size / 2) - 1))
     {
@@ -70,7 +61,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         else if (arc_name.find("map") != std::string::npos)
             ext = "map";
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->offset = offset;
         entry->path = algo::format("%03d.%s", i, ext.c_str());
         if (last_entry)
@@ -93,7 +84,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

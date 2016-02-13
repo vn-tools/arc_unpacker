@@ -5,15 +5,6 @@
 using namespace au;
 using namespace au::dec::propeller;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool MpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.path.has_extension("mpk");
@@ -29,7 +20,7 @@ std::unique_ptr<dec::ArchiveMeta> MpkArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
 
         auto name_bin = input_file.stream.read(32);
         const u8 key8 = name_bin[31];
@@ -57,7 +48,7 @@ std::unique_ptr<io::File> MpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

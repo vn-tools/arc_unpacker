@@ -11,16 +11,9 @@ static const bstr magic2 = "ARC2"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         int version;
-    };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
     };
 }
 
@@ -42,16 +35,16 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
 
     input_file.stream.seek(3);
     meta->version = input_file.stream.read<u8>() - '0';
 
-    ArchiveEntryImpl *last_entry = nullptr;
+    CompressedArchiveEntry *last_entry = nullptr;
     const auto file_count = input_file.stream.read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         entry->offset = input_file.stream.read_le<u32>();
         entry->size_orig = input_file.stream.read_le<u32>();
         auto name = input_file.stream.read(input_file.stream.read<u8>());
@@ -76,8 +69,8 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
 

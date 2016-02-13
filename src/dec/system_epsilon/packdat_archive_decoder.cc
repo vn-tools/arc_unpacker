@@ -10,11 +10,8 @@ static const auto magic = "PACKDAT."_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
         u32 flags;
     };
 }
@@ -33,7 +30,7 @@ std::unique_ptr<dec::ArchiveMeta> PackdatArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(32).str();
         entry->offset = input_file.stream.read_le<u32>();
         entry->flags = input_file.stream.read_le<u32>();
@@ -50,7 +47,7 @@ std::unique_ptr<io::File> PackdatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     if (entry->size_orig != entry->size_comp)
         throw err::NotSupportedError("Compressed entries are not supported");
     auto data = input_file.stream.seek(entry->offset).read(entry->size_orig);

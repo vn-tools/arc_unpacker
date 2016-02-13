@@ -7,15 +7,6 @@ using namespace au::dec::lilim;
 
 static const bstr magic = "PA"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool DpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
@@ -35,7 +26,7 @@ std::unique_ptr<dec::ArchiveMeta> DpkArchiveDecoder::read_meta_impl(
     size_t current_offset = magic.size() + 2 + 4 + file_count * 0x14;
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = input_file.stream.read_to_zero(0x10).str();
         entry->size = input_file.stream.read_le<u32>();
         entry->offset = current_offset;
@@ -51,7 +42,7 @@ std::unique_ptr<io::File> DpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }

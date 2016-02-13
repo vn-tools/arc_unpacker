@@ -7,16 +7,6 @@
 using namespace au;
 using namespace au::dec::silky;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
-    };
-}
-
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("arc"))
@@ -27,7 +17,7 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     if (!meta->entries.size())
         return false;
     const auto &last_entry
-        = static_cast<const ArchiveEntryImpl&>(*meta->entries.back());
+        = static_cast<const CompressedArchiveEntry&>(*meta->entries.back());
     return last_entry.offset + last_entry.size_comp == input_file.stream.size();
 }
 
@@ -41,7 +31,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (table_stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         const auto name_size = table_stream.read<u8>();
         auto name = table_stream.read(name_size);
         for (const auto j : algo::range(name.size()))
@@ -61,7 +51,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->size_comp != entry->size_orig)
         data = algo::pack::lzss_decompress(data, entry->size_orig);

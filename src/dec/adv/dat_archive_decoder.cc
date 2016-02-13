@@ -10,7 +10,7 @@ static const bstr magic = "ARCHIVE\x00"_b;
 
 namespace
 {
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr game_key;
         bstr arc_key;
@@ -18,17 +18,11 @@ namespace
         size_t header_offset;
         size_t table_offset;
     };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
 }
 
-static std::unique_ptr<ArchiveMetaImpl> prepare_meta(io::File &input_file)
+static std::unique_ptr<CustomArchiveMeta> prepare_meta(io::File &input_file)
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     input_file.stream.seek(53); // suspicious: varies for other games?
     meta->arc_key = input_file.stream.read(8);
 
@@ -75,7 +69,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     {
         table_stream.seek(0x114 * i);
         table_stream.skip(1);
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = algo::sjis_to_utf8(table_stream.read_to_zero()).str();
         table_stream.seek(0x114 * i + 0x108);
         entry->offset = table_stream.read_le<u32>() + meta->header_offset;
@@ -91,8 +85,8 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     auto key_idx = entry->offset - meta->header_offset;

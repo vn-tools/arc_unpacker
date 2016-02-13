@@ -7,15 +7,6 @@
 using namespace au;
 using namespace au::dec::qlie;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static const bstr magic10 = "abmp10\0\0\0\0\0\0\0\0\0\0"_b;
 static const bstr magic11 = "abmp11\0\0\0\0\0\0\0\0\0\0"_b;
 static const bstr magic12 = "abmp12\0\0\0\0\0\0\0\0\0\0"_b;
@@ -46,7 +37,7 @@ static int guess_version(io::BaseByteStream &input_stream)
 
 static void read_data_entry(io::File &input_file, dec::ArchiveMeta &meta)
 {
-    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto entry = std::make_unique<dec::PlainArchiveEntry>();
     entry->path = "unknown.dat";
     entry->size = input_file.stream.read_le<u32>();
     entry->offset = input_file.stream.pos();
@@ -57,7 +48,7 @@ static void read_data_entry(io::File &input_file, dec::ArchiveMeta &meta)
 static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
 {
     const auto magic = input_file.stream.read(16);
-    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto entry = std::make_unique<dec::PlainArchiveEntry>();
     const auto name_size = input_file.stream.read_le<u16>();
     entry->path = algo::sjis_to_utf8(input_file.stream.read(name_size)).str();
     if (entry->path.str().empty())
@@ -131,7 +122,7 @@ std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

@@ -30,7 +30,7 @@ namespace
         bool is_garbage;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t width, height;
         std::vector<size_t> block_offsets;
@@ -332,7 +332,7 @@ static void read_meta(
             offsets.push_back(data_offset
                 + input_stream.seek(table_offset + i * 4).read_le<u32>());
         }
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_stream.seek(base_offset + 20).read_le<u32>();
         entry->height = input_stream.seek(base_offset + 24).read_le<u32>();
         for (const auto offset : offsets)
@@ -343,7 +343,7 @@ static void read_meta(
 
     else
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->width = input_stream.seek(base_offset + 20).read_le<u32>();
         entry->height = input_stream.seek(base_offset + 24).read_le<u32>();
         entry->block_offsets.push_back(base_offset);
@@ -372,7 +372,7 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
     DecoderContext context;
     context.image_width = entry->width;

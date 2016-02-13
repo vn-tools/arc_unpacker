@@ -12,15 +12,6 @@ static const bstr magic1 = "AFAH"_b;
 static const bstr magic2 = "AlicArch"_b;
 static const bstr magic3 = "INFO"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool AfaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic1.size()) != magic1)
@@ -48,7 +39,7 @@ std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
 
         table_stream.skip(4);
         const auto name_size = table_stream.read_le<u32>();
@@ -69,7 +60,7 @@ std::unique_ptr<io::File> AfaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

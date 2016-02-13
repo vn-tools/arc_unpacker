@@ -11,12 +11,9 @@ static const bstr magic = "PBG3"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u32 checksum;
-        size_t offset;
-        size_t size_comp;
-        size_t size_orig;
     };
 }
 
@@ -43,11 +40,11 @@ std::unique_ptr<dec::ArchiveMeta> Pbg3ArchiveDecoder::read_meta_impl(
     input_file.stream.seek(table_offset);
     io::MsbBitStream table_bit_stream(input_file.stream);
 
-    ArchiveEntryImpl *last_entry = nullptr;
+    CustomArchiveEntry *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         read_integer(table_bit_stream);
         read_integer(table_bit_stream);
         entry->checksum = read_integer(table_bit_stream);
@@ -78,7 +75,7 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
     io::MsbBitStream bit_stream(input_file.stream.read(entry->size_comp));
 

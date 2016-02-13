@@ -18,19 +18,16 @@ namespace
         Compressed = 2,
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr game_title;
     };
 
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
     {
         u64 hash;
         TableEntryType type;
         bool valid;
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
         bstr path_orig;
     };
 }
@@ -146,7 +143,7 @@ static u32 read_file_count(io::BaseByteStream &input_stream)
     return input_stream.read_le<u32>() ^ file_count_hash;
 }
 
-static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
+static void dump(const CustomArchiveMeta &meta, const std::string &dump_path)
 {
     // make it static, so that ./au *.dat --dump=x doesn't write info only
     // about the last archive
@@ -154,7 +151,7 @@ static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
 
     for (const auto &e : meta.entries)
     {
-        const auto entry = static_cast<ArchiveEntryImpl*>(e.get());
+        const auto entry = static_cast<CustomArchiveEntry*>(e.get());
         if (entry->valid)
             stream.write(entry->path.str() + "\n");
         else
@@ -217,7 +214,7 @@ bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     meta->game_title = game_title;
 
     const auto file_count = read_file_count(input_file.stream);
@@ -227,7 +224,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         const auto hash32 = hash64 & 0xFFFFFFFF;
         const auto hash8 = hash64 & 0xFF;
 
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->hash = hash64;
         entry->type = static_cast<TableEntryType>(
             input_file.stream.read<u8>() ^ hash8);
@@ -274,8 +271,8 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     if (!entry->valid)
     {
         logger.err(

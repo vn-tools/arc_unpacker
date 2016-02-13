@@ -15,10 +15,8 @@ static const bstr magic = "ZWAV"_b;
 
 namespace
 {
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
+    struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
-        size_t offset;
-        size_t size;
         size_t intro_size;
         size_t format;
         size_t channel_count;
@@ -81,7 +79,7 @@ std::unique_ptr<dec::ArchiveMeta> ThbgmAudioArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (definitions_file->stream.left())
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CustomArchiveEntry>();
         entry->path = definitions_file->stream.read_to_zero(16).str();
         if (entry->path.str().empty())
             break;
@@ -107,7 +105,7 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     const auto samples = input_file.stream
         .seek(entry->offset)
         .read(entry->size);

@@ -11,15 +11,6 @@
 using namespace au;
 using namespace au::dec::twilight_frontier;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
     auto mt = algo::crypt::MersenneTwister::Improved(mt_seed);
@@ -67,7 +58,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->offset = table_stream.read_le<u32>();
         entry->size = table_stream.read_le<u32>();
         const auto name_size = table_stream.read<u8>();
@@ -85,7 +76,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = algo::unxor(
         input_file.stream.seek(entry->offset).read(entry->size),
         (entry->offset >> 1) | 0x23);

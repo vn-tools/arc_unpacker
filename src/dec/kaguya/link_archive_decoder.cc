@@ -7,15 +7,6 @@ using namespace au::dec::kaguya;
 
 static const auto magic = "LINK"_b;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
-    };
-}
-
 bool LinkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.seek(0).read(magic.size()) != magic)
@@ -45,7 +36,7 @@ std::unique_ptr<dec::ArchiveMeta> LinkArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
         entry->path = file_names.at(i).str();
         entry->offset = input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
@@ -60,7 +51,7 @@ std::unique_ptr<io::File> LinkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
 
     bstr data;
     if (entry->path.has_extension("cg_")

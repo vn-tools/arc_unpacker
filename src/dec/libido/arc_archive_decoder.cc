@@ -5,16 +5,6 @@
 using namespace au;
 using namespace au::dec::libido;
 
-namespace
-{
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size_orig;
-        size_t size_comp;
-    };
-}
-
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     const auto file_count = input_file.stream.read_le<u32>();
@@ -37,7 +27,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<CompressedArchiveEntry>();
         auto tmp = input_file.stream.read(20);
         for (const auto i : algo::range(tmp.size()))
             tmp[i] ^= tmp[tmp.size() - 1];
@@ -56,7 +46,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);

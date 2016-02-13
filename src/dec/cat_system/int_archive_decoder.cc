@@ -21,15 +21,9 @@ namespace
         bstr v_code2;
     };
 
-    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr file_key;
-    };
-
-    struct ArchiveEntryImpl final : dec::ArchiveEntry
-    {
-        size_t offset;
-        size_t size;
     };
 }
 
@@ -163,7 +157,7 @@ std::unique_ptr<dec::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
     bool encrypted = false;
     const auto table_seed = get_table_seed(game_id);
 
-    auto meta = std::make_unique<ArchiveMetaImpl>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         const io::path entry_path = input_file.stream.read(name_size).str();
@@ -181,7 +175,7 @@ std::unique_ptr<dec::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
     input_file.stream.seek(8);
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto entry = std::make_unique<PlainArchiveEntry>();
 
         const auto name = input_file.stream.read(name_size);
         if (io::path(name.str()).name() == "__key__.dat")
@@ -221,8 +215,8 @@ std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const algo::crypt::Blowfish bf(meta->file_key);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     bf.decrypt_in_place(data);
