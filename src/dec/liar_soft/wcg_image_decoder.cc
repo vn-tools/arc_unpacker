@@ -41,7 +41,7 @@ res::Image WcgImageDecoder::decode_impl(
     cg_decompress(output, 2, 4, input_file.stream, 2);
     cg_decompress(output, 0, 4, input_file.stream, 2);
 
-    for (auto i : algo::range(0, output.size(), 4))
+    for (const auto i : algo::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;
 
     return res::Image(width, height, output, res::PixelFormat::BGRA8888);

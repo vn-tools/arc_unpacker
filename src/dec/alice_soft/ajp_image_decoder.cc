@@ -12,7 +12,7 @@ static const bstr key =
 
 static void decrypt(bstr &input)
 {
-    for (auto i : algo::range(std::min(input.size(), key.size())))
+    for (const auto i : algo::range(std::min(input.size(), key.size())))
         input[i] ^= key[i];
 }
 
@@ -26,12 +26,12 @@ res::Image AjpImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(4 * 2);
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
-    auto jpeg_offset = input_file.stream.read_le<u32>();
-    auto jpeg_size = input_file.stream.read_le<u32>();
-    auto mask_offset = input_file.stream.read_le<u32>();
-    auto mask_size = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto jpeg_offset = input_file.stream.read_le<u32>();
+    const auto jpeg_size = input_file.stream.read_le<u32>();
+    const auto mask_offset = input_file.stream.read_le<u32>();
+    const auto mask_size = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(jpeg_offset);
     auto jpeg_data = input_file.stream.read(jpeg_size);

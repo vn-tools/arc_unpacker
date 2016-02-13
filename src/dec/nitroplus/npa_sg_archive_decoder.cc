@@ -20,7 +20,7 @@ namespace
 
 static void decrypt(bstr &data)
 {
-    for (auto i : algo::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] ^= key[i % key.size()];
 }
 
@@ -28,21 +28,21 @@ bool NpaSgArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("npa"))
         return false;
-    size_t table_size = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
     return table_size < input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> NpaSgArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    size_t table_size = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
     auto table_data = input_file.stream.read(table_size);
     decrypt(table_data);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = table_stream.read_le<u32>();
-    for (auto i : algo::range(file_count))
+    const auto file_count = table_stream.read_le<u32>();
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = table_stream.read_le<u32>();
@@ -63,9 +63,8 @@ std::unique_ptr<io::File> NpaSgArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size);
     decrypt(data);
     return std::make_unique<io::File>(entry->path, data);
 }

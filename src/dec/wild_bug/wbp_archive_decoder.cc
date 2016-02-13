@@ -25,49 +25,49 @@ std::unique_ptr<dec::ArchiveMeta> WbpArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x10);
-    auto file_count = input_file.stream.read_le<u32>();
-    auto table_offset = input_file.stream.read_le<u32>();
-    auto table_size = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_offset = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
     std::vector<size_t> dir_offsets;
-    for (auto i : algo::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
-        auto offset = input_file.stream.read_le<u32>();
+        const auto offset = input_file.stream.read_le<u32>();
         if (offset)
             dir_offsets.push_back(offset);
     }
 
     std::vector<size_t> file_offsets;
-    for (auto i : algo::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
-        auto offset = input_file.stream.read_le<u32>();
+        const auto offset = input_file.stream.read_le<u32>();
         if (offset)
             file_offsets.push_back(offset);
     }
 
     std::map<u16, std::string> dir_names;
-    for (auto &offset : dir_offsets)
+    for (const auto &offset : dir_offsets)
     {
         input_file.stream.seek(offset + 1);
-        auto name_size = input_file.stream.read<u8>();
-        auto dir_id = input_file.stream.read<u8>();
+        const auto name_size = input_file.stream.read<u8>();
+        const auto dir_id = input_file.stream.read<u8>();
         input_file.stream.skip(1);
         dir_names[dir_id] = input_file.stream.read_to_zero(name_size).str();
     }
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (size_t i : algo::range(file_offsets.size()))
+    for (const size_t i : algo::range(file_offsets.size()))
     {
         // one file offset may contain multiple entries
         input_file.stream.seek(file_offsets[i]);
         do
         {
-            auto old_pos = input_file.stream.pos();
+            const auto old_pos = input_file.stream.pos();
 
             input_file.stream.skip(1);
-            auto name_size = input_file.stream.read<u8>();
-            auto dir_id = input_file.stream.read<u8>();
+            const auto name_size = input_file.stream.read<u8>();
+            const auto dir_id = input_file.stream.read<u8>();
             input_file.stream.skip(1);
 
             auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -93,9 +93,8 @@ std::unique_ptr<io::File> WbpArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
 

@@ -126,9 +126,9 @@ static const std::vector<u16> decoder_table
 std::unique_ptr<Decoder> MusumePlugin::create_decoder(
     const std::array<u32, 4> &keys) const
 {
-    u32 target = ((keys[0] * 95) >> 13) & 0xFFFF;
+    const u32 target = ((keys[0] * 95) >> 13) & 0xFFFF;
     int index = -1;
-    for (auto i : algo::range(decoder_table.size()))
+    for (const auto i : algo::range(decoder_table.size()))
         if (decoder_table[i] == target)
             index = i;
     if (index == -1)
@@ -137,12 +137,13 @@ std::unique_ptr<Decoder> MusumePlugin::create_decoder(
             algo::format("Unsupported key: %08x", keys[0]));
     }
 
-    auto tmp1 = index / 150;
-    auto tmp2 = index / 30;
-    auto src_permutation = tmp1;
-    auto dst_permutation = tmp2 - 5 * tmp1 - ((tmp2 - 5 * tmp1 < tmp1) - 1);
-    auto func1_index = (index / 5) % 6;
-    auto func2_index = index % 5 - ((index % 5 < func1_index) - 1);
+    const auto tmp1 = index / 150;
+    const auto tmp2 = index / 30;
+    const auto src_permutation = tmp1;
+    const auto dst_permutation
+        = tmp2 - 5 * tmp1 - ((tmp2 - 5 * tmp1 < tmp1) - 1);
+    const auto func1_index = (index / 5) % 6;
+    const auto func2_index = index % 5 - ((index % 5 < func1_index) - 1);
 
     return std::unique_ptr<Decoder>(
         new Decoder

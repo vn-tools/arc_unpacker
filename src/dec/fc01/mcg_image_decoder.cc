@@ -16,7 +16,7 @@ static bstr decrypt_v101(const bstr &input, size_t output_size, u8 initial_key)
 {
     auto data = input;
     auto key = initial_key;
-    for (auto i : algo::range(data.size()))
+    for (const auto i : algo::range(data.size()))
     {
         data[i] = common::rol8(data[i], 1) ^ key;
         key += data.size() - 1 - i;

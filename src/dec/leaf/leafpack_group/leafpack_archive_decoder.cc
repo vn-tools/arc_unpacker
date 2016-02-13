@@ -20,7 +20,7 @@ namespace
 
 static void decrypt(bstr &data, const bstr &key)
 {
-    for (auto i : algo::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] -= key[i % key.size()];
 }
 
@@ -65,7 +65,7 @@ std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
 
     io::MemoryStream table_stream(table_data);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = table_stream.read_to_zero(12).str();
@@ -91,8 +91,7 @@ std::unique_ptr<io::File> LeafpackArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size);
     decrypt(data, key);
     return std::make_unique<io::File>(entry->path, data);
 }

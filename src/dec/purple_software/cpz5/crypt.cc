@@ -74,7 +74,7 @@ void cpz5::decrypt_1a(
     }
 
     auto target_u8 = reinterpret_cast<u8*>(target_u32);
-    for (auto i : algo::range(target.size() & 3))
+    for (const auto i : algo::range(target.size() & 3))
     {
         const auto tmp1 = table[table_pos++] >> (4 * (3 - i));
         const auto tmp2 = tmp1 ^ *target_u8;
@@ -98,7 +98,7 @@ void cpz5::decrypt_1b(
     u32 seed = 0x76548AEF;
     for (const auto i : algo::range(target.size() >> 2))
     {
-        u32 tmp = (*target_u32 ^ table[table_pos++]) - 0x4A91C262;
+        const u32 tmp = (*target_u32 ^ table[table_pos++]) - 0x4A91C262;
         *target_u32++ = algo::rotl<u32>(tmp, 3) - seed;
         table_pos %= table.size();
         seed += 0x10FB562A;
@@ -129,7 +129,7 @@ void cpz5::decrypt_1c(
     u32 seed = plugin.crypt_1c.init_key;
     for (const auto i : algo::range(target.size() >> 2))
     {
-        u32 tmp = (*target_u32 ^ table[table_pos++]) - seed;
+        const u32 tmp = (*target_u32 ^ table[table_pos++]) - seed;
         *target_u32++ = algo::rotl<u32>(tmp, 2) + 0x37A19E8B;
         table_pos %= table.size();
         seed -= 0x139FA9B;

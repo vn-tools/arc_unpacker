@@ -75,7 +75,7 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
     Tree tree;
     tree.size = freq_table.size();
     u32 freq_sum = 0;
-    for (auto i : algo::range(tree.size))
+    for (const auto i : algo::range(tree.size))
     {
         auto node = std::make_shared<NodeInfo>();
         node->frequency = freq_table[i];
@@ -86,11 +86,11 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
         tree.nodes.push_back(std::move(node));
     }
 
-    for (auto level : algo::range(tree.size))
+    for (const auto level : algo::range(tree.size))
     {
         u32 freq = 0;
         u32 children[2];
-        for (auto j : algo::range(2))
+        for (const auto j : algo::range(2))
         {
             u32 min = 0xFFFFFFFF;
             children[j] = 0xFFFFFFFF;
@@ -107,7 +107,8 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
                 }
             }
 
-            for (auto k : algo::range(greedy ? j + 1 : 0, tree.nodes.size()))
+            for (const auto k : algo::range(
+                greedy ? j + 1 : 0, tree.nodes.size()))
             {
                 if (tree[k].valid && tree[k].frequency < min)
                 {

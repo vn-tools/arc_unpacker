@@ -49,12 +49,12 @@ static void load_pixel_block_row(
     size_t max_y = std::min(block_y + header.block_height, header.image_height);
     bool use_alpha = header.channel_count == 4;
 
-    for (auto y : algo::range(block_y, max_y))
+    for (const auto y : algo::range(block_y, max_y))
     {
         size_t block_y_shift = (y - block_y) * header.image_width;
         u8 prev_pixel[4] = {0, 0, 0, 0};
 
-        for (auto x : algo::range(header.image_width))
+        for (const auto x : algo::range(header.image_width))
         {
             res::Pixel pixel;
             pixel.b = channel_data[0]->data.get<u8>()[block_y_shift + x];
@@ -67,7 +67,7 @@ static void load_pixel_block_row(
             pixel.b += pixel.g;
             pixel.r += pixel.g;
 
-            for (auto c : algo::range(header.channel_count))
+            for (const auto c : algo::range(header.channel_count))
             {
                 prev_pixel[c] += pixel[c];
                 image.at(x, y)[c] = prev_pixel[c];
@@ -87,19 +87,17 @@ static void read_image(
     input_stream.skip(4 * block_count);
 
     LzssDecompressor decompressor;
-
-    for (auto y : algo::range(0, header.image_height, header.block_height))
+    for (const auto y
+        : algo::range(0, header.image_height, header.block_height))
     {
         std::vector<std::unique_ptr<BlockInfo>> channel_data;
-
-        for (auto channel : algo::range(header.channel_count))
+        for (const auto channel : algo::range(header.channel_count))
         {
             auto block_info = std::make_unique<BlockInfo>(input_stream);
             if (!block_info->mark)
                 block_info->decompress(decompressor, header);
             channel_data.push_back(std::move(block_info));
         }
-
         load_pixel_block_row(image, std::move(channel_data), header, y);
     }
 }

@@ -27,11 +27,11 @@ static const bstr magic = "DSC FORMAT 1.00\x00"_b;
 static int is_image(const bstr &input)
 {
     io::MemoryStream input_stream(input);
-    auto width = input_stream.read_le<u16>();
-    auto height = input_stream.read_le<u16>();
-    auto bpp = input_stream.read<u8>();
-    auto zeros = input_stream.read(11);
-    for (auto i : algo::range(zeros.size()))
+    const auto width = input_stream.read_le<u16>();
+    const auto height = input_stream.read_le<u16>();
+    const auto bpp = input_stream.read<u8>();
+    const auto zeros = input_stream.read(11);
+    for (const auto i : algo::range(zeros.size()))
         if (zeros[i])
             return false;
     return width && height && (bpp == 8 || bpp == 24 || bpp == 32);
@@ -70,7 +70,7 @@ static NodeList get_nodes(io::BaseByteStream &input_stream, u32 key)
 
         while (true)
         {
-            u32 c = arr0_pos < arr0.size() ? arr0[arr0_pos] : 0;
+            const u32 c = arr0_pos < arr0.size() ? arr0[arr0_pos] : 0;
             if (n != (c >> 16))
                 break;
             nodes[*node_ptr]->has_children = false;
@@ -81,14 +81,14 @@ static NodeList get_nodes(io::BaseByteStream &input_stream, u32 key)
             group_count++;
         }
 
-        u32 unk3 = 2 * (unk1 - group_count);
+        const u32 unk3 = 2 * (unk1 - group_count);
         if (group_count < unk1)
         {
             unk1 = unk1 - group_count;
-            for (auto i : algo::range(unk1))
+            for (const auto i : algo::range(unk1))
             {
                 nodes[*node_ptr]->has_children = true;
-                for (auto j : algo::range(2))
+                for (const auto j : algo::range(2))
                     *arr1_ptr++ = nodes[*node_ptr]->children[j] = node_index++;
                 node_ptr++;
             }
@@ -121,7 +121,7 @@ static bstr decompress(
         if (nodes[node_index]->look_behind)
         {
             auto offset = bit_stream.read(12);
-            u32 repetitions = nodes[node_index]->value + 2;
+            size_t repetitions = nodes[node_index]->value + 2;
             u8 *look_behind = output_ptr - offset - 2;
             if (look_behind < output_start)
                 break;
@@ -148,19 +148,20 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto key = input_file.stream.read_le<u32>();
-    auto output_size = input_file.stream.read_le<u32>();
+    const auto key = input_file.stream.read_le<u32>();
+    const auto output_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
-    auto nodes = get_nodes(input_file.stream, key);
-    auto data = decompress(input_file.stream, std::move(nodes), output_size);
+    const auto nodes = get_nodes(input_file.stream, key);
+    const auto data = decompress(
+        input_file.stream, std::move(nodes), output_size);
 
     if (is_image(data))
     {
         io::MemoryStream data_stream(data);
-        auto width = data_stream.read_le<u16>();
-        auto height = data_stream.read_le<u16>();
-        auto bpp = data_stream.read<u8>();
+        const auto width = data_stream.read_le<u16>();
+        const auto height = data_stream.read_le<u16>();
+        const auto bpp = data_stream.read<u8>();
         data_stream.skip(11);
 
         res::PixelFormat fmt;

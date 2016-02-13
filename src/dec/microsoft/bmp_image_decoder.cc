@@ -51,7 +51,7 @@ static Header read_header(io::BaseByteStream &input_stream)
     io::MemoryStream header_stream(input_stream.read(header_size - 4));
 
     h.width = header_stream.read_le<u32>();
-    s32 height = header_stream.read_le<u32>();
+    const auto height = header_stream.read_le<s32>();
     h.height = std::abs(height);
     h.flip = height > 0;
     h.planes = header_stream.read_le<u16>();

@@ -103,7 +103,7 @@ static void unpickle(io::BaseByteStream &table_stream, UnpickleContext *context)
     // and integers for later interpretation. We also take advantage of RenPy
     // using Pickle's HIGHEST_PROTOCOL, which means there's no need to parse
     // 90% of the opcodes (such as "S" with escape stuff).
-    size_t table_size = table_stream.size();
+    const auto table_size = table_stream.size();
     while (table_stream.pos() < table_size)
     {
         PickleOpcode c = static_cast<PickleOpcode>(table_stream.read<u8>());
@@ -118,7 +118,7 @@ static void unpickle(io::BaseByteStream &table_stream, UnpickleContext *context)
 
             case PickleOpcode::BinUnicode:
             {
-                u32 size = table_stream.read_le<u32>();
+                const auto size = table_stream.read_le<u32>();
                 unpickle_handle_string(table_stream.read(size), context);
                 break;
             }
@@ -143,10 +143,10 @@ static void unpickle(io::BaseByteStream &table_stream, UnpickleContext *context)
 
             case PickleOpcode::Long1:
             {
-                size_t size = table_stream.read<u8>();
+                const auto size = table_stream.read<u8>();
                 u32 number = 0;
-                size_t pos = table_stream.pos();
-                for (auto i : algo::range(size))
+                const auto pos = table_stream.pos();
+                for (const auto i : algo::range(size))
                 {
                     table_stream.seek(pos + size - 1 - i);
                     number *= 256;
@@ -206,7 +206,7 @@ static int guess_version(io::BaseByteStream &input_stream)
 static u32 read_hex_number(io::BaseByteStream &input_stream, size_t size)
 {
     u32 result = 0;
-    for (auto i : algo::range(size))
+    for (const auto i : algo::range(size))
     {
         char c = input_stream.read<u8>();
         result *= 16;
@@ -224,8 +224,8 @@ static u32 read_hex_number(io::BaseByteStream &input_stream, size_t size)
 
 static bstr read_raw_table(io::BaseByteStream &input_stream)
 {
-    size_t compressed_size = input_stream.size() - input_stream.pos();
-    return algo::pack::zlib_inflate(input_stream.read(compressed_size));
+    const auto size_comp = input_stream.size() - input_stream.pos();
+    return algo::pack::zlib_inflate(input_stream.read(size_comp));
 }
 
 bool RpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -236,8 +236,8 @@ bool RpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> RpaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    int version = guess_version(input_file.stream);
-    size_t table_offset = read_hex_number(input_file.stream, 16);
+    const auto version = guess_version(input_file.stream);
+    const auto table_offset = read_hex_number(input_file.stream, 16);
 
     u32 key;
     if (version == 3)
@@ -270,9 +270,9 @@ std::unique_ptr<dec::ArchiveMeta> RpaArchiveDecoder::read_meta_impl(
     if (context.numbers.size() != context.strings.size())
         throw err::NotSupportedError("Unsupported table format");
 
-    size_t file_count = context.strings.size() / 2;
+    const auto file_count = context.strings.size() / 2;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = context.strings[i * 2 ].str();

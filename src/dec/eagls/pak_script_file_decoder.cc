@@ -15,17 +15,17 @@ bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
         return false;
     }
 
-    for (auto i : algo::range(100))
+    for (const auto i : algo::range(100))
     {
-        auto name = input_file.stream.read(32).str();
+        const auto name = input_file.stream.read(32).str();
         input_file.stream.skip(4);
 
         // after first zero, the "name" (whatever it is) should contain only
         // more zeros
-        auto zero_index = name.find_first_of('\x00');
+        const auto zero_index = name.find_first_of('\x00');
         if (zero_index == std::string::npos)
             return false;
-        for (auto i : algo::range(zero_index, name.size()))
+        for (const auto i : algo::range(zero_index, name.size()))
             if (name[i] != '\x00')
                 return false;
     }
@@ -42,9 +42,9 @@ std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
     const auto offset = 3600;
     input_file.stream.seek(offset);
     auto data = input_file.stream.read(input_file.stream.size() - offset - 1);
-    s8 seed = input_file.stream.read<u8>();
+    const s8 seed = input_file.stream.read<u8>();
     algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
-    for (auto i : algo::range(0, data.size(), 2))
+    for (const auto i : algo::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];
 
     auto output_file = std::make_unique<io::File>(input_file.path, data);

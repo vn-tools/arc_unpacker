@@ -1,4 +1,5 @@
 #include "dec/tactics/arc_archive_decoder.h"
+#include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
@@ -23,24 +24,22 @@ namespace
 
 static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
 {
-    auto size_comp = input_file.stream.read_le<u32>();
-    auto size_orig = input_file.stream.read_le<u32>();
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     if (size_comp > 1024 * 1024 * 10)
         throw err::BadDataSizeError();
 
     input_file.stream.skip(4);
-    auto table_buf = input_file.stream.read(size_comp);
-    auto data_start = input_file.stream.pos();
-
-    for (auto &c : table_buf)
-        c ^= 0xFF;
+    const auto table_data
+        = algo::unxor(input_file.stream.read(size_comp), 0xFF);
     io::MemoryStream table_stream(
-        algo::pack::lzss_decompress(table_buf, size_orig));
+        algo::pack::lzss_decompress(table_data, size_orig));
 
-    auto key = table_stream.read_to_zero();
+    const auto data_start = input_file.stream.pos();
+    const auto key = table_stream.read_to_zero();
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = table_stream.read_le<u32>() + data_start;
@@ -67,7 +66,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
         if (!entry->size_comp)
             break;
         entry->size_orig = input_file.stream.read_le<u32>();
-        auto name_size = input_file.stream.read_le<u32>();
+        const auto name_size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
@@ -94,7 +93,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
             read_meta_v1
         };
 
-    for (auto meta_reader : meta_readers)
+    for (const auto meta_reader : meta_readers)
     {
         input_file.stream.seek(magic.size());
         try
@@ -116,11 +115,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->key.size())
-        for (auto i : algo::range(data.size()))
+        for (const auto i : algo::range(data.size()))
             data[i] ^= entry->key[i % entry->key.size()];
     if (entry->size_orig)
         data = algo::pack::lzss_decompress(data, entry->size_orig);

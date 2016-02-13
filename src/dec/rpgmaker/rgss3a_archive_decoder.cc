@@ -28,9 +28,9 @@ std::unique_ptr<dec::ArchiveMeta> Rgss3aArchiveDecoder::read_meta_impl(
         entry->size = input_file.stream.read_le<u32>() ^ key;
         entry->key = input_file.stream.read_le<u32>() ^ key;
 
-        size_t name_size = input_file.stream.read_le<u32>() ^ key;
+        const auto name_size = input_file.stream.read_le<u32>() ^ key;
         auto name = input_file.stream.read(name_size).str();
-        for (auto i : algo::range(name_size))
+        for (const auto i : algo::range(name_size))
             name[i] ^= key >> (i << 3);
         entry->path = name;
 

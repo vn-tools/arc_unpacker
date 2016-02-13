@@ -12,7 +12,7 @@ static bstr decompress_huffman(
     io::BaseBitStream &bit_stream, const Tree &tree, size_t output_size)
 {
     bstr output(output_size);
-    for (auto i : algo::range(output.size()))
+    for (const auto i : algo::range(output.size()))
         output[i] = tree.get_leaf(bit_stream);
     return output;
 }
@@ -28,18 +28,18 @@ static bstr decompress_rle(bstr &input, size_t output_size)
     bool zero_flag = false;
     while (input_stream.left())
     {
-        u32 size = read_variable_data(input_stream);
+        size_t size = read_variable_data(input_stream);
         if (output_ptr + size >= output_end)
             size = output_end - output_ptr;
 
         if (zero_flag)
         {
-            for (auto i : algo::range(size))
+            for (const auto i : algo::range(size))
                 *output_ptr++ = 0;
         }
         else
         {
-            for (auto i : algo::range(size))
+            for (const auto i : algo::range(size))
                 *output_ptr++ = input_stream.read<u8>();
         }
         zero_flag = !zero_flag;
@@ -62,9 +62,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     left += channels;
 
     // add left to first row
-    for (auto x : algo::range(1, width))
+    for (const auto x : algo::range(1, width))
     {
-        for (auto i : algo::range(channels))
+        for (const auto i : algo::range(channels))
         {
             *input_ptr += input_ptr[-channels];
             input_ptr++;
@@ -74,9 +74,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     }
 
     // add left and top to all other pixels
-    for (auto y : algo::range(1, height))
+    for (const auto y : algo::range(1, height))
     {
-        for (auto i : algo::range(channels))
+        for (const auto i : algo::range(channels))
         {
             *input_ptr += *above;
             input_ptr++;
@@ -84,9 +84,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
             left++;
         }
 
-        for (auto x : algo::range(1, width))
+        for (const auto x : algo::range(1, width))
         {
-            for (auto i : algo::range(channels))
+            for (const auto i : algo::range(channels))
             {
                 *input_ptr += (*left + *above) >> 1;
                 input_ptr++;
@@ -114,23 +114,23 @@ static res::PixelFormat bpp_to_pixel_format(int bpp)
 std::unique_ptr<res::Image> Cbg1Decoder::decode(
     io::BaseByteStream &input_stream) const
 {
-    auto width = input_stream.read_le<u16>();
-    auto height = input_stream.read_le<u16>();
-    auto bpp = input_stream.read_le<u32>();
+    const auto width = input_stream.read_le<u16>();
+    const auto height = input_stream.read_le<u16>();
+    const auto bpp = input_stream.read_le<u32>();
     input_stream.skip(8);
 
-    auto huffman_size = input_stream.read_le<u32>();
+    const auto huffman_size = input_stream.read_le<u32>();
     io::MemoryStream decrypted_stream(read_decrypted_data(input_stream));
-    auto raw_data = input_stream.read_to_eof();
+    const auto raw_data = input_stream.read_to_eof();
 
-    auto freq_table = read_freq_table(decrypted_stream, 256);
-    auto tree = build_tree(freq_table, false);
+    const auto freq_table = read_freq_table(decrypted_stream, 256);
+    const auto tree = build_tree(freq_table, false);
 
     io::MsbBitStream bit_stream(raw_data);
     auto output = decompress_huffman(bit_stream, tree, huffman_size);
     auto pixel_data = decompress_rle(output, width * height * (bpp >> 3));
     transform_colors(pixel_data, width, height, bpp);
 
-    auto format = bpp_to_pixel_format(bpp);
+    const auto format = bpp_to_pixel_format(bpp);
     return std::make_unique<res::Image>(width, height, pixel_data, format);
 }

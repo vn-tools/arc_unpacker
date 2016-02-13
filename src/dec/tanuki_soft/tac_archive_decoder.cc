@@ -16,9 +16,9 @@ namespace
     {
         u64 hash;
         bool compressed;
-        u32 size_original;
-        u32 offset;
-        u32 size_compressed;
+        size_t offset;
+        size_t size_orig;
+        size_t size_comp;
     };
 
     struct Directory final
@@ -42,7 +42,7 @@ static const bstr magic_110 = "TArc1.10\x00\x00\x00\x00"_b;
 static bstr decrypt(const bstr &input, size_t size, const bstr &key)
 {
     algo::crypt::Blowfish bf(key);
-    size_t left = (size / bf.block_size()) * bf.block_size();
+    const auto left = (size / bf.block_size()) * bf.block_size();
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
 
@@ -95,9 +95,9 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = table_stream.read_le<u64>();
         entry->compressed = table_stream.read_le<u32>() != 0;
-        entry->size_original = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         entry->offset = table_stream.read_le<u32>() + file_data_start;
-        entry->size_compressed = table_stream.read_le<u32>();
+        entry->size_comp = table_stream.read_le<u32>();
         entry->path = algo::format("%05d.dat", i);
         meta->entries.push_back(std::move(entry));
     }
@@ -126,16 +126,14 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto data = input_file.stream
         .seek(entry->offset)
-        .read(entry->size_compressed);
+        .read(entry->size_comp);
     if (entry->compressed)
         data = algo::pack::zlib_inflate(data);
 
     if (!entry->compressed)
     {
-        bstr key = algo::format("%llu_tlib_secure_", entry->hash);
-        size_t bytes_to_decrypt = 10240;
-        if (data.size() < bytes_to_decrypt)
-            bytes_to_decrypt = data.size();
+        const auto key = algo::format("%llu_tlib_secure_", entry->hash);
+        auto bytes_to_decrypt = std::min<size_t>(10240, data.size());
 
         {
             const auto header = decrypt(

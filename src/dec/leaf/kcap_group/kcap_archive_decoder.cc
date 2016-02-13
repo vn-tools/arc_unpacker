@@ -54,7 +54,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(
     io::File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->compressed = true;
@@ -71,7 +71,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v2(
     io::File &input_file, const size_t file_count, const Logger &logger)
 {
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto type = static_cast<EntryType>(
@@ -125,8 +125,8 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = input_file.stream.read_le<u32>();
-        auto size_orig = input_file.stream.read_le<u32>();
+        const auto size_comp = input_file.stream.read_le<u32>();
+        const auto size_orig = input_file.stream.read_le<u32>();
         data = input_file.stream.read(size_comp - 8);
         data = algo::pack::lzss_decompress(data, size_orig);
     }

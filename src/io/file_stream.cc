@@ -9,7 +9,7 @@ using namespace au::io;
 static FILE *utf8_fopen(const path &path, const char *mode)
 {
     #ifdef _WIN32
-        auto cmode = algo::utf8_to_utf16(std::string(mode)).str();
+        const auto cmode = algo::utf8_to_utf16(std::string(mode)).str();
         std::wstring widemode(
             reinterpret_cast<const wchar_t*>(cmode.c_str()),
             cmode.size() / 2);
@@ -69,9 +69,9 @@ size_t FileStream::pos() const
 
 size_t FileStream::size() const
 {
-    size_t old_pos = ftell(p->file);
+    const auto old_pos = ftell(p->file);
     fseek(p->file, 0, SEEK_END);
-    size_t size = ftell(p->file);
+    const auto size = ftell(p->file);
     fseek(p->file, old_pos, SEEK_SET);
     return size;
 }

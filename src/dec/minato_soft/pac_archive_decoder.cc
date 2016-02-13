@@ -25,7 +25,7 @@ static int init_huffman(
 {
     if (bit_stream.read(1))
     {
-        auto old_pos = pos;
+        const auto old_pos = pos;
         pos++;
         if (old_pos < 511)
         {
@@ -47,7 +47,7 @@ static bstr decompress_table(const bstr &input, size_t output_size)
 
     u16 nodes[2][512];
     auto pos = 256;
-    auto initial_pos = init_huffman(bit_stream, nodes, pos);
+    const auto initial_pos = init_huffman(bit_stream, nodes, pos);
 
     while (output_ptr < output_end)
     {
@@ -69,22 +69,21 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    size_t file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.seek(input_file.stream.size() - 4);
-    size_t compressed_size = input_file.stream.read_le<u32>();
-    size_t uncompressed_size = file_count * 76;
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = file_count * 76;
 
-    input_file.stream.seek(input_file.stream.size() - 4 - compressed_size);
-    bstr compressed = input_file.stream.read(compressed_size);
-    for (auto i : algo::range(compressed.size()))
+    input_file.stream.seek(input_file.stream.size() - 4 - size_comp);
+    auto compressed = input_file.stream.read(size_comp);
+    for (const auto i : algo::range(compressed.size()))
         compressed.get<u8>()[i] ^= 0xFF;
 
-    io::MemoryStream table_stream(
-        decompress_table(compressed, uncompressed_size));
+    io::MemoryStream table_stream(decompress_table(compressed, size_orig));
     table_stream.seek(0);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(table_stream.read_to_zero(0x40)).str();
@@ -102,9 +101,8 @@ std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->size_orig != entry->size_comp)
         data = algo::pack::zlib_inflate(data);
     return std::make_unique<io::File>(entry->path, data);

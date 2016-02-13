@@ -33,7 +33,7 @@ static std::unique_ptr<Header> read_header(io::BaseByteStream &input_stream)
     auto header = std::make_unique<Header>();
     header->encrypted = input_stream.read_le<u16>() > 0;
 
-    size_t header_size = input_stream.read_le<u32>();
+    const auto header_size = input_stream.read_le<u32>();
     if (header_size != 64)
         throw err::NotSupportedError("Unexpected header size");
     input_stream.skip(28);
@@ -53,8 +53,8 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     std::vector<std::unique_ptr<Region>> regions;
 
     input_stream.seek(header.regions_offset);
-    size_t region_count = header.regions_size / 64;
-    for (auto i : algo::range(region_count))
+    const auto region_count = header.regions_size / 64;
+    for (const auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
         region->x = input_stream.read_le<u32>();

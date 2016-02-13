@@ -44,10 +44,10 @@ Rsa::~Rsa()
 
 bstr Rsa::decrypt(const bstr &input) const
 {
-    size_t output_size = RSA_size(p->key_impl);
+    const auto output_size = RSA_size(p->key_impl);
     auto output = std::make_unique<u8[]>(output_size);
 
-    int result = RSA_public_decrypt(
+    const auto result = RSA_public_decrypt(
         input.size(),
         input.get<const u8>(),
         output.get(),

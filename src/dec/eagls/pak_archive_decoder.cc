@@ -40,9 +40,9 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         get_path_to_index(input_file.path), io::FileMode::Read);
 
     auto data = index_stream.read(index_stream.size() - 4);
-    auto seed = index_stream.read_le<u32>();
+    const auto seed = index_stream.read_le<u32>();
     algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
-    for (auto i : algo::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] ^= key[lcg.next() % key.size()];
 
     io::MemoryStream data_stream(data);
@@ -73,9 +73,8 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

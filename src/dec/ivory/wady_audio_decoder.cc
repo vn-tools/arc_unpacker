@@ -22,16 +22,16 @@ static Version detect_version(io::BaseByteStream &input_stream)
     auto version = Version::Version1;
     input_stream.peek(input_stream.pos(), [&]()
     {
-        auto channels = input_stream.read_le<u16>();
+        const auto channels = input_stream.read_le<u16>();
         try
         {
             input_stream.seek(0x30);
             if (channels == 2)
             {
-                for (auto i : algo::range(2))
+                for (const auto i : algo::range(2))
                 {
-                    auto compressed_size = input_stream.read_le<u32>();
-                    input_stream.skip(compressed_size);
+                    const auto size_comp = input_stream.read_le<u32>();
+                    input_stream.skip(size_comp);
                 }
             }
             else if (channels == 1)
@@ -81,9 +81,9 @@ static bstr decode_v1(
     io::MemoryStream tmp_stream(input_stream);
     while (tmp_stream.left() && samples_ptr < samples_end)
     {
-        for (auto i : algo::range(channels))
+        for (const auto i : algo::range(channels))
         {
-            u16 b = tmp_stream.read<u8>();
+            const u16 b = tmp_stream.read<u8>();
             if (b & 0x80)
             {
                 prev_sample[i] = b << 9;
@@ -118,13 +118,13 @@ static bstr decode_v2(
 
     bstr samples(sample_count * 2 * channels);
 
-    for (auto i : algo::range(channels))
+    for (const auto i : algo::range(channels))
     {
-        auto compressed_size = channels == 1
+        const auto size_comp = channels == 1
             ? input_stream.size() - input_stream.pos()
             : input_stream.read_le<u32>();
 
-        io::MemoryStream tmp_stream(input_stream, compressed_size);
+        io::MemoryStream tmp_stream(input_stream, size_comp);
         tmp_stream.skip(4);
         auto left = tmp_stream.read_le<u32>();
         s16 prev_sample = tmp_stream.read_le<u16>();
@@ -137,7 +137,7 @@ static bstr decode_v2(
         while (left && samples_ptr < samples_end)
         {
             prev_sample = left == 300 ? 0 : prev_sample;
-            u16 b = tmp_stream.read<u8>();
+            const u16 b = tmp_stream.read<u8>();
 
             if (b & 1)
             {
@@ -147,7 +147,7 @@ static bstr decode_v2(
                 }
                 else
                 {
-                    u16 tmp = static_cast<s16>(b << 9) >> 15;
+                    const u16 tmp = static_cast<s16>(b << 9) >> 15;
                     prev_sample += (tmp ^ table1[(b >> 1) & 0x1F]) - tmp;
                 }
                 *samples_ptr = prev_sample;
@@ -155,12 +155,13 @@ static bstr decode_v2(
             }
             else
             {
-                u32 tmp = (tmp_stream.read<u8>() << 8) | b;
-                auto dividend = table2[(tmp >> 1) & 7];
+                const u32 tmp = (tmp_stream.read<u8>() << 8) | b;
+                const auto dividend = table2[(tmp >> 1) & 7];
                 auto repetitions = table2[(tmp >> 1) & 7];
-                s16 tmp2 = tmp & 0xFFF0;
+                const s16 tmp2 = tmp & 0xFFF0;
                 float sample = prev_sample;
-                float delta = (tmp2 - sample) / static_cast<float>(dividend);
+                const float delta
+                    = (tmp2 - sample) / static_cast<float>(dividend);
                 while (repetitions-- && samples_ptr < samples_end)
                 {
                     sample += delta;
@@ -186,26 +187,26 @@ res::Audio WadyAudioDecoder::decode_impl(
     input_file.stream.skip(magic.size());
     input_file.stream.skip(2);
 
-    auto version = detect_version(input_file.stream);
+    const auto version = detect_version(input_file.stream);
 
-    auto channels = input_file.stream.read_le<u16>();
-    auto sample_rate = input_file.stream.read_le<u32>();
+    const auto channels = input_file.stream.read_le<u16>();
+    const auto sample_rate = input_file.stream.read_le<u32>();
 
-    auto sample_count = input_file.stream.read_le<u32>();
-    auto channel_sample_count = input_file.stream.read_le<u32>();
-    auto size_uncompressed = input_file.stream.read_le<u32>();
+    const auto sample_count = input_file.stream.read_le<u32>();
+    const auto channel_sample_count = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
     if (channel_sample_count * channels != sample_count)
         throw err::CorruptDataError("Sample count mismatch");
-    if (sample_count * 2 != size_uncompressed)
+    if (sample_count * 2 != size_orig)
         throw err::CorruptDataError("Data size mismatch");
     input_file.stream.skip(4 * 2 + 2);
     if (input_file.stream.read_le<u16>() != channels)
         throw err::CorruptDataError("Channel count mismatch");
     if (input_file.stream.read_le<u32>() != sample_rate)
         throw err::CorruptDataError("Sample rate mismatch");
-    auto byte_rate = input_file.stream.read_le<u32>();
-    auto block_align = input_file.stream.read_le<u16>();
-    auto bits_per_sample = input_file.stream.read_le<u16>();
+    const auto byte_rate = input_file.stream.read_le<u32>();
+    const auto block_align = input_file.stream.read_le<u16>();
+    const auto bits_per_sample = input_file.stream.read_le<u16>();
 
     input_file.stream.seek(0x30);
     bstr samples;

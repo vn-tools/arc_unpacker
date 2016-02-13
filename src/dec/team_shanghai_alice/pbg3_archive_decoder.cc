@@ -22,7 +22,7 @@ namespace
 
 static unsigned int read_integer(io::BaseBitStream &bit_stream)
 {
-    size_t integer_size = bit_stream.read(2) + 1;
+    const auto integer_size = bit_stream.read(2) + 1;
     return bit_stream.read(integer_size << 3);
 }
 
@@ -37,15 +37,15 @@ std::unique_ptr<dec::ArchiveMeta> Pbg3ArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
 
     io::MsbBitStream header_bit_stream(input_file.stream);
-    auto file_count = read_integer(header_bit_stream);
-    auto table_offset = read_integer(header_bit_stream);
+    const auto file_count = read_integer(header_bit_stream);
+    const auto table_offset = read_integer(header_bit_stream);
 
     input_file.stream.seek(table_offset);
     io::MsbBitStream table_bit_stream(input_file.stream);
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         read_integer(table_bit_stream);
@@ -54,7 +54,7 @@ std::unique_ptr<dec::ArchiveMeta> Pbg3ArchiveDecoder::read_meta_impl(
         entry->offset = read_integer(table_bit_stream);
         entry->size_orig = read_integer(table_bit_stream);
         std::string name;
-        for (auto j : algo::range(256))
+        for (const auto j : algo::range(256))
         {
             char c = table_bit_stream.read(8);
             if (c == 0)
@@ -78,7 +78,7 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     io::MsbBitStream bit_stream(input_file.stream.read(entry->size_comp));
 
@@ -87,9 +87,8 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    auto data = algo::pack::lzss_decompress(
+    const auto data = algo::pack::lzss_decompress(
         bit_stream, entry->size_orig, settings);
-
     return std::make_unique<io::File>(entry->path, data);
 }
 

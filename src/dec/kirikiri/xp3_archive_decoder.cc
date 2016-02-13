@@ -70,8 +70,8 @@ static u64 get_table_offset(io::BaseByteStream &input_stream, int version)
     if (version == 1)
         return input_stream.read_le<u64>();
 
-    u64 additional_header_offset = input_stream.read_le<u64>();
-    u32 minor_version = input_stream.read_le<u32>();
+    const u64 additional_header_offset = input_stream.read_le<u64>();
+    const u32 minor_version = input_stream.read_le<u32>();
     if (minor_version != 1)
         throw err::CorruptDataError("Unexpected XP3 version");
 

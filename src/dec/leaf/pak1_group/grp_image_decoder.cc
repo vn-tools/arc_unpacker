@@ -37,7 +37,7 @@ static res::Palette decode_palette(io::File &input_file)
     input_file.stream.seek(0);
     const auto count = input_file.stream.read_le<u16>();
     auto palette = res::Palette(256);
-    for (auto i : algo::range(count))
+    for (const auto i : algo::range(count))
     {
         auto index = input_file.stream.read<u8>();
         palette[index].a = 0xFF;

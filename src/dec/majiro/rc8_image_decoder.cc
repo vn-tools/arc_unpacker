@@ -19,11 +19,11 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     auto output_end = output.end<const u8>();
 
     std::vector<int> shift_table;
-    for (auto i : algo::range(4))
+    for (const auto i : algo::range(4))
         shift_table.push_back(-1 - i);
-    for (auto i : algo::range(7))
+    for (const auto i : algo::range(7))
         shift_table.push_back(3 - i - width);
-    for (auto i : algo::range(5))
+    for (const auto i : algo::range(5))
         shift_table.push_back(2 - i - width * 2);
 
     if (output.size() < 1)

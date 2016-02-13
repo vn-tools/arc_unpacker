@@ -29,7 +29,7 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    auto palette_count = input_file.stream.read<u8>();
+    const auto palette_count = input_file.stream.read<u8>();
     input_file.stream.skip(palette_count * 512);
     while (input_file.stream.left())
     {
@@ -44,8 +44,8 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    auto palette_count = input_file.stream.read<u8>();
-    for (auto i : algo::range(palette_count))
+    const auto palette_count = input_file.stream.read<u8>();
+    for (const auto i : algo::range(palette_count))
     {
         meta->palettes.push_back(res::Palette(
             256, input_file.stream.read(512), res::PixelFormat::BGRA5551));
@@ -75,8 +75,8 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
     auto chunk_size = 0;
     if (entry->depth == 32 || entry->depth == 24)

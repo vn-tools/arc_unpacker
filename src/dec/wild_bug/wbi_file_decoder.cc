@@ -16,8 +16,7 @@ std::unique_ptr<io::File> WbiFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
-    auto data = decoder.read_compressed_section(0x02);
-
+    const auto data = decoder.read_compressed_section(0x02);
     auto output_file = std::make_unique<io::File>(input_file.path, data);
     output_file->path.change_extension("dat");
     return output_file;

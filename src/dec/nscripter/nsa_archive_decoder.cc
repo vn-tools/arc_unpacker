@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/nscripter/spb_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
-#include "io/memory_stream.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::dec::nscripter;
@@ -12,9 +12,9 @@ namespace
 {
     enum CompressionType
     {
-        COMPRESSStreamN_NONE = 0,
-        COMPRESSStreamN_SPB = 1,
-        COMPRESSStreamN_LZSS = 2,
+        COMPRESSION_NONE = 0,
+        COMPRESSION_SPB = 1,
+        COMPRESSION_LZSS = 2,
     };
 
     struct ArchiveEntryImpl final : dec::ArchiveEntry
@@ -28,17 +28,17 @@ namespace
 
 bool NsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    size_t file_count = input_file.stream.read_be<u16>();
-    size_t offset_to_files = input_file.stream.read_be<u32>();
+    const auto file_count = input_file.stream.read_be<u16>();
+    const auto offset_to_files = input_file.stream.read_be<u32>();
     if (file_count == 0)
         return false;
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         input_file.stream.read_to_zero();
         input_file.stream.read<u8>();
-        size_t offset = input_file.stream.read_be<u32>();
-        size_t size_comp = input_file.stream.read_be<u32>();
-        size_t size_orig = input_file.stream.read_be<u32>();
+        const auto offset = input_file.stream.read_be<u32>();
+        const auto size_comp = input_file.stream.read_be<u32>();
+        const auto size_orig = input_file.stream.read_be<u32>();
         if (offset_to_files + offset + size_comp > input_file.stream.size())
             return false;
     }
@@ -49,9 +49,9 @@ std::unique_ptr<dec::ArchiveMeta> NsaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = input_file.stream.read_be<u16>();
-    size_t offset_to_data = input_file.stream.read_be<u32>();
-    for (auto i : algo::range(file_count))
+    const auto file_count = input_file.stream.read_be<u16>();
+    const auto offset_to_data = input_file.stream.read_be<u32>();
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
@@ -71,45 +71,36 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<io::File>();
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream
+        .seek(entry->offset)
+        .read(entry->size_comp);
 
-    output_file->path = entry->path;
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    if (entry->compression_type == COMPRESSION_NONE)
+        return std::make_unique<io::File>(entry->path, data);
 
-    switch (entry->compression_type)
+    if (entry->compression_type == COMPRESSION_LZSS)
     {
-        case COMPRESSStreamN_NONE:
-            output_file->stream.write(data);
-            break;
-
-        case COMPRESSStreamN_LZSS:
-        {
-            algo::pack::BitwiseLzssSettings settings;
-            settings.position_bits = 8;
-            settings.size_bits = 4;
-            settings.min_match_size = 2;
-            settings.initial_dictionary_pos = 239;
-            output_file->stream.write(algo::pack::lzss_decompress(
-                data, entry->size_orig, settings));
-            break;
-        }
-
-        case COMPRESSStreamN_SPB:
-        {
-            const auto decoder = SpbImageDecoder();
-            const auto encoder = enc::png::PngImageEncoder();
-            output_file->stream.write(data);
-            output_file = encoder.encode(
-                logger,
-                decoder.decode(logger, *output_file),
-                output_file->path);
-            break;
-        }
+        algo::pack::BitwiseLzssSettings settings;
+        settings.position_bits = 8;
+        settings.size_bits = 4;
+        settings.min_match_size = 2;
+        settings.initial_dictionary_pos = 239;
+        return std::make_unique<io::File>(
+            entry->path,
+            algo::pack::lzss_decompress(data, entry->size_orig, settings));
     }
 
-    return output_file;
+    if (entry->compression_type == COMPRESSION_SPB)
+    {
+        const auto decoder = SpbImageDecoder();
+        const auto encoder = enc::png::PngImageEncoder();
+        io::File spb_file("dummy.spb", data);
+        return encoder.encode(
+            logger, decoder.decode(logger, spb_file), entry->path);
+    }
+
+    throw err::NotSupportedError("Unknown compression type");
 }
 
 static auto _ = dec::register_decoder<NsaArchiveDecoder>("nscripter/nsa");

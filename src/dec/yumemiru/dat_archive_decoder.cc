@@ -33,7 +33,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     input_file.stream.seek(8);
     const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x100).str();
@@ -51,11 +51,11 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     if (entry->size_orig != entry->size_comp)
         throw err::NotSupportedError("Compressed archives are not supported");
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto data = input_file.stream.read(entry->size_comp);
     return std::make_unique<io::File>(entry->path, data);
 }
 

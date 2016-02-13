@@ -28,8 +28,8 @@ namespace
     struct ArchiveEntryImpl final : dec::ArchiveEntry
     {
         bstr path_orig;
-        size_t size_compressed;
-        size_t size_original;
+        size_t size_comp;
+        size_t size_orig;
         size_t offset;
         bool encrypted;
         bool compressed;
@@ -167,8 +167,8 @@ static bstr decompress(const bstr &input, const size_t output_size)
             "Try with --fkey or --gameexe?");
     }
 
-    bool use_short_size = input_stream.read_le<u32>() > 0;
-    u32 file_size = input_stream.read_le<u32>();
+    const bool use_short_size = input_stream.read_le<u32>() > 0;
+    const auto file_size = input_stream.read_le<u32>();
     if (file_size != output_size)
         throw err::BadDataSizeError();
 
@@ -374,8 +374,8 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
         entry->path = algo::sjis_to_utf8(entry->path_orig).str();
 
         entry->offset = table_stream.read_le<u64>();
-        entry->size_compressed = table_stream.read_le<u32>();
-        entry->size_original = table_stream.read_le<u32>();
+        entry->size_comp = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         entry->compressed = table_stream.read_le<u32>() > 0;
         entry->encrypted = table_stream.read_le<u32>() > 0;
 
@@ -409,13 +409,13 @@ std::unique_ptr<io::File> PackArchiveDecoder::read_file_impl(
 
     auto data = input_file.stream
         .seek(entry->offset)
-        .read(entry->size_compressed);
+        .read(entry->size_comp);
 
     if (entry->encrypted)
         decrypt_file_data(data, entry->seed, entry->path_orig, *meta);
 
     if (entry->compressed)
-        data = decompress(data, entry->size_original);
+        data = decompress(data, entry->size_orig);
 
     return std::make_unique<io::File>(entry->path, data);
 }

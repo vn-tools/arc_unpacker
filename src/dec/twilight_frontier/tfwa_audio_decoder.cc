@@ -15,14 +15,14 @@ res::Audio TfwaAudioDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    auto format = input_file.stream.read_le<u16>();
-    auto channel_count = input_file.stream.read_le<u16>();
-    auto sample_rate = input_file.stream.read_le<u32>();
-    auto byte_rate = input_file.stream.read_le<u32>();
-    auto block_align = input_file.stream.read_le<u16>();
-    auto bits_per_sample = input_file.stream.read_le<u16>();
+    const auto format = input_file.stream.read_le<u16>();
+    const auto channel_count = input_file.stream.read_le<u16>();
+    const auto sample_rate = input_file.stream.read_le<u32>();
+    const auto byte_rate = input_file.stream.read_le<u32>();
+    const auto block_align = input_file.stream.read_le<u16>();
+    const auto bits_per_sample = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    size_t size = input_file.stream.read_le<u32>();
+    const auto size = input_file.stream.read_le<u32>();
 
     res::Audio audio;
     audio.channel_count = channel_count;

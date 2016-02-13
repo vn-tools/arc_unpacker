@@ -24,7 +24,7 @@ static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
 {
     bstr output(input.size());
     auto key = initial_key;
-    for (auto i : algo::range(input.size()))
+    for (const auto i : algo::range(input.size()))
     {
         output[i] = common::rol8(input[i], 1) ^ key;
         key += input.size() - i;
@@ -58,13 +58,13 @@ std::unique_ptr<dec::ArchiveMeta> McaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(16);
-    auto header_size = input_file.stream.read_le<u32>();
+    const auto header_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(12);
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.seek(header_size);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::format("%03d.png", i);
@@ -80,14 +80,14 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    auto encryption_type = input_file.stream.read_le<u32>();
+    const auto encryption_type = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
-    auto size_comp = input_file.stream.read_le<u32>();
-    auto size_orig = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     auto data = input_file.stream.read(size_comp);

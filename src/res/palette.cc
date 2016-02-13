@@ -16,7 +16,7 @@ struct Palette::Priv final
 Palette::Priv::Priv(const size_t color_count)
 {
     colors.resize(color_count);
-    for (auto i : algo::range(color_count))
+    for (const auto i : algo::range(color_count))
     {
         colors[i].r = colors[i].g = colors[i].b = i * 0xFF / color_count;
         colors[i].a = 0xFF;
@@ -34,7 +34,7 @@ Palette::Priv::Priv(
 
 Palette::Palette(const Palette &other) : p(new Priv(other.p->colors.size()))
 {
-    for (auto i : algo::range(size()))
+    for (const auto i : algo::range(size()))
         p->colors[i] = other.p->colors[i];
 }
 

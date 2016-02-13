@@ -257,7 +257,7 @@ ImageOptionalHeader::ImageOptionalHeader(io::BaseByteStream &input_stream)
     checksum                       = input_stream.read_le<u32>();
     subsystem                      = input_stream.read_le<u16>();
     dll_characteristics            = input_stream.read_le<u16>();
-    bool pe64 = magic == 0x20B;
+    const auto pe64 = magic == 0x20B;
     if (pe64)
     {
         size_of_stack_reserve = input_stream.read_le<u64>();
@@ -364,7 +364,7 @@ u32 RvaHelper::rva_to_offset(u32 rva) const
 
 const ImageSectionHeader &RvaHelper::section_for_rva(u32 rva) const
 {
-    for (auto &section : sections)
+    for (const auto &section : sections)
     {
         if (rva >= section.virtual_address
         && rva < (section.virtual_address + section.virtual_size))
@@ -382,7 +382,7 @@ u32 RvaHelper::adjust_file_alignment(u32 offset) const
 
 u32 RvaHelper::adjust_section_alignment(u32 offset) const
 {
-    u32 fixed_alignment = section_alignment < 0x1000
+    const auto fixed_alignment = section_alignment < 0x1000
         ? file_alignment
         : section_alignment;
     if (fixed_alignment && (offset % fixed_alignment))
@@ -418,8 +418,9 @@ void ResourceCrawler::process_dir(const size_t offset, const std::string path)
 {
     args.input_stream.seek(args.base_offset + offset);
     ImageResourceDir dir(args.input_stream);
-    size_t entry_count = dir.number_of_named_entries + dir.number_of_id_entries;
-    for (auto i : algo::range(entry_count))
+    const auto entry_count
+        = dir.number_of_named_entries + dir.number_of_id_entries;
+    for (const auto i : algo::range(entry_count))
     {
         ImageResourceDirEntry entry(args.input_stream);
 
@@ -465,8 +466,8 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     if (entry.name_is_string)
     {
         args.input_stream.seek(args.base_offset + entry.name_offset);
-        size_t max_size = args.input_stream.read_le<u16>();
-        bstr name_utf16 = args.input_stream.read(max_size * 2);
+        const auto max_size = args.input_stream.read_le<u16>();
+        const auto name_utf16 = args.input_stream.read(max_size * 2);
         return algo::utf16_to_utf8(name_utf16).str();
     }
 
@@ -509,14 +510,15 @@ std::unique_ptr<dec::ArchiveMeta> ExeArchiveDecoder::read_meta_impl(
     input_file.stream.seek(dos_header.e_lfanew);
     ImageNtHeader nt_header(input_file.stream);
 
-    size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
+    const auto data_dir_count
+        = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDir> data_dirs;
     data_dirs.reserve(data_dir_count);
-    for (auto i : algo::range(data_dir_count))
+    for (const auto i : algo::range(data_dir_count))
         data_dirs.push_back(ImageDataDir(input_file.stream));
 
     std::vector<ImageSectionHeader> sections;
-    for (auto i : algo::range(nt_header.file_header.number_of_sections))
+    for (const auto i : algo::range(nt_header.file_header.number_of_sections))
         sections.push_back(ImageSectionHeader(input_file.stream));
 
     RvaHelper rva_helper(
@@ -524,8 +526,9 @@ std::unique_ptr<dec::ArchiveMeta> ExeArchiveDecoder::read_meta_impl(
         nt_header.optional_header.section_alignment,
         sections);
 
-    auto resource_dir = data_dirs[2];
-    size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
+    const auto resource_dir = data_dirs[2];
+    const auto base_offset
+        = rva_helper.rva_to_offset(resource_dir.virtual_address);
     auto meta = std::make_unique<ArchiveMeta>();
     ResourceCrawler::crawl(ResourceCrawlerArgs(
         logger, rva_helper, base_offset, input_file.stream, *meta));
@@ -538,9 +541,8 @@ std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

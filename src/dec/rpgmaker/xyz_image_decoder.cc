@@ -17,16 +17,12 @@ res::Image XyzImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-
-    u16 width = input_file.stream.read_le<u16>();
-    u16 height = input_file.stream.read_le<u16>();
-
-    bstr data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
-
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    const auto data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
     io::MemoryStream data_stream(data);
-    auto pal_data = data_stream.read(256 * 3);
-    auto pix_data = data_stream.read_to_eof();
-
+    const auto pal_data = data_stream.read(256 * 3);
+    const auto pix_data = data_stream.read_to_eof();
     res::Palette palette(256, pal_data, res::PixelFormat::RGB888);
     return res::Image(width, height, pix_data, palette);
 }

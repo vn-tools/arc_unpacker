@@ -34,7 +34,7 @@ static const bstr magic_sound10 = "absound10\0\0\0\0\0\0\0"_b;
 
 static int guess_version(io::BaseByteStream &input_stream)
 {
-    bstr magic = input_stream.read(16);
+    const auto magic = input_stream.read(16);
     if (magic == magic10)
         return 10;
     if (magic == magic11)
@@ -56,10 +56,9 @@ static void read_data_entry(io::File &input_file, dec::ArchiveMeta &meta)
 
 static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
 {
-    bstr magic = input_file.stream.read(16);
-
+    const auto magic = input_file.stream.read(16);
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    auto name_size = input_file.stream.read_le<u16>();
+    const auto name_size = input_file.stream.read_le<u16>();
     entry->path = algo::sjis_to_utf8(input_file.stream.read(name_size)).str();
     if (entry->path.str().empty())
         entry->path = "unknown";
@@ -103,7 +102,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto magic = input_file.stream.read(16);
+        const auto magic = input_file.stream.read(16);
         if (magic == magic_data10
             || magic == magic_data11
             || magic == magic_data12
@@ -113,8 +112,8 @@ std::unique_ptr<dec::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
         }
         else if (magic == magic_image10 || magic == magic_sound10)
         {
-            size_t file_count = input_file.stream.read<u8>();
-            for (auto i : algo::range(file_count))
+            const auto file_count = input_file.stream.read<u8>();
+            for (const auto i : algo::range(file_count))
                 read_resource_entry(input_file, *meta);
         }
         else
@@ -132,9 +131,8 @@ std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

@@ -43,7 +43,7 @@ static void decrypt_file_name(
     const ArchiveMetaImpl &meta, bstr &name, size_t file_index)
 {
     u32 tmp = meta.plugin->file_name_key(meta.key1, meta.key2);
-    for (auto char_pos : algo::range(name.size()))
+    for (const auto char_pos : algo::range(name.size()))
     {
         u32 key = 0xFC * char_pos;
         key -= tmp >> 0x18;
@@ -62,7 +62,7 @@ static void decrypt_file_data(
     const ArchiveMetaImpl &meta, const ArchiveEntryImpl &entry, bstr &data)
 {
     u32 key = meta.plugin->data_key;
-    for (auto i : algo::range(entry.path_orig.size()))
+    for (const auto i : algo::range(entry.path_orig.size()))
         key -= entry.path_orig[i];
     key *= entry.path_orig.size();
     key += meta.key1 * meta.key2;
@@ -70,8 +70,8 @@ static void decrypt_file_data(
     key &= 0xFF;
 
     u8 *data_ptr = data.get<u8>();
-    size_t size = 0x1000 + entry.path_orig.size();
-    for (auto i : algo::range(std::min(size, data.size())))
+    const auto size = 0x1000 + entry.path_orig.size();
+    for (const auto i : algo::range(std::min(size, data.size())))
         data_ptr[i] = meta.plugin->permutation[data_ptr[i]] - key - i;
 }
 

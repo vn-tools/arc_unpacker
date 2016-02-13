@@ -16,16 +16,16 @@ res::Image CmpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto size_original = input_file.stream.read_le<u32>();
-    auto size_compressed = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
 
-    auto data = input_file.stream.read(size_compressed);
+    auto data = input_file.stream.read(size_comp);
     algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 11;
     settings.size_bits = 4;
     settings.min_match_size = 2;
     settings.initial_dictionary_pos = 2031;
-    data = algo::pack::lzss_decompress(data, size_original, settings);
+    data = algo::pack::lzss_decompress(data, size_orig, settings);
 
     io::File bmp_file(input_file.path, data);
     const auto bmp_image_decoder = dec::microsoft::BmpImageDecoder();

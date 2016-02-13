@@ -8,7 +8,7 @@ std::string algo::format(const std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
-    auto ret = format(fmt, args);
+    const auto ret = format(fmt, args);
     va_end(args);
     return ret;
 }

@@ -30,24 +30,24 @@ namespace
 static std::unique_ptr<dec::ArchiveMeta> read_meta(
     io::File &input_file, const Plugin &plugin, bool encrypted)
 {
-    auto file_count = input_file.stream.read_le<u32>() ^ plugin.key1;
-    auto file_data_start = input_file.stream.read_le<u32>() ^ plugin.key2;
+    const auto file_count = input_file.stream.read_le<u32>() ^ plugin.key1;
+    const auto file_data_start = input_file.stream.read_le<u32>() ^ plugin.key2;
     if (file_data_start > input_file.stream.size())
         return nullptr;
 
-    auto table_size_orig = file_count * 24;
-    auto table_size_comp = file_data_start - input_file.stream.pos();
+    const auto table_size_orig = file_count * 24;
+    const auto table_size_comp = file_data_start - input_file.stream.pos();
     auto table_data = input_file.stream.read(table_size_comp);
     if (encrypted)
     {
-        auto key = get_delta_key("CHERRYSOFT"_b);
+        const auto key = get_delta_key("CHERRYSOFT"_b);
         delta_decrypt(table_data, key);
         table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     }
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero(16).str();
@@ -86,8 +86,8 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
 {
     if (input_file.stream.read(magic2.size()) != magic2)
         input_file.stream.seek(magic3.size());
-    bool encrypted = input_file.stream.read_le<u32>() > 0;
-    auto pos = input_file.stream.pos();
+    const auto encrypted = input_file.stream.read_le<u32>() > 0;
+    const auto pos = input_file.stream.pos();
     for (const auto &plugin : p->plugin_manager.get_all())
     {
         input_file.stream.seek(pos);
@@ -111,9 +111,8 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

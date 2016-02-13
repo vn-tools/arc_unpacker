@@ -16,12 +16,12 @@ res::Image Lf2ImageDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
-    auto width = input_file.stream.read_le<u16>();
-    auto height = input_file.stream.read_le<u16>();
-    auto size_orig = width * height;
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    const auto size_orig = width * height;
 
     input_file.stream.seek(0x16);
-    auto color_count = input_file.stream.read_le<u16>();
+    const auto color_count = input_file.stream.read_le<u16>();
     res::Palette palette(
         color_count, input_file.stream, res::PixelFormat::BGR888);
 

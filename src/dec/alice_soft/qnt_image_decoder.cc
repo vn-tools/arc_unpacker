@@ -24,7 +24,7 @@ static void deinterleave(res::Image &image, const bstr &input)
     io::MemoryStream input_stream(input);
 
     size_t x, y;
-    for (auto i : algo::range(3))
+    for (const auto i : algo::range(3))
     {
         for (y = 0; y < image.height() - 1; y += 2)
         {
@@ -62,17 +62,17 @@ static void deinterleave(res::Image &image, const bstr &input)
 
 static void apply_differences(res::Image &image)
 {
-    for (auto x : algo::range(1, image.width()))
-    for (auto c : algo::range(3))
+    for (const auto x : algo::range(1, image.width()))
+    for (const auto c : algo::range(3))
         image.at(x, 0)[c] = image.at(x - 1, 0)[c] - image.at(x, 0)[c];
 
-    for (auto y : algo::range(1, image.height()))
-    for (auto c : algo::range(3))
+    for (const auto y : algo::range(1, image.height()))
+    for (const auto c : algo::range(3))
         image.at(0, y)[c] = image.at(0, y - 1)[c] - image.at(0, y)[c];
 
-    for (auto y : algo::range(1, image.height()))
-    for (auto x : algo::range(1, image.width()))
-    for (auto c : algo::range(3))
+    for (const auto y : algo::range(1, image.height()))
+    for (const auto x : algo::range(1, image.width()))
+    for (const auto c : algo::range(3))
     {
         u8 ax = image.at(x - 1, y)[c];
         u8 ay = image.at(x, y - 1)[c];
@@ -84,8 +84,8 @@ static void apply_alpha(res::Image &image, const bstr &input)
 {
     if (!input.size())
     {
-        for (auto y : algo::range(image.height()))
-        for (auto x : algo::range(image.width()))
+        for (const auto y : algo::range(image.height()))
+        for (const auto x : algo::range(image.width()))
             image.at(x, y).a = 0xFF;
         return;
     }
@@ -93,15 +93,15 @@ static void apply_alpha(res::Image &image, const bstr &input)
     io::MemoryStream input_stream(input);
 
     image.at(0, 0).a = input_stream.read<u8>();
-    for (auto x : algo::range(1, image.width()))
+    for (const auto x : algo::range(1, image.width()))
         image.at(x, 0).a = image.at(x - 1, 0).a - input_stream.read<u8>();
     if (image.width() & 1)
         input_stream.skip(1);
 
-    for (auto y : algo::range(1, image.height()))
+    for (const auto y : algo::range(1, image.height()))
     {
         image.at(0, y).a = image.at(0, y - 1).a - input_stream.read<u8>();
-        for (auto x : algo::range(1, image.width()))
+        for (const auto x : algo::range(1, image.width()))
         {
             u8 ax = image.at(x - 1, y).a;
             u8 ay = image.at(x, y - 1).a;
@@ -127,12 +127,12 @@ res::Image QntImageDecoder::decode_impl(
         throw err::UnsupportedVersionError(static_cast<int>(version));
 
     input_file.stream.skip(4 * 3);
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
-    auto depth = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto depth = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    auto pixel_size = input_file.stream.read_le<u32>();
-    auto alpha_size = input_file.stream.read_le<u32>();
+    const auto pixel_size = input_file.stream.read_le<u32>();
+    const auto alpha_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(24);
 
     bstr color_data = pixel_size

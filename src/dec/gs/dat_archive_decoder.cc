@@ -28,23 +28,23 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0xA8);
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(12);
-    auto table_offset = input_file.stream.read_le<u32>();
-    auto table_size_comp = input_file.stream.read_le<u32>();
-    auto key = input_file.stream.read_le<u32>();
-    auto table_size_orig = input_file.stream.read_le<u32>();
-    auto data_offset = input_file.stream.read_le<u32>();
+    const auto table_offset = input_file.stream.read_le<u32>();
+    const auto table_size_comp = input_file.stream.read_le<u32>();
+    const auto key = input_file.stream.read_le<u32>();
+    const auto table_size_orig = input_file.stream.read_le<u32>();
+    const auto data_offset = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read(table_size_comp);
-    for (auto i : algo::range(table_data.size()))
+    for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
     table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         table_stream.seek(i * 0x18);
         auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -63,9 +63,8 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = algo::pack::lzss_decompress(data, entry->size_orig);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();

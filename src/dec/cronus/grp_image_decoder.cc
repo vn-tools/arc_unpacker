@@ -194,8 +194,8 @@ res::Image GrpImageDecoder::decode_impl(
 
     if (!header->use_transparency)
     {
-        for (auto x : algo::range(header->width))
-        for (auto y : algo::range(header->height))
+        for (const auto x : algo::range(header->width))
+        for (const auto y : algo::range(header->height))
             image->at(x, y).a = 0xFF;
     }
     if (header->flip)

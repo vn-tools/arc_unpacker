@@ -31,24 +31,24 @@ static std::string extract_string(std::string &container)
 
 static res::Image decode_tlg_0(io::File &input_file)
 {
-    size_t raw_data_size = input_file.stream.read_le<u32>();
-    size_t raw_data_offset = input_file.stream.pos();
+    const auto raw_data_size = input_file.stream.read_le<u32>();
+    const auto raw_data_offset = input_file.stream.pos();
 
     std::vector<std::pair<std::string, std::string>> tags;
 
     input_file.stream.skip(raw_data_size);
     while (input_file.stream.left())
     {
-        std::string chunk_name = input_file.stream.read(4).str();
-        size_t chunk_size = input_file.stream.read_le<u32>();
-        std::string chunk_data = input_file.stream.read(chunk_size).str();
+        const auto chunk_name = input_file.stream.read(4).str();
+        const auto chunk_size = input_file.stream.read_le<u32>();
+        auto chunk_data = input_file.stream.read(chunk_size).str();
 
         if (chunk_name == "tags")
         {
             while (chunk_data != "")
             {
-                std::string key = extract_string(chunk_data);
-                std::string value = extract_string(chunk_data);
+                const auto key = extract_string(chunk_data);
+                const auto value = extract_string(chunk_data);
                 tags.push_back(std::pair<std::string, std::string>(key, value));
             }
         }
@@ -75,7 +75,7 @@ static res::Image decode_tlg_6(io::File &input_file)
 
 static int guess_version(io::BaseByteStream &input_stream)
 {
-    size_t pos = input_stream.pos();
+    const auto pos = input_stream.pos();
     if (input_stream.read(magic_tlg_0.size()) == magic_tlg_0)
         return 0;
 

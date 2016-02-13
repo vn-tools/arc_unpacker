@@ -16,14 +16,14 @@ static bstr convert_locale(
     bstr output;
     output.reserve(input.size() * 2);
 
-    char *input_ptr = const_cast<char*>(input.get<const char>());
-    size_t input_bytes_left = input.size();
+    auto input_ptr = const_cast<char*>(input.get<const char>());
+    auto input_bytes_left = input.size();
     bstr buffer(32);
 
     while (true)
     {
-        char *output_buffer = buffer.get<char>();
-        size_t output_bytes_left = buffer.size();
+        auto output_buffer = buffer.get<char>();
+        auto output_bytes_left = buffer.size();
         int ret = iconv(
             conv,
             &input_ptr,

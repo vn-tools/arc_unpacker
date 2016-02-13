@@ -26,9 +26,9 @@ res::Image JpegImageDecoder::decode_impl(
     jpeg_read_header(&info, true);
     jpeg_start_decompress(&info);
 
-    auto width = info.output_width;
-    auto height = info.output_height;
-    auto channels = info.num_components;
+    const auto width = info.output_width;
+    const auto height = info.output_height;
+    const auto channels = info.num_components;
 
     res::PixelFormat format;
     if (channels == 3)
@@ -45,7 +45,7 @@ res::Image JpegImageDecoder::decode_impl(
     }
 
     bstr raw_data(width * height * channels);
-    for (auto y : algo::range(height))
+    for (const auto y : algo::range(height))
     {
         auto ptr = raw_data.get<u8>() + y * width * channels;
         jpeg_read_scanlines(&info, &ptr, 1);

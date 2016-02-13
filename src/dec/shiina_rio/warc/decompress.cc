@@ -81,7 +81,7 @@ static bstr decode_huffman(const bstr &input, const size_t size_orig)
     CustomBitStream bit_stream(input);
     u16 nodes[2][512];
     auto size = 256;
-    auto root = init_huffman(bit_stream, nodes, size);
+    const auto root = init_huffman(bit_stream, nodes, size);
     while (output_ptr < output_end)
     {
         auto byte = root;
@@ -100,7 +100,7 @@ bstr warc::decompress_yh1(
     {
         const u32 key32 = 0x6393528E;
         const u16 key16 = 0x4B4D;
-        for (auto i : algo::range(transient.size() / 4))
+        for (const auto i : algo::range(transient.size() / 4))
             transient.get<u32>()[i] ^= key32 ^ key16;
     }
     return decode_huffman(transient, size_orig);

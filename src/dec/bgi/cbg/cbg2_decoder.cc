@@ -57,8 +57,8 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
 
     FloatTablePair ac_mul_pair;
     io::MemoryStream input_stream(input);
-    for (auto i : algo::range(ac_mul_pair.size()))
-        for (auto j : algo::range(dc_table.size()))
+    for (const auto i : algo::range(ac_mul_pair.size()))
+        for (const auto j : algo::range(dc_table.size()))
             ac_mul_pair[i][j] = input_stream.read<u8>() * dc_table[j];
     return ac_mul_pair;
 }
@@ -85,13 +85,13 @@ static void jpeg_dct_float(
     float tmp10, tmp11, tmp12, tmp13;
     float z5, z10, z11, z12, z13;
 
-    for (auto i : algo::range(block_dim2))
+    for (const auto i : algo::range(block_dim2))
     {
         inptr[i] = ac[i];
         dv[i] = ac_mul[i];
     }
 
-    for (auto i : algo::range(block_dim))
+    for (const auto i : algo::range(block_dim))
     {
         if (!inptr[8 + i] && !inptr[16 + i]
             && !inptr[24 + i] && !inptr[32 + i]
@@ -151,7 +151,7 @@ static void jpeg_dct_float(
         tp[24 + i] = tmp3 - tmp4;
     }
 
-    for (auto i : algo::range(block_dim))
+    for (const auto i : algo::range(block_dim))
     {
         z5 = tp[i * block_dim];
         tmp10 = z5 + tp[block_dim * i + 4];
@@ -208,9 +208,9 @@ static std::vector<u16> decompress_block(
     io::MsbBitStream bit_stream(input);
 
     int init_value = 0;
-    for (auto i : algo::range(0, output_size, block_dim2))
+    for (const auto i : algo::range(0, output_size, block_dim2))
     {
-        size_t size = tree1.get_leaf(bit_stream);
+        const auto size = tree1.get_leaf(bit_stream);
         if (size)
         {
             int value = bit_stream.read(size);
@@ -224,12 +224,12 @@ static std::vector<u16> decompress_block(
     // align to regular byte
     bit_stream.read((8 - (bit_stream.pos() & 7)) & 7);
 
-    for (auto i : algo::range(0, output_size, block_dim2))
+    for (const auto i : algo::range(0, output_size, block_dim2))
     {
-        size_t index = 1;
+        auto index = 1;
         while (index < block_dim2)
         {
-            size_t size = tree2.get_leaf(bit_stream);
+            auto size = tree2.get_leaf(bit_stream);
             if (!size)
                 break;
             if (size < 0xF)
@@ -264,9 +264,9 @@ static void process_24bit_block(
     u8 *rgb_out)
 {
     FloatTableTriplet yuv_in;
-    for (auto i : algo::range(width / block_dim))
+    for (const auto i : algo::range(width / block_dim))
     {
-        for (auto channel : algo::range(3))
+        for (const auto channel : algo::range(3))
         {
             jpeg_dct_float(
                 yuv_in[channel],
@@ -274,17 +274,18 @@ static void process_24bit_block(
                 ac_mul_pair[channel > 0]);
         }
 
-        for (auto y : algo::range(block_dim))
-        for (auto x : algo::range(block_dim))
+        for (const auto y : algo::range(block_dim))
+        for (const auto x : algo::range(block_dim))
         {
-            auto offset = y * block_dim + x;
-            auto cy = yuv_in[0][offset];
-            auto cb = yuv_in[1][offset];
-            auto cr = yuv_in[2][offset];
+            const auto offset = y * block_dim + x;
+            const auto cy = yuv_in[0][offset];
+            const auto cb = yuv_in[1][offset];
+            const auto cr = yuv_in[2][offset];
 
-            auto r = cy + 1.402f * cr - 178.956f;
-            auto g = cy + 44.04992f - 0.34414f * cb + 91.90992f - 0.71414f * cr;
-            auto b = cy + 1.772f * cb - 226.316f;
+            const auto r = cy + 1.402f * cr - 178.956f;
+            const auto g
+                = cy + 44.04992f - 0.34414f * cb + 91.90992f - 0.71414f * cr;
+            const auto b = cy + 1.772f * cb - 226.316f;
 
             u8 *rgb_ptr = &rgb_out[(y * width + x) * 4];
             rgb_ptr[0] = get_component(b);
@@ -301,12 +302,12 @@ static void process_8bit_block(
     size_t width,
     u8 *rgb_out)
 {
-    for (auto i : algo::range(width / block_dim))
+    for (const auto i : algo::range(width / block_dim))
     {
         FloatTable color_data;
         jpeg_dct_float(color_data, &color_info[i * block_dim2], ac_mul_pair[0]);
-        for (auto y : algo::range(block_dim))
-        for (auto x : algo::range(block_dim))
+        for (const auto y : algo::range(block_dim))
+        for (const auto x : algo::range(block_dim))
         {
             u8 *rgb_ptr = &rgb_out[(i * block_dim + (y * width + x)) * 4];
             rgb_ptr[0] = color_data[y * block_dim + x];
@@ -350,7 +351,7 @@ static void process_alpha(
             if (look_behind < output_start || look_behind >= output_end)
                 return;
 
-            for (auto i : algo::range(count))
+            for (const auto i : algo::range(count))
             {
                 *output_ptr = *look_behind;
                 look_behind += 4;
@@ -368,46 +369,51 @@ static void process_alpha(
 std::unique_ptr<res::Image> Cbg2Decoder::decode(
     io::BaseByteStream &input_stream) const
 {
-    size_t width = input_stream.read_le<u16>();
-    size_t height = input_stream.read_le<u16>();
-    size_t depth = input_stream.read_le<u32>();
-    size_t channels = depth >> 3;
+    const size_t width = input_stream.read_le<u16>();
+    const size_t height = input_stream.read_le<u16>();
+    const size_t depth = input_stream.read_le<u32>();
+    const size_t channels = depth >> 3;
     input_stream.skip(12);
 
-    auto decrypted_data = read_decrypted_data(input_stream);
-    auto ac_mul_pair = read_ac_mul_pair(decrypted_data);
+    const auto decrypted_data = read_decrypted_data(input_stream);
+    const auto ac_mul_pair = read_ac_mul_pair(decrypted_data);
     io::MemoryStream raw_stream(input_stream);
 
-    auto pad_width = width + ((block_dim - (width % block_dim)) % block_dim);
-    auto pad_height = height + ((block_dim - (height % block_dim)) % block_dim);
-    auto block_count = pad_height / block_dim;
+    const auto pad_width
+        = width + ((block_dim - (width % block_dim)) % block_dim);
+    const auto pad_height
+        = height + ((block_dim - (height % block_dim)) % block_dim);
+    const auto block_count = pad_height / block_dim;
 
-    auto tree1 = build_tree(read_freq_table(raw_stream, tree1_size), true);
-    auto tree2 = build_tree(read_freq_table(raw_stream, tree2_size), true);
+    const auto tree1
+        = build_tree(read_freq_table(raw_stream, tree1_size), true);
+    const auto tree2
+        = build_tree(read_freq_table(raw_stream, tree2_size), true);
 
-    auto block_offsets = std::make_unique<u32[]>(block_count + 1);
-    for (auto i : algo::range(block_count + 1))
+    const auto block_offsets = std::make_unique<u32[]>(block_count + 1);
+    for (const auto i : algo::range(block_count + 1))
         block_offsets[i] = raw_stream.read_le<u32>();
 
     bstr bmp_data(pad_width * pad_height * 4);
-    for (auto i : algo::range(bmp_data.size()))
+    for (const auto i : algo::range(bmp_data.size()))
         bmp_data.get<u8>()[i] = 0xFF;
 
-    for (auto i : algo::range(block_count))
+    for (const auto i : algo::range(block_count))
     {
         raw_stream.seek(block_offsets[i]);
         raw_stream.skip((pad_width + block_dim2 - 1) / block_dim2);
-        size_t block_size_original = read_variable_data(raw_stream);
-        int block_size_compressed = block_offsets[i + 1] - raw_stream.pos();
-        if (block_size_compressed < 0)
-            block_size_compressed = raw_stream.size() - raw_stream.pos();
-        auto expected_width = pad_width * block_dim * (depth == 8 ? 1 : 3);
-        if (expected_width != block_size_original)
+        const auto block_size_orig = read_variable_data(raw_stream);
+        int block_size_comp = block_offsets[i + 1] - raw_stream.pos();
+        if (block_size_comp < 0)
+            block_size_comp = raw_stream.size() - raw_stream.pos();
+        const auto expected_width
+            = pad_width * block_dim * (depth == 8 ? 1 : 3);
+        if (expected_width != block_size_orig)
             throw err::BadDataSizeError();
-        auto block_data = raw_stream.read(block_size_compressed);
 
-        auto color_info = decompress_block(
-            block_size_original, block_data, tree1, tree2);
+        const auto block_data = raw_stream.read(block_size_comp);
+        const auto color_info = decompress_block(
+            block_size_orig, block_data, tree1, tree2);
 
         if (channels == 3 || channels == 4)
         {

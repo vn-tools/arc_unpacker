@@ -17,8 +17,8 @@ namespace
         int compression_level;
         bool use_run_length;
         size_t block_count;
-        size_t uncompressed_size;
-        size_t compressed_size;
+        size_t size_orig;
+        size_t size_comp;
         size_t sample_count;
         size_t block_size;
         size_t rest_size;
@@ -150,10 +150,10 @@ static bstr read_compressed_samples(
     if (!header.block_count)
         throw err::CorruptDataError("No blocks found");
 
-    if (!header.compressed_size)
+    if (!header.size_comp)
         throw err::CorruptDataError("No data found");
 
-    if (header.uncompressed_size
+    if (header.size_orig
         != header.sample_count * header.bits_per_sample / 8)
     {
         throw err::BadDataSizeError();
@@ -179,7 +179,7 @@ static bstr read_compressed_samples(
 static bstr read_uncompressed_samples(
     io::BaseByteStream &input_stream, const NwaHeader &header)
 {
-    return input_stream.read(header.uncompressed_size);
+    return input_stream.read(header.size_orig);
 }
 
 bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
@@ -200,8 +200,8 @@ res::Audio NwaAudioDecoder::decode_impl(
     header.compression_level = static_cast<s32>(input_stream.read_le<u32>());
     header.use_run_length = input_stream.read_le<u32>() != 0;
     header.block_count = input_stream.read_le<u32>();
-    header.uncompressed_size = input_stream.read_le<u32>();
-    header.compressed_size = input_stream.read_le<u32>();
+    header.size_orig = input_stream.read_le<u32>();
+    header.size_comp = input_stream.read_le<u32>();
     header.sample_count = input_stream.read_le<u32>();
     header.block_size = input_stream.read_le<u32>();
     header.rest_size = input_stream.read_le<u32>();

@@ -39,7 +39,7 @@ res::Image CbgImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    auto version = get_version(input_file.stream);
+    const auto version = get_version(input_file.stream);
     if (version == Version::Version1)
         return *cbg::Cbg1Decoder().decode(input_file.stream);
     if (version == Version::Version2)

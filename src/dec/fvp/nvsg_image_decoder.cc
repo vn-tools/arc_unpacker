@@ -21,15 +21,15 @@ res::Image NvsgImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
-    size_t uncompressed_size = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
     input_file.stream.skip(4); // nvsg header size
     input_file.stream.skip(nvsg_magic.size());
     input_file.stream.skip(2);
-    size_t format = input_file.stream.read_le<u16>();
-    size_t width = input_file.stream.read_le<u16>();
-    size_t height = input_file.stream.read_le<u16>();
+    const auto format = input_file.stream.read_le<u16>();
+    const auto width = input_file.stream.read_le<u16>();
+    auto height = input_file.stream.read_le<u16>();
     input_file.stream.skip(8);
-    size_t image_count = input_file.stream.read_le<u32>();
+    const auto image_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
     bstr data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
@@ -55,7 +55,7 @@ res::Image NvsgImageDecoder::decode_impl(
             break;
 
         case 4:
-            for (auto i : algo::range(data.size()))
+            for (const auto i : algo::range(data.size()))
                 if (data.get<u8>()[i])
                     data.get<u8>()[i] = 255;
             pixel_format = res::PixelFormat::Gray8;

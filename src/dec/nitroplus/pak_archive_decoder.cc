@@ -33,9 +33,9 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_le<u32>();
-    auto table_size_orig = input_file.stream.read_le<u32>();
-    auto table_size_comp = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_size_orig = input_file.stream.read_le<u32>();
+    const auto table_size_comp = input_file.stream.read_le<u32>();
     input_file.stream.skip(0x104);
 
     io::MemoryStream table_stream(
@@ -43,11 +43,11 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
             input_file.stream.read(table_size_comp)));
 
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_data_offset = input_file.stream.pos();
-    for (auto i : algo::range(file_count))
+    const auto file_data_offset = input_file.stream.pos();
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        size_t file_name_size = table_stream.read_le<u32>();
+        const auto file_name_size = table_stream.read_le<u32>();
         entry->path = algo::sjis_to_utf8(
             table_stream.read(file_name_size)).str();
         entry->offset = table_stream.read_le<u32>() + file_data_offset;
@@ -66,9 +66,9 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    auto data = entry->compressed
+    const auto data = entry->compressed
         ? algo::pack::zlib_inflate(input_file.stream.read(entry->size_comp))
         : input_file.stream.read(entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);

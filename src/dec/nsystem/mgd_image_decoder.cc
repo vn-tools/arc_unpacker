@@ -37,7 +37,7 @@ static void decompress_sgd_alpha(
         if (flag & 0x8000)
         {
             const u8 alpha = input_stream.read<u8>();
-            for (auto i : algo::range((flag & 0x7FFF) + 1))
+            for (const auto i : algo::range((flag & 0x7FFF) + 1))
             {
                 output_stream.skip(3);
                 output_stream.write<u8>(alpha ^ 0xFF);
@@ -47,7 +47,7 @@ static void decompress_sgd_alpha(
         {
             while (flag-- && input_stream.left())
             {
-                u8 alpha = input_stream.read<u8>();
+                const auto alpha = input_stream.read<u8>();
                 output_stream.skip(3);
                 output_stream.write<u8>(alpha ^ 0xFF);
             }
@@ -62,9 +62,9 @@ static void decompress_sgd_bgr_strategy_1(
     const u8 flag)
 {
     output_stream.skip(-4);
-    u8 b = output_stream.read<u8>();
-    u8 g = output_stream.read<u8>();
-    u8 r = output_stream.read<u8>();
+    auto b = output_stream.read<u8>();
+    auto g = output_stream.read<u8>();
+    auto r = output_stream.read<u8>();
     output_stream.skip(1);
     for (const auto i : algo::range(flag & 0x3F))
     {
@@ -125,7 +125,7 @@ static void decompress_sgd_bgr(
     io::MemoryStream input_stream(input);
     while (input_stream.left())
     {
-        u8 flag = input_stream.read<u8>();
+        auto flag = input_stream.read<u8>();
         switch (flag & 0xC0)
         {
             case 0x80: func = decompress_sgd_bgr_strategy_1; break;
@@ -145,12 +145,12 @@ static bstr decompress_sgd(const bstr &input, size_t output_size)
 
     io::MemoryStream tmp_stream(input);
 
-    auto alpha_size = tmp_stream.read_le<u32>();
-    auto alpha_data = tmp_stream.read(alpha_size);
+    const auto alpha_size = tmp_stream.read_le<u32>();
+    const auto alpha_data = tmp_stream.read(alpha_size);
     decompress_sgd_alpha(alpha_data, output_stream);
 
-    auto color_size = tmp_stream.read_le<u32>();
-    auto color_data = tmp_stream.read(color_size);
+    const auto color_size = tmp_stream.read_le<u32>();
+    const auto color_data = tmp_stream.read(color_size);
     decompress_sgd_bgr(color_data, output_stream);
 
     return output_stream.read_to_eof();
@@ -163,16 +163,16 @@ static std::vector<std::unique_ptr<Region>> read_region_data(
     while (input_stream.left())
     {
         input_stream.skip(4);
-        size_t regions_size = input_stream.read_le<u32>();
-        size_t region_count = input_stream.read_le<u16>();
-        size_t meta_format = input_stream.read_le<u16>();
-        size_t bytes_left = input_stream.size() - input_stream.pos();
+        const auto regions_size = input_stream.read_le<u32>();
+        const auto region_count = input_stream.read_le<u16>();
+        const auto meta_format = input_stream.read_le<u16>();
+        const auto bytes_left = input_stream.size() - input_stream.pos();
         if (meta_format != 4)
             throw err::NotSupportedError("Unexpected meta format");
         if (regions_size != bytes_left)
             throw err::CorruptDataError("Region size mismatch");
 
-        for (auto i : algo::range(region_count))
+        for (const auto i : algo::range(region_count))
         {
             auto region = std::make_unique<Region>();
             region->x = input_stream.read_le<u16>();
@@ -193,7 +193,7 @@ static res::Image read_image(
     const Logger &logger,
     const bstr &input,
     CompressionType compression_type,
-    size_t size_original,
+    size_t size_orig,
     size_t width,
     size_t height)
 {
@@ -202,7 +202,7 @@ static res::Image read_image(
 
     if (compression_type == CompressionType::Sgd)
     {
-        const auto data = decompress_sgd(input, size_original);
+        const auto data = decompress_sgd(input, size_orig);
         return res::Image(width, height, data, res::PixelFormat::BGRA8888);
     }
 
@@ -227,26 +227,26 @@ res::Image MgdImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    u16 data_offset = input_file.stream.read_le<u16>();
-    u16 format = input_file.stream.read_le<u16>();
+    const auto data_offset = input_file.stream.read_le<u16>();
+    const auto format = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
-    u16 width = input_file.stream.read_le<u16>();
-    u16 height = input_file.stream.read_le<u16>();
-    u32 size_original = input_file.stream.read_le<u32>();
-    u32 size_compressed_total = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp_total = input_file.stream.read_le<u32>();
     const auto compression_type
         = static_cast<const CompressionType>(input_file.stream.read_le<u32>());
     input_file.stream.skip(64);
 
-    const size_t size_compressed = input_file.stream.read_le<u32>();
-    if (size_compressed_total != size_compressed + 4)
+    const auto size_comp = input_file.stream.read_le<u32>();
+    if (size_comp_total != size_comp + 4)
         throw err::CorruptDataError("Compressed data size mismatch");
 
     auto image = read_image(
         logger,
-        input_file.stream.read(size_compressed),
+        input_file.stream.read(size_comp),
         compression_type,
-        size_original,
+        size_orig,
         width,
         height);
     read_region_data(input_file.stream);

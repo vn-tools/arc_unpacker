@@ -39,7 +39,7 @@ res::Image AgfImageDecoder::decode_impl(
         const auto strategy = control & 0xFF;
         if (strategy == 1)
         {
-            auto repetitions = control >> 8;
+            const auto repetitions = control >> 8;
             output_ptr.append_from(input_ptr, repetitions);
         }
         else if (strategy == 2)

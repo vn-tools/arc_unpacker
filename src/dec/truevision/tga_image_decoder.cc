@@ -50,12 +50,12 @@ static bstr read_compressed_data(
         if (use_rle)
         {
             const auto chunk = input_stream.read(channels);
-            for (auto i : algo::range(repetitions))
+            for (const auto i : algo::range(repetitions))
                 output += chunk;
         }
         else
         {
-            for (auto i : algo::range(repetitions))
+            for (const auto i : algo::range(repetitions))
                 output += input_stream.read(channels);
         }
     }
@@ -80,8 +80,8 @@ static res::Image get_image_from_palette(
 {
     io::MsbBitStream bit_stream(input);
     res::Image output(width, height);
-    for (auto y : algo::range(height))
-    for (auto x : algo::range(width))
+    for (const auto y : algo::range(height))
+    for (const auto x : algo::range(width))
         output.at(x, y) = palette[bit_stream.read(depth)];
     return output;
 }

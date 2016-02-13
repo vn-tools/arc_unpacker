@@ -14,37 +14,37 @@ namespace
     };
 }
 
-static bstr decompress(const bstr &input, size_t size_original)
+static bstr decompress(const bstr &input, size_t size_orig)
 {
     const u8 *input_ptr = input.get<const u8>();
     const u8 *input_end = input_ptr + input.size();
 
-    bstr output(size_original);
+    bstr output(size_orig);
     u8 *output_ptr = output.get<u8>();
-    u8 *output_end = output_ptr + size_original;
+    u8 *output_end = output_ptr + size_orig;
 
     while (output_ptr < output_end)
     {
-        u32 c = *input_ptr++;
+        const auto c = *input_ptr++;
 
         if (c < 0x20)
         {
-            u32 size = c + 1;
-            while (size--)
+            size_t repetitions = c + 1;
+            while (repetitions--)
                 *output_ptr++ = *input_ptr++;
         }
         else
         {
-            u32 size = c >> 5;
-            if (size == 7)
-                size += *input_ptr++;
-            size += 2;
+            size_t repetitions = c >> 5;
+            if (repetitions == 7)
+                repetitions += *input_ptr++;
+            repetitions += 2;
 
-            u32 look_behind = ((c & 0x1F) << 8) + 1;
+            auto look_behind = ((c & 0x1F) << 8) + 1;
             look_behind += *input_ptr++;
 
             u8 *source = output_ptr - look_behind;
-            while (size--)
+            while (repetitions--)
                 *output_ptr++ = *source++;
         }
     }
@@ -60,9 +60,9 @@ bool MgrArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> MgrArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto entry_count = input_file.stream.read_le<u16>();
+    const auto entry_count = input_file.stream.read_le<u16>();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(entry_count))
+    for (const auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = entry_count == 1
@@ -80,10 +80,10 @@ std::unique_ptr<io::File> MgrArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    size_t size_orig = input_file.stream.read_le<u32>();
-    size_t size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
 
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);

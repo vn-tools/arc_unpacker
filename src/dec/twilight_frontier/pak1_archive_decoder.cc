@@ -17,7 +17,7 @@ namespace
 
 static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
 {
-    for (auto i : algo::range(buffer.size()))
+    for (const auto i : algo::range(buffer.size()))
     {
         buffer[i] ^= a;
         a += b;
@@ -28,7 +28,7 @@ static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
 static std::unique_ptr<io::MemoryStream> read_raw_table(
     io::BaseByteStream &input_stream, size_t file_count)
 {
-    size_t table_size = file_count * 0x6C;
+    const auto table_size = file_count * 0x6C;
     if (table_size > input_stream.left())
         throw err::RecognitionError();
     if (table_size > file_count * (0x64 + 4 + 4))
@@ -56,12 +56,12 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    u16 file_count = input_file.stream.read_le<u16>();
+    const auto file_count = input_file.stream.read_le<u16>();
     if (file_count == 0 && input_file.stream.size() != 6)
         throw err::RecognitionError();
     auto table_stream = read_raw_table(input_file.stream, file_count);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream->read_to_zero(0x64).str();
@@ -80,13 +80,9 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->path;
-
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
-
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto output_file = std::make_unique<io::File>(entry->path, ""_b);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size);
     if (output_file->path.name() == "musicroom.dat")
     {
         decrypt(data, 0x5C, 0x5A, 0x3D);
@@ -102,7 +98,6 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
         decrypt(data, 0x60, 0x61, 0x41);
         output_file->path.change_extension(".txt");
     }
-
     output_file->stream.write(data);
     return output_file;
 }

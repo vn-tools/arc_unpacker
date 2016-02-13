@@ -24,21 +24,21 @@ res::Image BbmImageDecoder::decode_impl(
     const auto chunk_size = input_file.stream.read_le<u32>();
 
     res::Image image(total_width, total_height);
-    for (auto chunk_y : algo::range(chunk_count_y))
-    for (auto chunk_x : algo::range(chunk_count_x))
+    for (const auto chunk_y : algo::range(chunk_count_y))
+    for (const auto chunk_x : algo::range(chunk_count_x))
     {
         io::MemoryStream chunk_stream(input_file.stream.read(chunk_size));
         chunk_stream.skip(5);
-        auto color_num = chunk_stream.read_le<u16>();
+        const auto color_count = chunk_stream.read_le<u16>();
         chunk_stream.skip(11);
         const res::Palette palette(
-            color_num, chunk_stream, res::PixelFormat::BGRA8888);
+            color_count, chunk_stream, res::PixelFormat::BGRA8888);
         const res::Image sub_image(
             chunk_width, chunk_height, chunk_stream, palette);
         const auto base_x = chunk_x * chunk_width;
         const auto base_y = chunk_y * chunk_height;
-        for (auto y : algo::range(chunk_height))
-        for (auto x : algo::range(chunk_width))
+        for (const auto y : algo::range(chunk_height))
+        for (const auto x : algo::range(chunk_width))
         {
             image.at(base_x + x, base_y + y) = sub_image.at(x, y);
         }

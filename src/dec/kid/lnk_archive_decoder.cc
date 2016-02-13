@@ -29,14 +29,14 @@ std::unique_ptr<dec::ArchiveMeta> LnkArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto file_data_start = input_file.stream.pos() + (file_count << 5);
-    for (auto i : algo::range(file_count))
+    const auto file_data_start = input_file.stream.pos() + (file_count << 5);
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.read_le<u32>() + file_data_start;
-        u32 tmp = input_file.stream.read_le<u32>();
+        const u32 tmp = input_file.stream.read_le<u32>();
         entry->compressed = tmp & 1;
         entry->size = tmp >> 1;
         entry->path = input_file.stream.read_to_zero(24).str();
@@ -51,12 +51,9 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->path;
-
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto output_file = std::make_unique<io::File>(entry->path, ""_b);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
     int key_pos = -1;
     if (output_file->path.has_extension(".wav"))

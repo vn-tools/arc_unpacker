@@ -21,7 +21,7 @@ res::Image SotesImageDecoder::decode_impl(
         = 0x458 + input_file.stream.seek(0x450).read_le<u32>() - base;
 
     const auto depth = input_file.stream.seek(0x430).read_le<u16>() - base;
-    auto tmp1 = input_file.stream.seek(0x440).read_le<u32>() - base;
+    const auto tmp1 = input_file.stream.seek(0x440).read_le<u32>() - base;
     const auto width
         = input_file.stream.seek(4 + 4 * tmp1).read_le<u32>() - base;
 

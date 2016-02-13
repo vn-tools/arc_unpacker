@@ -31,16 +31,16 @@ std::unique_ptr<dec::ArchiveMeta> PArchiveDecoder::read_meta_impl(
 {
     static const u32 encryption_key = 0xE3DF59AC;
     input_file.stream.seek(0);
-    auto magic = input_file.stream.read_le<u32>();
-    auto file_count = input_file.stream.read_le<u32>() ^ encryption_key;
+    const auto magic = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>() ^ encryption_key;
     if (magic != 0 && magic != 1)
         throw err::RecognitionError();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = input_file.stream.read(60).str();
-        for (auto j : algo::range(name.size()))
+        for (const auto j : algo::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;
         entry->path = name.substr(0, name.find('\0'));
         entry->offset = input_file.stream.read_le<u32>();
@@ -58,9 +58,9 @@ std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto key = entry->path.str();
+    const auto encrypted_block_size = std::min<size_t>(0x2173, entry->size);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    static const size_t encrypted_block_size = 0x2173;
-    for (auto i : algo::range(std::min(encrypted_block_size, entry->size)))
+    for (const auto i : algo::range(encrypted_block_size))
         data[i] ^= key[i % key.size()] + i + 3;
     return std::make_unique<io::File>(entry->path, data);
 }

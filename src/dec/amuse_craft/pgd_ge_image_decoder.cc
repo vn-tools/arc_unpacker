@@ -82,15 +82,15 @@ static bstr apply_filter_2(
     auto output_ptr = output.get<u8>();
 
     const std::initializer_list<size_t> indices = {0, 1, width, width + 1};
-    for (auto y : algo::range(height / 2))
+    for (const auto y : algo::range(height / 2))
     {
-        for (auto x : algo::range(width / 2))
+        for (const auto x : algo::range(width / 2))
         {
             long value_b = 226 * plane1[0];
             long value_g = -43 * plane1[0] - 89 * plane2[0];
             long value_r = 179 * plane2[0];
 
-            for (auto index : indices)
+            for (const auto index : indices)
             {
                 long base = plane3[index] << 7;
                 output_ptr[3 * index + 0] = clamp((base + value_b) >> 7);
@@ -125,24 +125,24 @@ static bstr apply_delta_filter(
         throw err::BadDataSizeError();
 
     bstr output(input);
-    for (auto y : algo::range(height))
+    for (const auto y : algo::range(height))
     {
         const auto prev_line = output.get<u8>() + (y - 1) * stride;
         const auto dst_line = output.get<u8>() + y * stride;
 
         if (delta_spec[y] == 1)
         {
-            for (auto x : algo::range(channels, stride))
+            for (const auto x : algo::range(channels, stride))
                 dst_line[x] = dst_line[x - channels] - dst_line[x];
         }
         else if (delta_spec[y] == 2)
         {
-            for (auto x : algo::range(stride))
+            for (const auto x : algo::range(stride))
                 dst_line[x] = prev_line[x] - dst_line[x];
         }
         else if (delta_spec[y] == 4)
         {
-            for (auto x : algo::range(channels, stride))
+            for (const auto x : algo::range(channels, stride))
             {
                 const auto mean = (prev_line[x] + dst_line[x - channels]) / 2;
                 dst_line[x] = mean - dst_line[x];
@@ -164,13 +164,13 @@ res::Image PgdGeImageDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(8);
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto filter_type = input_file.stream.read_le<u16>();
+    const auto filter_type = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    auto size_orig = input_file.stream.read_le<u32>();
-    auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
 

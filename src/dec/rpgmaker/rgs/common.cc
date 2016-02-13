@@ -23,10 +23,9 @@ std::unique_ptr<io::File> rgs::read_file_impl(
     tmp_stream.seek(0);
 
     u32 key = entry.key;
-    for (auto i : algo::range(0, entry.size, 4))
+    for (const auto i : algo::range(0, entry.size, 4))
     {
-        u32 chunk = tmp_stream.read_le<u32>();
-        chunk ^= key;
+        const auto chunk = tmp_stream.read_le<u32>() ^ key;
         key = rgs::advance_key(key);
         output_file->stream.write_le<u32>(chunk);
     }

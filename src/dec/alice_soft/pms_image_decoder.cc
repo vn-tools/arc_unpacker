@@ -23,8 +23,8 @@ bstr PmsImageDecoder::decompress_8bit(
         {
             case 0xFF:
             {
-                auto n = input_stream.read<u8>() + 3;
-                while (n-- && output_ptr < output_end)
+                auto repetitions = input_stream.read<u8>() + 3;
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
                     output_ptr++;
@@ -34,8 +34,8 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFE:
             {
-                auto n = input_stream.read<u8>() + 3;
-                while (n-- && output_ptr < output_end)
+                auto repetitions = input_stream.read<u8>() + 3;
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
                     output_ptr++;
@@ -45,19 +45,19 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFD:
             {
-                auto n = input_stream.read<u8>() + 4;
+                auto repetitions = input_stream.read<u8>() + 4;
                 auto color = input_stream.read<u8>();
-                while (n-- && output_ptr < output_end)
+                while (repetitions-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
             }
 
             case 0xFC:
             {
-                auto n = input_stream.read<u8>() + 3;
+                auto repetitions = input_stream.read<u8>() + 3;
                 auto color1 = input_stream.read<u8>();
                 auto color2 = input_stream.read<u8>();
-                while (n-- && output_ptr < output_end)
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
                     *output_ptr++ = color2;
@@ -92,8 +92,8 @@ bstr PmsImageDecoder::decompress_16bit(
         {
             case 0xFF:
             {
-                auto n = input_stream.read<u8>() + 2;
-                while (n-- && output_ptr < output_end)
+                auto repetitions = input_stream.read<u8>() + 2;
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
                     output_ptr++;
@@ -103,8 +103,8 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFE:
             {
-                auto n = input_stream.read<u8>() + 2;
-                while (n-- && output_ptr < output_end)
+                auto repetitions = input_stream.read<u8>() + 2;
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
                     output_ptr++;
@@ -114,19 +114,19 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFD:
             {
-                auto size = input_stream.read<u8>() + 3;
+                auto repetitions = input_stream.read<u8>() + 3;
                 auto color = input_stream.read_le<u16>();
-                while (size-- && output_ptr < output_end)
+                while (repetitions-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
             }
 
             case 0xFC:
             {
-                auto n = input_stream.read<u8>() + 2;
+                auto repetitions = input_stream.read<u8>() + 2;
                 auto color1 = input_stream.read_le<u16>();
                 auto color2 = input_stream.read_le<u16>();
-                while (n-- && output_ptr < output_end)
+                while (repetitions-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
                     *output_ptr++ = color2;
@@ -146,13 +146,13 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xF9:
             {
-                auto n = input_stream.read<u8>() + 1;
+                auto repetitions = input_stream.read<u8>() + 1;
                 auto byte1 = input_stream.read<u8>();
                 auto half1
                     = ((byte1 & 0b11100000) << 8)
                     | ((byte1 & 0b00011000) << 6)
                     | ((byte1 & 0b00000111) << 2);
-                while (n-- && output_ptr < output_end)
+                while (repetitions-- && output_ptr < output_end)
                 {
                     auto byte2 = input_stream.read<u8>();
                     auto half2
@@ -189,21 +189,22 @@ res::Image PmsImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(2);
-    auto version = input_file.stream.read_le<u16>();
+    const auto version = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    auto depth = input_file.stream.read_le<u16>();
+    const auto depth = input_file.stream.read_le<u16>();
     input_file.stream.skip(4 * 4);
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
-    auto data_offset = input_file.stream.read_le<u32>();
-    auto extra_data_offset = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto data_offset = input_file.stream.read_le<u32>();
+    const auto extra_data_offset = input_file.stream.read_le<u32>();
 
     std::unique_ptr<res::Image> image;
 
     if (depth == 8)
     {
         input_file.stream.seek(data_offset);
-        auto pixel_data = decompress_8bit(input_file.stream, width, height);
+        const auto pixel_data
+            = decompress_8bit(input_file.stream, width, height);
         input_file.stream.seek(extra_data_offset);
         res::Palette palette(
             256,
@@ -214,13 +215,15 @@ res::Image PmsImageDecoder::decode_impl(
     else if (depth == 16)
     {
         input_file.stream.seek(data_offset);
-        auto pixel_data = decompress_16bit(input_file.stream, width, height);
+        const auto pixel_data
+            = decompress_16bit(input_file.stream, width, height);
         image.reset(new res::Image(
             width, height, pixel_data, res::PixelFormat::BGR565));
         if (extra_data_offset)
         {
             input_file.stream.seek(extra_data_offset);
-            auto mask_data = decompress_8bit(input_file.stream, width, height);
+            const auto mask_data
+                = decompress_8bit(input_file.stream, width, height);
             res::Image mask(width, height, mask_data, res::PixelFormat::Gray8);
             image->apply_mask(mask);
         }

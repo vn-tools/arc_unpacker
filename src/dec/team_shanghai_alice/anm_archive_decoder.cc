@@ -107,15 +107,15 @@ static void write_image(
     if (input_stream.read(texture_magic.size()) != texture_magic)
         throw err::CorruptDataError("Corrupt texture data");
     input_stream.skip(2);
-    auto format = input_stream.read_le<u16>();
-    auto width = input_stream.read_le<u16>();
-    auto height = input_stream.read_le<u16>();
-    auto data_size = input_stream.read_le<u32>();
+    const auto format = input_stream.read_le<u16>();
+    const auto width = input_stream.read_le<u16>();
+    const auto height = input_stream.read_le<u16>();
+    const auto data_size = input_stream.read_le<u32>();
     auto data = input_stream.read(data_size);
     auto data_ptr = data.get<const u8>();
 
-    for (auto y : algo::range(height))
-    for (auto x : algo::range(width))
+    for (const auto y : algo::range(height))
+    for (const auto x : algo::range(width))
     {
         res::Pixel color;
         switch (format)
@@ -156,10 +156,10 @@ static std::vector<TextureInfo> read_texture_info_list(
 
         input_stream.seek(base_offset);
         input_stream.skip(8);
-        bool use_old = input_stream.read_le<u32>() == 0;
+        const auto use_old = input_stream.read_le<u32>() == 0;
 
         input_stream.seek(base_offset);
-        size_t next_offset = use_old
+        const auto next_offset = use_old
             ? read_old_texture_info(texture_info, input_stream, base_offset)
             : read_new_texture_info(texture_info, input_stream, base_offset);
 
@@ -187,14 +187,14 @@ bool AnmArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> AnmArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto texture_info_list = read_texture_info_list(input_file.stream);
+    const auto texture_info_list = read_texture_info_list(input_file.stream);
 
     std::map<std::string, std::vector<TextureInfo>> map;
-    for (auto &texture_info : texture_info_list)
+    for (const auto &texture_info : texture_info_list)
         map[texture_info.name].push_back(texture_info);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto &kv : map)
+    for (const auto &kv : map)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = kv.first;
@@ -210,10 +210,10 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     size_t width = 0;
     size_t height = 0;
-    for (auto &texture_info : entry->texture_info_list)
+    for (const auto &texture_info : entry->texture_info_list)
     {
         input_file.stream.peek(texture_info.texture_offset, [&]()
         {
@@ -228,7 +228,7 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
     }
 
     res::Image image(width, height);
-    for (auto &texture_info : entry->texture_info_list)
+    for (const auto &texture_info : entry->texture_info_list)
         write_image(input_file.stream, texture_info, image, width);
 
     const auto encoder = enc::png::PngImageEncoder();

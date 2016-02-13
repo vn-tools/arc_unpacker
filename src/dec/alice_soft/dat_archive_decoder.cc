@@ -40,9 +40,9 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
 
     ArchiveEntryImpl *last_entry = nullptr;
     bool finished = false;
-    for (auto i : algo::range((header_size / 2) - 1))
+    for (const auto i : algo::range((header_size / 2) - 1))
     {
-        size_t offset = input_file.stream.read_le<u16>();
+        auto offset = input_file.stream.read_le<u16>();
         if (offset == 0)
         {
             finished = true;
@@ -93,9 +93,8 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

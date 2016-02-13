@@ -17,7 +17,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGR555X>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;
@@ -29,7 +29,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGR565>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000111'11100000) >> 3;
@@ -61,7 +61,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGRA4444>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00001111) << 4;
         c.g = (tmp & 0b00000000'11110000) << 0;
@@ -73,7 +73,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGRA5551>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;
@@ -95,7 +95,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGRnA4444>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00001111) << 4;
         c.g = (tmp & 0b00000000'11110000) << 0;
@@ -107,7 +107,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::BGRnA5551>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.b = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;
@@ -129,7 +129,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGB555X>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;
@@ -141,7 +141,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGB565>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000111'11100000) >> 3;
@@ -173,7 +173,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGBA4444>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00001111) << 4;
         c.g = (tmp & 0b00000000'11110000) << 0;
@@ -185,7 +185,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGBA5551>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;
@@ -207,7 +207,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGBnA4444>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00001111) << 4;
         c.g = (tmp & 0b00000000'11110000) << 0;
@@ -219,7 +219,7 @@ namespace res {
     template<> Pixel read_pixel<PixelFormat::RGBnA5551>(const u8 *&ptr)
     {
         Pixel c;
-        u16 tmp = reinterpret_cast<const u16&>(*ptr);
+        const u16 tmp = reinterpret_cast<const u16&>(*ptr);
         ptr += 2;
         c.r = (tmp & 0b00000000'00011111) << 3;
         c.g = (tmp & 0b00000011'11100000) >> 2;

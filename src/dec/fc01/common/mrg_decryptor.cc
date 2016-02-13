@@ -74,7 +74,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
     std::vector<u8> arr3;
 
     auto key = initial_key;
-    for (auto i : algo::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
         auto byte = p->input_stream.read<u8>();
         if (initial_key)
@@ -85,7 +85,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
 
         arr2[i] = byte;
         arr1[i + 1] = arr2[i] + arr1[i];
-        for (auto j : algo::range(arr2[i]))
+        for (const auto j : algo::range(arr2[i]))
             arr3.push_back(i);
     }
 

@@ -32,11 +32,11 @@ std::unique_ptr<dec::ArchiveMeta> GmlArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_data_start = input_file.stream.read_le<u32>();
-    auto table_size_orig = input_file.stream.read_le<u32>();
-    auto table_size_comp = input_file.stream.read_le<u32>();
+    const auto file_data_start = input_file.stream.read_le<u32>();
+    const auto table_size_orig = input_file.stream.read_le<u32>();
+    const auto table_size_comp = input_file.stream.read_le<u32>();
     auto table_data = input_file.stream.read(table_size_comp);
-    for (auto i : algo::range(table_data.size()))
+    for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= 0xFF;
     table_data = custom_lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
@@ -44,8 +44,8 @@ std::unique_ptr<dec::ArchiveMeta> GmlArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->permutation = table_stream.read(0x100);
 
-    auto file_count = table_stream.read_le<u32>();
-    for (auto i : algo::range(file_count))
+    const auto file_count = table_stream.read_le<u32>();
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read(table_stream.read_le<u32>()).str();
@@ -63,13 +63,13 @@ std::unique_ptr<io::File> GmlArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
     input_file.stream.seek(entry->offset);
     input_file.stream.skip(entry->prefix.size());
     auto suffix = input_file.stream.read(entry->size - entry->prefix.size());
-    for (auto i : algo::range(suffix.size()))
+    for (const auto i : algo::range(suffix.size()))
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 
     auto output_file = std::make_unique<io::File>();

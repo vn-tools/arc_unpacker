@@ -33,7 +33,7 @@ static std::array<size_t, 8> get_offsets(size_t channels, size_t stride)
 static void remove_pad(
     bstr &data, size_t height, size_t out_stride, size_t in_stride)
 {
-    for (auto y : algo::range(height))
+    for (const auto y : algo::range(height))
     {
         auto output = data.get<u8>() + y * out_stride;
         auto input = data.get<u8>() + y * in_stride;
@@ -50,8 +50,8 @@ static res::Image get_image(
     size_t height,
     size_t channels)
 {
-    auto stride = get_stride(width, channels);
-    auto offsets = get_offsets(channels, stride);
+    const auto stride = get_stride(width, channels);
+    const auto offsets = get_offsets(channels, stride);
     auto data = decoder.read_compressed_section(section_id, channels, offsets);
     remove_pad(data, height, width * channels, stride);
     if (channels == 1)
@@ -76,10 +76,10 @@ res::Image WbmImageDecoder::decode_impl(
 
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x10));
     metadata_stream.skip(4);
-    auto width = metadata_stream.read_le<u16>();
-    auto height = metadata_stream.read_le<u16>();
+    const auto width = metadata_stream.read_le<u16>();
+    const auto height = metadata_stream.read_le<u16>();
     metadata_stream.skip(4);
-    auto depth = metadata_stream.read<u8>();
+    const auto depth = metadata_stream.read<u8>();
 
     if (depth != 32 && depth != 24 && depth != 8)
         throw err::UnsupportedBitDepthError(depth);
@@ -87,7 +87,7 @@ res::Image WbmImageDecoder::decode_impl(
     auto image = get_image(decoder, 0x11, width, height, depth >> 3);
     if (decoder.has_section(0x13))
     {
-        auto mask = get_image(decoder, 0x13, width, height, 1);
+        const auto mask = get_image(decoder, 0x13, width, height, 1);
         image.apply_mask(mask);
     }
 

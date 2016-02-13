@@ -26,7 +26,7 @@ static void init_state(u32 state[], const u32 seed, int &mti)
     }
 }
 
-CustomMersenneTwister::CustomMersenneTwister(u32 seed) : p(new Priv)
+CustomMersenneTwister::CustomMersenneTwister(const u32 seed) : p(new Priv)
 {
     init_state(p->state, seed, p->mti);
 }

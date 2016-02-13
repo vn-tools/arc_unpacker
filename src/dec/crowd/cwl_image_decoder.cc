@@ -22,7 +22,7 @@ res::Image CwlImageDecoder::decode_impl(
 
     algo::pack::BytewiseLzssSettings settings;
     settings.initial_dictionary_pos = 0xFF0;
-    auto data = algo::pack::lzss_decompress(
+    const auto data = algo::pack::lzss_decompress(
         input_file.stream.read_to_eof(), size_orig, settings);
 
     const auto cwd_decoder = dec::crowd::CwdImageDecoder();

@@ -26,7 +26,7 @@ res::Image Ex3ImageDecoder::decode_impl(
     u8 b = input_file.stream.read<u8>();
     while (input_file.stream.left())
     {
-        for (auto j : algo::range(256))
+        for (const auto j : algo::range(256))
             table1[j] = j;
 
         size_t offset = 0;

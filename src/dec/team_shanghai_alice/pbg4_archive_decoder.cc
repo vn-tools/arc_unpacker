@@ -37,18 +37,17 @@ std::unique_ptr<dec::ArchiveMeta> Pbg4ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_le<u32>();
-    auto table_offset = input_file.stream.read_le<u32>();
-    auto table_size_orig = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_offset = input_file.stream.read_le<u32>();
+    const auto table_size_orig = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
-    auto table_data = input_file.stream.read_to_eof();
-    table_data = decompress(table_data, table_size_orig);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryStream table_stream(
+        decompress(input_file.stream.read_to_eof(), table_size_orig));
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero().str();
@@ -71,9 +70,8 @@ std::unique_ptr<io::File> Pbg4ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }

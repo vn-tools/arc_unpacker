@@ -60,7 +60,7 @@ std::string OptionImpl::get_invocation_help() const
     bool primary_long_option_shown = false;
     for (const auto &name : names)
     {
-        bool is_long_option = name.compare(0, 2, "--") == 0;
+        const auto is_long_option = name.compare(0, 2, "--") == 0;
         if (is_long_option)
         {
             if (!invocation.size())
@@ -232,7 +232,7 @@ static std::string format_switch_help(const SwitchImpl &sw, bool force)
         values.begin(), values.end(),
         [](const auto &it) { return !it.second.empty(); });
     std::vector<std::pair<std::string, std::string>> dict;
-    for (auto it : values)
+    for (const auto &it : values)
         dict.push_back({it.first, it.second});
     out += use_descriptions
         ? format_dictionary_as_list("- ", dict)

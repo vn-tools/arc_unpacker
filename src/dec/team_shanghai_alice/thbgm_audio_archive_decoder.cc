@@ -43,7 +43,7 @@ static std::unique_ptr<io::File> grab_definitions_file(
             continue;
 
         io::File other_file(path, io::FileMode::Read);
-        for (auto &decoder : decoders)
+        for (const auto &decoder : decoders)
         {
             if (!decoder->is_recognized(other_file))
                 continue;

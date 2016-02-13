@@ -94,8 +94,8 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
 
     const bstr head = input_file.stream.read(4);

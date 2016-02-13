@@ -283,7 +283,7 @@ template<class T> static void test_seeking()
         {
             T reader(from_bits(
                 {0b11001100, 0b10101010, 0b11110000, 0b00110011}));
-            for (auto i : algo::range(32))
+            for (const auto i : algo::range(32))
             {
                 reader.seek(i);
                 INFO("Position: " << reader.pos());
@@ -297,13 +297,13 @@ template<class T> static void test_seeking()
         {
             T reader(from_bits(
                 {0b11001100, 0b10101010, 0b11110000, 0b00110011}));
-            for (auto i : algo::range(32))
+            for (const auto i : algo::range(32))
             {
                 reader.seek(31);
                 REQUIRE_THROWS(reader.skip(2 + i));
                 REQUIRE((reader.pos() == 31));
             }
-            for (auto i : algo::range(32))
+            for (const auto i : algo::range(32))
                 REQUIRE_THROWS(reader.seek(33 + i));
         }
     }

@@ -27,7 +27,7 @@ std::unique_ptr<dec::ArchiveMeta> LacArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u32>();
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = input_file.stream.read_to_zero(32).str();

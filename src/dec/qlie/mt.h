@@ -10,7 +10,7 @@ namespace qlie {
     class CustomMersenneTwister final
     {
     public:
-        CustomMersenneTwister(u32 seed);
+        CustomMersenneTwister(const u32 seed);
         ~CustomMersenneTwister();
 
         void xor_state(const bstr &data);

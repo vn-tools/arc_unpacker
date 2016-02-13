@@ -117,8 +117,8 @@ static res::Image decode_v2(
             continue;
 
         input_stream.seek(region->block_offset);
-        u16 block_type = input_stream.read_le<u16>();
-        u16 part_count = input_stream.read_le<u16>();
+        const auto block_type = input_stream.read_le<u16>();
+        const auto part_count = input_stream.read_le<u16>();
         if (block_type != 1)
             throw err::NotSupportedError("Unexpected block type");
 

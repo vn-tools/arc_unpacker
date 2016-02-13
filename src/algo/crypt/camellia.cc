@@ -288,14 +288,14 @@ static inline void feistel(
     const u32 key0,
     const u32 key1)
 {
-    u32 t0 = s0 ^ key0;
+    const u32 t0 = s0 ^ key0;
     u32 u
         = sbox4_4404[ t0        & 0xFF]
         ^ sbox3_3033[(t0 >>  8) & 0xFF]
         ^ sbox2_0222[(t0 >> 16) & 0xFF]
         ^ sbox1_1110[(t0 >> 24) & 0xFF];
 
-    u32 t1 = s1 ^ key1;
+    const u32 t1 = s1 ^ key1;
     u32 d
         = sbox1_1110[ t1        & 0xFF]
         ^ sbox4_4404[(t1 >>  8) & 0xFF]

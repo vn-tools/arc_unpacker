@@ -175,7 +175,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
         }
     }
 
-    auto actual_data = data.substr(0, entry->size);
+    const auto actual_data = data.substr(0, entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, actual_data);
     output_file->guess_extension();
     return output_file;

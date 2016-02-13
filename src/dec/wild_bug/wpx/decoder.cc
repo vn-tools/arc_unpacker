@@ -53,7 +53,7 @@ Decoder::Decoder(io::BaseByteStream &input_stream) : p(new Priv(input_stream))
     auto section_count = input_stream.read<u8>();
     auto dir_size = input_stream.read<u8>();
 
-    for (auto i : algo::range(section_count))
+    for (const auto i : algo::range(section_count))
     {
         auto id = input_stream.read<u8>();
         Section section;
@@ -78,7 +78,7 @@ std::string Decoder::get_tag() const
 const std::vector<u8> Decoder::get_sections() const
 {
     std::vector<u8> ids;
-    for (auto it : p->sections)
+    for (const auto it : p->sections)
         ids.push_back(it.first);
     return ids;
 }
@@ -126,7 +126,7 @@ bstr Decoder::read_compressed_section(
         use_plain_transcriptors = true;
     }
 
-    for (auto i : algo::range(quant_size))
+    for (const auto i : algo::range(quant_size))
         *output_ptr++ = section_stream.read<u8>();
     int remaining = section.size_orig - quant_size;
     section_stream.seek((-quant_size & 3) + quant_size);

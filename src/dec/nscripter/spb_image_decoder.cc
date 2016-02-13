@@ -43,9 +43,8 @@ static res::Image decode_image(
                 continue;
             }
 
-            size_t mask = t == 7 ? bit_stream.read(1) + 1 : t + 2;
-
-            for (auto i : algo::range(4))
+            const auto mask = t == 7 ? bit_stream.read(1) + 1 : t + 2;
+            for (const auto i : algo::range(4))
             {
                 if (mask == 8)
                 {
@@ -66,16 +65,16 @@ static res::Image decode_image(
         }
 
         const u8 *p = channel_data.get<const u8>();
-        for (auto y : algo::range(0, height))
+        for (const auto y : algo::range(0, height))
         {
             if (y & 1)
             {
-                for (auto x : algo::range(width))
+                for (const auto x : algo::range(width))
                     output.at(width - 1 - x, y)[2 - rgb] = *p++;
             }
             else
             {
-                for (auto x : algo::range(width))
+                for (const auto x : algo::range(width))
                     output.at(x, y)[2 - rgb] = *p++;
             }
         }

@@ -15,16 +15,16 @@ res::Image MncImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto offset_to_pixels = input_file.stream.read_le<u32>();
-    auto header_size = input_file.stream.read_le<u32>();
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
+    const auto offset_to_pixels = input_file.stream.read_le<u32>();
+    const auto header_size = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(2);
-    auto bit_depth = input_file.stream.read_le<u16>();
+    const auto bit_depth = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
-    auto data_size = input_file.stream.read_le<u32>();
+    const auto data_size = input_file.stream.read_le<u32>();
     input_file.stream.seek(offset_to_pixels);
-    auto data = input_file.stream.read(data_size);
+    const auto data = input_file.stream.read(data_size);
 
     if (bit_depth != 24)
         throw err::UnsupportedBitDepthError(bit_depth);

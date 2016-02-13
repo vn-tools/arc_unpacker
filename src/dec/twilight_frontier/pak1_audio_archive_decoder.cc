@@ -25,12 +25,12 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    size_t file_count = input_file.stream.read_le<u32>();
-    for (auto i : algo::range(file_count))
+    const auto file_count = input_file.stream.read_le<u32>();
+    for (const auto i : algo::range(file_count))
     {
         if (!input_file.stream.read<u8>())
             continue;
-        auto size = input_file.stream.read_le<u32>();
+        const auto size = input_file.stream.read_le<u32>();
         input_file.stream.skip(18);
         input_file.stream.skip(size);
     }
@@ -40,9 +40,9 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1AudioArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         if (!input_file.stream.read<u8>())

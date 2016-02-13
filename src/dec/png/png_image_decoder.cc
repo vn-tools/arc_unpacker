@@ -90,7 +90,7 @@ static res::Image decode(
 
     bstr data;
     data.reserve(width * height * pixel_format_to_bpp(format));
-    for (auto y : algo::range(height))
+    for (const auto y : algo::range(height))
         data += bstr(row_pointers[y], width * pixel_format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 

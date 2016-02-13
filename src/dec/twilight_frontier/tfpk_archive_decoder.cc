@@ -147,7 +147,7 @@ size_t RsaReader::pos() const
 
 std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 {
-    bstr block = rsa
+    const auto block = rsa
         ? rsa->decrypt(input_stream.read(0x40)).substr(0, 0x20)
         : input_stream.read(0x40).substr(0, 0x20);
     return std::make_unique<io::MemoryStream>(block);
@@ -161,7 +161,7 @@ static bstr read_file_content(
 {
     input_file.stream.seek(entry.offset);
     auto data = input_file.stream.read(std::min<size_t>(max_size, entry.size));
-    size_t key_size = entry.key.size();
+    const auto key_size = entry.key.size();
     if (meta.version == TfpkVersion::Th135)
     {
         for (const auto i : algo::range(data.size()))
@@ -176,7 +176,7 @@ static bstr read_file_content(
             aux[i] = key[i];
         for (const auto i : algo::range(data.size()))
         {
-            u8 tmp = buf[i];
+            const auto tmp = buf[i];
             buf[i] = tmp ^ key[i % key_size] ^ aux[i & 3];
             aux[i & 3] = tmp;
         }
@@ -209,7 +209,7 @@ static std::string replace_slash_with_backslash(std::string s)
 static u32 get_file_name_hash(
     const std::string name,
     TfpkVersion version,
-    u32 initial_hash = 0x811C9DC5)
+    const u32 initial_hash = 0x811C9DC5)
 {
     std::string name_processed = algo::utf8_to_sjis(
         replace_slash_with_backslash(lower_ascii_only(name))).str();
@@ -247,7 +247,7 @@ static std::string get_unknown_name(
 static std::string get_dir_name(
     const DirEntry &dir_entry, const HashLookupMap user_fn_map)
 {
-    auto it = user_fn_map.find(dir_entry.initial_hash);
+    const auto it = user_fn_map.find(dir_entry.initial_hash);
     if (it != user_fn_map.end())
         return it->second;
     return get_unknown_name(0, dir_entry.initial_hash, "");
@@ -256,7 +256,7 @@ static std::string get_dir_name(
 static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
 {
     std::vector<DirEntry> dirs;
-    auto dir_count = reader.read_block()->read_le<u32>();
+    const auto dir_count = reader.read_block()->read_le<u32>();
     for (const auto i : algo::range(dir_count))
     {
         auto tmp_stream = reader.read_block();
@@ -277,9 +277,9 @@ static HashLookupMap read_fn_map(
     HashLookupMap fn_map;
 
     auto tmp_stream = reader.read_block();
-    size_t table_size_compressed = tmp_stream->read_le<u32>();
-    size_t table_size_original = tmp_stream->read_le<u32>();
-    size_t block_count = tmp_stream->read_le<u32>();
+    const auto table_size_comp = tmp_stream->read_le<u32>();
+    const auto table_size_orig = tmp_stream->read_le<u32>();
+    const auto block_count = tmp_stream->read_le<u32>();
 
     tmp_stream = std::make_unique<io::MemoryStream>();
     for (const auto i : algo::range(block_count))
@@ -287,7 +287,7 @@ static HashLookupMap read_fn_map(
 
     tmp_stream->seek(0);
     tmp_stream = std::make_unique<io::MemoryStream>(
-        algo::pack::zlib_inflate(tmp_stream->read(table_size_compressed)));
+        algo::pack::zlib_inflate(tmp_stream->read(table_size_comp)));
 
     for (const auto &dir_entry : dir_entries)
     {
@@ -300,8 +300,9 @@ static HashLookupMap read_fn_map(
             // TH145 English patch contains invalid directory names
             try
             {
-                auto fn = algo::sjis_to_utf8(tmp_stream->read_to_zero()).str();
-                auto hash = get_file_name_hash(
+                const auto fn
+                    = algo::sjis_to_utf8(tmp_stream->read_to_zero()).str();
+                const auto hash = get_file_name_hash(
                     fn, version, dir_entry.initial_hash);
                 fn_map[hash] = dn + fn;
             }
@@ -342,7 +343,7 @@ bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
-    auto version = input_file.stream.read<u8>();
+    const auto version = input_file.stream.read<u8>();
     return version == 0 || version == 1;
 }
 
@@ -364,27 +365,27 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
     HashLookupMap fn_map;
 
     // TH135 contains file hashes, TH145 contains garbage
-    auto dir_entries = read_dir_entries(reader);
+    const auto dir_entries = read_dir_entries(reader);
     if (dir_entries.size() > 0)
         fn_map = read_fn_map(reader, dir_entries, user_fn_map, meta->version);
 
     for (const auto &it : user_fn_map)
         fn_map[it.first] = it.second;
 
-    size_t file_count = reader.read_block()->read_le<u32>();
+    const auto file_count = reader.read_block()->read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto b1 = reader.read_block();
-        auto b2 = reader.read_block();
-        auto b3 = reader.read_block();
+        const auto b1 = reader.read_block();
+        const auto b2 = reader.read_block();
+        const auto b3 = reader.read_block();
         if (meta->version == TfpkVersion::Th135)
         {
             entry->size = b1->read_le<u32>();
             entry->offset = b1->read_le<u32>();
 
-            auto fn_hash = b2->read_le<u32>();
-            auto it = fn_map.find(fn_hash);
+            const auto fn_hash = b2->read_le<u32>();
+            const auto it = fn_map.find(fn_hash);
             entry->path = it == fn_map.end()
                 ? get_unknown_name(i, fn_hash)
                 : it->second;
@@ -396,9 +397,9 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
             entry->size   = b1->read_le<u32>() ^ b3->read_le<u32>();
             entry->offset = b1->read_le<u32>() ^ b3->read_le<u32>();
 
-            u32 fn_hash = b2->read_le<u32>() ^ b3->read_le<u32>();
-            u32 unk = b2->read_le<u32>() ^ b3->read_le<u32>();
-            auto it = fn_map.find(fn_hash);
+            const auto fn_hash = b2->read_le<u32>() ^ b3->read_le<u32>();
+            const auto unk = b2->read_le<u32>() ^ b3->read_le<u32>();
+            const auto it = fn_map.find(fn_hash);
             entry->path = it == fn_map.end()
                 ? get_unknown_name(i + 1, fn_hash)
                 : it->second;

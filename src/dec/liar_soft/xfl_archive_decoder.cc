@@ -25,11 +25,11 @@ std::unique_ptr<dec::ArchiveMeta> XflArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto table_size = input_file.stream.read_le<u32>();
-    auto file_count = input_file.stream.read_le<u32>();
-    auto file_start = input_file.stream.pos() + table_size;
+    const auto table_size = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto file_start = input_file.stream.pos() + table_size;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(
@@ -47,9 +47,8 @@ std::unique_ptr<io::File> XflArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

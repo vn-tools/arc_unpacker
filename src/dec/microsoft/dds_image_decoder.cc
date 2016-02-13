@@ -145,8 +145,8 @@ res::Image DdsImageDecoder::decode_impl(
     if (header->pixel_format.four_cc == magic_dx10)
         read_header_dx10(input_file.stream);
 
-    auto width = header->width;
-    auto height = header->height;
+    const auto width = header->width;
+    const auto height = header->height;
 
     std::unique_ptr<res::Image> image(nullptr);
     if (header->pixel_format.flags & DDPF_FOURCC)

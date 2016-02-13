@@ -34,7 +34,7 @@ std::unique_ptr<dec::ArchiveMeta> Aos1ArchiveDecoder::read_meta_impl(
             break;
         if (name[0] == 0xFF)
         {
-            auto offset = input_file.stream.read_le<u32>();
+            const auto offset = input_file.stream.read_le<u32>();
             input_file.stream.skip(12);
             input_file.stream.skip(offset);
             continue;

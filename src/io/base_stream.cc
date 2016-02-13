@@ -22,7 +22,7 @@ io::BaseStream &BaseStream::skip(const int offset)
 io::BaseStream &BaseStream::peek(
     const size_t offset, std::function<void()> func)
 {
-    size_t old_pos = pos();
+    const auto old_pos = pos();
     seek(offset);
     try
     {

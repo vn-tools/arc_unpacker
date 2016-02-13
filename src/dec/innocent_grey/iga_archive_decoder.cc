@@ -101,7 +101,7 @@ std::unique_ptr<io::File> IgaArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    for (auto i : algo::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] ^= (i + 2) & 0xFF;
     return std::make_unique<io::File>(entry->path, data);
 }

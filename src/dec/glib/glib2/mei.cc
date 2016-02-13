@@ -36,13 +36,13 @@ static const std::function<u8(u8, size_t)> funcs[] =
     [](u8 b, size_t acc) { return b ^ (0x1100 >> (acc & 7)); },
     [](u8 b, size_t acc)
     {
-        auto c = b ^ (0x80 >> (acc & 7));
+        const auto c = b ^ (0x80 >> (acc & 7));
         return (c >> (acc & 7)) | (c << (8 - (acc & 7)));
     },
     [](u8 b, size_t acc) { return b ^ ((b >> 1) & 0x55); },
     [](u8 b, size_t acc)
     {
-        auto c = b ^ (acc & 1);
+        const auto c = b ^ (acc & 1);
         return (c << 1) ^ (((c << 1) ^ (c >> 1)) & 0x55);
     },
 };
@@ -942,7 +942,7 @@ std::unique_ptr<Decoder> MeiPlugin::create_decoder(
             algo::format("Unsupported key: %08x", keys[0]));
     }
 
-    auto mapping = mappings.at(keys[0]);
+    const auto mapping = mappings.at(keys[0]);
     return std::unique_ptr<Decoder>(
         new Decoder
         {

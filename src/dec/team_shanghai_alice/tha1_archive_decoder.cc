@@ -107,7 +107,7 @@ bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    auto encryption_version = detect_encryption_version(input_file);
+    const auto encryption_version = detect_encryption_version(input_file);
     if (encryption_version < 0)
         return false;
     input_file.stream.seek(0);
@@ -125,10 +125,10 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
     io::MemoryStream header_stream(header_data);
     if (header_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
-    auto table_size_orig = header_stream.read_le<u32>() - 123456789;
-    auto table_size_comp = header_stream.read_le<u32>() - 987654321;
-    auto file_count = header_stream.read_le<u32>() - 135792468;
-    auto table_offset = input_file.stream.size() - table_size_comp;
+    const auto table_size_orig = header_stream.read_le<u32>() - 123456789;
+    const auto table_size_comp = header_stream.read_le<u32>() - 987654321;
+    const auto file_count = header_stream.read_le<u32>() - 135792468;
+    const auto table_offset = input_file.stream.size() - table_size_comp;
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read(table_size_comp);
@@ -138,7 +138,7 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
@@ -172,11 +172,10 @@ std::unique_ptr<io::File> Tha1ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = decrypt(
         data, decryptors[meta->encryption_version][entry->decryptor_id]);
     if (entry->size_comp != entry->size_orig)

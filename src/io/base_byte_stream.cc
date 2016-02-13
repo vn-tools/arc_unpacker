@@ -22,7 +22,7 @@ bstr BaseByteStream::read_to_zero()
 
 bstr BaseByteStream::read_to_zero(const size_t bytes)
 {
-    bstr output = read(bytes);
+    const auto output = read(bytes);
     for (const auto i : algo::range(output.size()))
         if (!output[i])
             return output.substr(0, i);

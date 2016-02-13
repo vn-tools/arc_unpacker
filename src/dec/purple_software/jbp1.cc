@@ -295,15 +295,15 @@ static void ycc2rgb(u8 *dc, u8 *ac, short *iy, short *cbcr, const size_t stride)
     {
         for (const auto x : algo::range(4))
         {
-            auto c = cbcr[0];
-            auto d = cbcr[-64];
-            auto r = ((c * 0x166F0) >> 16);
-            auto g = ((d * 0x5810) >> 16) + ((c * 0xB6C0) >> 16);
-            auto b = ((d * 0x1C590) >> 16);
-            auto cw = iy[1] + 0x180;
-            auto cx = iy[0] + 0x180;
-            auto cy = iy[8] + 0x180;
-            auto cz = iy[9] + 0x180;
+            const auto c = cbcr[0];
+            const auto d = cbcr[-64];
+            const auto r = ((c * 0x166F0) >> 16);
+            const auto g = ((d * 0x5810) >> 16) + ((c * 0xB6C0) >> 16);
+            const auto b = ((d * 0x1C590) >> 16);
+            const auto cw = iy[1] + 0x180;
+            const auto cx = iy[0] + 0x180;
+            const auto cy = iy[8] + 0x180;
+            const auto cz = iy[9] + 0x180;
 
             dc[0]          = lookup_table.at(cx + b);
             ac[4 - stride] = lookup_table.at(cw + b);

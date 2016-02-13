@@ -26,26 +26,26 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x30);
-    auto version = input_file.stream.read_le<u32>();
-    auto entry_size = (version >> 16) < 5 ? 0x48 : 0x68;
+    const auto version = input_file.stream.read_le<u32>();
+    const auto entry_size = (version >> 16) < 5 ? 0x48 : 0x68;
 
-    auto table_size_comp = input_file.stream.read_le<u32>();
-    auto key = input_file.stream.read_le<u32>();
-    auto file_count = input_file.stream.read_le<u32>();
-    auto data_offset = input_file.stream.read_le<u32>();
-    auto table_offset = input_file.stream.read_le<u32>();
+    const auto table_size_comp = input_file.stream.read_le<u32>();
+    const auto key = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto data_offset = input_file.stream.read_le<u32>();
+    const auto table_offset = input_file.stream.read_le<u32>();
 
-    auto table_size_orig = file_count * entry_size;
+    const auto table_size_orig = file_count * entry_size;
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read(table_size_comp);
-    for (auto i : algo::range(table_data.size()))
+    for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
     table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         table_stream.seek(entry_size * i);
@@ -63,9 +63,8 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

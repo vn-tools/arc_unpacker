@@ -77,7 +77,7 @@ HuffmanDecoder::~HuffmanDecoder()
 void HuffmanDecoder::reset()
 {
     p->huffman_trees.clear();
-    for (auto i : algo::range(0x101))
+    for (const auto i : algo::range(0x101))
         p->huffman_trees.push_back(std::make_shared<HuffmanTree>());
     p->last_huffman_tree = p->huffman_trees[0];
     p->available_size = 0;

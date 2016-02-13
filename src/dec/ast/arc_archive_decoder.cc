@@ -49,7 +49,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
 
     ArchiveEntryImpl *last_entry = nullptr;
     const auto file_count = input_file.stream.read_le<u32>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.read_le<u32>();

@@ -27,8 +27,8 @@ std::unique_ptr<io::File> TfcsFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    size_t compressed_size = input_file.stream.read_le<u32>();
-    size_t original_size = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
     io::MemoryStream uncompressed_stream(
         algo::pack::zlib_inflate(input_file.stream.read_to_eof()));
 
@@ -36,14 +36,14 @@ std::unique_ptr<io::File> TfcsFileDecoder::decode_impl(
     output_file->path = input_file.path;
     output_file->path.change_extension("csv");
 
-    size_t row_count = uncompressed_stream.read_le<u32>();
-    for (size_t i : algo::range(row_count))
+    const auto row_count = uncompressed_stream.read_le<u32>();
+    for (const size_t i : algo::range(row_count))
     {
-        size_t column_count = uncompressed_stream.read_le<u32>();
-        for (size_t j : algo::range(column_count))
+        const auto column_count = uncompressed_stream.read_le<u32>();
+        for (const size_t j : algo::range(column_count))
         {
-            size_t cell_size = uncompressed_stream.read_le<u32>();
-            std::string cell = uncompressed_stream.read(cell_size).str();
+            const auto cell_size = uncompressed_stream.read_le<u32>();
+            const auto cell = uncompressed_stream.read(cell_size).str();
 
             // escaping etc. is too boring
             write_cell(output_file->stream, cell);

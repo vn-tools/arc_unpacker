@@ -24,17 +24,17 @@ std::unique_ptr<dec::ArchiveMeta> FjsysArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto header_size = input_file.stream.read_le<u32>();
-    auto file_names_size = input_file.stream.read_le<u32>();
-    auto file_names_start = header_size - file_names_size;
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto header_size = input_file.stream.read_le<u32>();
+    const auto file_names_size = input_file.stream.read_le<u32>();
+    const auto file_names_start = header_size - file_names_size;
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(64);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        size_t file_name_offset = input_file.stream.read_le<u32>();
+        const auto file_name_offset = input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.read_le<u64>();
         input_file.stream.peek(file_name_offset + file_names_start, [&]()
@@ -52,9 +52,8 @@ std::unique_ptr<io::File> FjsysArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
 

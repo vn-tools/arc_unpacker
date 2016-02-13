@@ -25,9 +25,9 @@ static bstr decompress_vsp(
     auto bc = buf2.get();
     auto mask = 0;
 
-    for (auto x : algo::range(width / 8))
+    for (const auto x : algo::range(width / 8))
     {
-        for (auto plane : algo::range(4))
+        for (const auto plane : algo::range(4))
         {
             size_t y = 0;
             while (y < height)
@@ -37,8 +37,8 @@ static bstr decompress_vsp(
                 {
                     case 0x00:
                     {
-                        auto n = input_stream.read<u8>() + 1;
-                        while (n-- && y < height)
+                        auto repetitions = input_stream.read<u8>() + 1;
+                        while (repetitions-- && y < height)
                         {
                             bc[y][plane] = bp[y][plane];
                             y++;
@@ -48,19 +48,19 @@ static bstr decompress_vsp(
 
                     case 0x01:
                     {
-                        auto n = input_stream.read<u8>() + 1;
+                        auto repetitions = input_stream.read<u8>() + 1;
                         auto b0 = input_stream.read<u8>();
-                        while (n-- && y < height)
+                        while (repetitions-- && y < height)
                             bc[y++][plane] = b0;
                         break;
                     }
 
                     case 0x02:
                     {
-                        auto n = input_stream.read<u8>() + 1;
+                        auto repetitions = input_stream.read<u8>() + 1;
                         auto b0 = input_stream.read<u8>();
                         auto b1 = input_stream.read<u8>();
-                        while (n-- && y < height)
+                        while (repetitions-- && y < height)
                         {
                             bc[y++][plane] = b0;
                             if (y >= height) break;
@@ -71,8 +71,8 @@ static bstr decompress_vsp(
 
                     case 0x03:
                     {
-                        auto n = input_stream.read<u8>() + 1;
-                        while (n-- && y < height)
+                        auto repetitions = input_stream.read<u8>() + 1;
+                        while (repetitions-- && y < height)
                         {
                             bc[y][plane] = bc[y][0] ^ mask;
                             y++;
@@ -83,8 +83,8 @@ static bstr decompress_vsp(
 
                     case 0x04:
                     {
-                        auto n = input_stream.read<u8>() + 1;
-                        while (n-- && y < height)
+                        auto repetitions = input_stream.read<u8>() + 1;
+                        while (repetitions-- && y < height)
                         {
                             bc[y][plane] = bc[y][1] ^ mask;
                             y++;
@@ -95,8 +95,8 @@ static bstr decompress_vsp(
 
                     case 0x05:
                     {
-                        auto n = input_stream.read<u8>() + 1;
-                        while (n-- && y < height)
+                        auto repetitions = input_stream.read<u8>() + 1;
+                        while (repetitions-- && y < height)
                         {
                             bc[y][plane] = bc[y][2] ^ mask;
                             y++;
@@ -120,24 +120,22 @@ static bstr decompress_vsp(
             }
         }
 
-        for (auto y : algo::range(height))
+        for (const auto y : algo::range(height))
         {
             int component[4];
-            for (auto i : algo::range(4))
+            for (const auto i : algo::range(4))
                 component[i] = (bc[y][i] << i) | (bc[y][i] >> (8 - i));
 
             auto output_ptr = &output[(y * (width / 8) + x) * 8];
-            for (auto j : algo::range(8))
+            for (const auto j : algo::range(8))
             {
-                for (auto i : algo::range(4))
+                for (const auto i : algo::range(4))
                     *output_ptr |= (component[i] >> (7 - j)) & (1 << i);
                 output_ptr++;
             }
         }
 
-        auto tmp = bp;
-        bp = bc;
-        bc = tmp;
+        std::swap(bp, bc);
     }
 
     return output;
@@ -146,11 +144,11 @@ static bstr decompress_vsp(
 res::Image VspImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto x = input_file.stream.read_le<u16>();
-    auto y = input_file.stream.read_le<u16>();
+    const auto x = input_file.stream.read_le<u16>();
+    const auto y = input_file.stream.read_le<u16>();
     auto width = input_file.stream.read_le<u16>() - x;
-    auto height = input_file.stream.read_le<u16>() - y;
-    auto use_pms = input_file.stream.read<u8>() > 0;
+    const auto height = input_file.stream.read_le<u16>() - y;
+    const auto use_pms = input_file.stream.read<u8>() > 0;
 
     std::unique_ptr<res::Image> image;
 
@@ -162,7 +160,7 @@ res::Image VspImageDecoder::decode_impl(
         res::Palette palette(256, input_file.stream, res::PixelFormat::RGB888);
 
         input_file.stream.seek(0x320);
-        auto pixel_data = PmsImageDecoder::decompress_8bit(
+        const auto pixel_data = PmsImageDecoder::decompress_8bit(
             input_file.stream, width, height);
         image.reset(new res::Image(width, height, pixel_data, palette));
     }
@@ -180,8 +178,11 @@ res::Image VspImageDecoder::decode_impl(
         }
 
         input_file.stream.seek(0x3A);
-        auto pixel_data = decompress_vsp(input_file.stream, width, height);
-        image.reset(new res::Image(width, height, pixel_data, palette));
+        image = std::make_unique<res::Image>(
+            width,
+            height,
+            decompress_vsp(input_file.stream, width, height),
+            palette);
     }
 
     return *image;

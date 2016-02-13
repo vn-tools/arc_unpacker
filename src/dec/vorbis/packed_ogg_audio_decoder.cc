@@ -128,7 +128,7 @@ std::unique_ptr<io::File> PackedOggAudioDecoder::decode_impl(
 
     if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    auto data_size = input_file.stream.read_le<u32>();
+    const auto data_size = input_file.stream.read_le<u32>();
     io::MemoryStream input(input_file.stream, data_size);
 
     auto output_file = std::make_unique<io::File>();

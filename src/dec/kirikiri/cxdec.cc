@@ -108,7 +108,7 @@ u32 KeyDeriver::rand()
     // This is a modified glibc LCG randomization routine. It is used to make
     // the key as random as possible for each file, which is supposed to
     // maximize confusion.
-    u32 old_seed = seed;
+    const auto old_seed = seed;
     seed = (0x41C64E6D * old_seed) + 12345;
     return seed ^ (old_seed << 16) ^ (old_seed >> 16);
 }
@@ -123,7 +123,7 @@ u32 KeyDeriver::derive_for_stage(size_t stage)
     // mov edi, dword ptr ss:[esp+18] (esp+18 == parameter)
     add_shellcode("\x86\x7C\x24\x18"_b);
 
-    u32 eax = run_stage_strategy_1(stage);
+    const auto eax = run_stage_strategy_1(stage);
 
     // pop edx, pop ecx, pop ebx, pop esi, pop edi
     add_shellcode("\x5A\x59\x5B\x5E\x5F"_b);
@@ -136,7 +136,7 @@ u32 KeyDeriver::derive_for_stage(size_t stage)
 
 u32 KeyDeriver::run_first_stage()
 {
-    size_t routine_number = settings.key_derivation_order1[rand() % 3];
+    const auto routine_number = settings.key_derivation_order1[rand() % 3];
 
     u32 eax;
     switch (routine_number)
@@ -145,7 +145,7 @@ u32 KeyDeriver::run_first_stage()
         {
             // mov eax, rand()
             add_shellcode("\xB8"_b);
-            u32 tmp = rand();
+            const auto tmp = rand();
             add_shellcode(u32_to_string(tmp));
             eax = tmp;
             break;
@@ -165,7 +165,7 @@ u32 KeyDeriver::run_first_stage()
 
             // mov eax, dword ptr ds:[esi+((rand() & 0x3FF) * 4]
             add_shellcode("\x8B\x86"_b);
-            u32 pos = (rand() & 0x3FF) * 4;
+            const auto pos = (rand() & 0x3FF) * 4;
             add_shellcode(u32_to_string(pos));
 
             eax = *reinterpret_cast<const u32*>(&settings.control_block[pos]);
@@ -184,11 +184,11 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
     if (stage == 1)
         return run_first_stage();
 
-    u32 eax = (rand() & 1)
+    auto eax = (rand() & 1)
         ? run_stage_strategy_1(stage - 1)
         : run_stage_strategy_0(stage - 1);
 
-    size_t routine_number = settings.key_derivation_order2[rand() % 8];
+    const auto routine_number = settings.key_derivation_order2[rand() % 8];
 
     switch (routine_number)
     {
@@ -257,7 +257,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             // pop ebx
             add_shellcode("\x5B"_b);
 
-            u32 ebx = eax;
+            auto ebx = eax;
             ebx &= 0xAAAAAAAA;
             eax &= 0x55555555;
             ebx >>= 1;
@@ -270,7 +270,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         {
             // xor eax, rand()
             add_shellcode("\x35"_b);
-            u32 tmp = rand();
+            const auto tmp = rand();
             add_shellcode(u32_to_string(tmp));
 
             eax ^= tmp;
@@ -283,7 +283,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             {
                 // add eax, rand()
                 add_shellcode("\x05"_b);
-                u32 tmp = rand();
+                const auto tmp = rand();
                 add_shellcode(u32_to_string(tmp));
 
                 eax += tmp;
@@ -292,7 +292,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             {
                 // sub eax, rand()
                 add_shellcode("\x2D"_b);
-                u32 tmp = rand();
+                const auto tmp = rand();
                 add_shellcode(u32_to_string(tmp));
 
                 eax -= tmp;
@@ -315,19 +315,19 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
     // push ebx
     add_shellcode("\x53"_b);
 
-    u32 eax = (rand() & 1)
+    auto eax = (rand() & 1)
         ? run_stage_strategy_1(stage - 1)
         : run_stage_strategy_0(stage - 1);
 
     // mov ebx, eax
     add_shellcode("\x89\xC3"_b);
-    u32 ebx = eax;
+    const auto ebx = eax;
 
     eax = (rand() & 1)
         ? run_stage_strategy_1(stage - 1)
         : run_stage_strategy_0(stage - 1);
 
-    size_t routine_number = settings.key_derivation_order3[rand() % 6];
+    const auto routine_number = settings.key_derivation_order3[rand() % 6];
     switch (routine_number)
     {
         case 0:
@@ -347,7 +347,7 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
             // pop ecx
             add_shellcode("\x59"_b);
 
-            u8 ecx = ebx & 0x0F;
+            const auto ecx = ebx & 0x0F;
             eax >>= ecx;
             break;
         }
@@ -369,7 +369,7 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
             // pop ecx
             add_shellcode("\x59"_b);
 
-            u8 ecx = ebx & 0x0F;
+            const auto ecx = ebx & 0x0F;
             eax <<= ecx;
             break;
         }
@@ -417,21 +417,19 @@ static void decrypt_chunk(
     size_t base_offset,
     size_t size)
 {
-    u32 seed = hash & 0x7F;
+    const auto seed = hash & 0x7F;
     hash >>= 7;
-    u32 ret0 = key_deriver.derive(seed, hash);
-    u32 ret1 = key_deriver.derive(seed, hash ^ 0xFFFFFFFF);
+    const auto ret0 = key_deriver.derive(seed, hash);
+    const auto ret1 = key_deriver.derive(seed, hash ^ 0xFFFFFFFF);
 
-    u8 xor0 = (ret0 >> 8) & 0xFF;
-    u8 xor1 = (ret0 >> 16) & 0xFF;
-    u8 xor2 = ret0 & 0xFF;
-    if (xor2 == 0)
-        xor2 = 1;
+    const auto xor0 = (ret0 >> 8) & 0xFF;
+    const auto xor1 = (ret0 >> 16) & 0xFF;
+    const auto xor2 = (ret0 & 0xFF) == 0 ? 1 : (ret0 & 0xFF);
 
-    size_t offset0 = ret1 >> 16;
-    size_t offset1 = ret1 & 0xFFFF;
+    const auto offset0 = ret1 >> 16;
+    const auto offset1 = ret1 & 0xFFFF;
 
-    auto data_ptr = &data[base_offset];
+    const auto data_ptr = &data[base_offset];
 
     if (offset0 >= base_offset && offset0 < base_offset + size)
         data_ptr[offset0 - base_offset] ^= xor0;
@@ -439,25 +437,25 @@ static void decrypt_chunk(
     if (offset1 >= base_offset && offset1 < base_offset + size)
         data_ptr[offset1 - base_offset] ^= xor1;
 
-    for (auto i : algo::range(size))
+    for (const auto i : algo::range(size))
         data_ptr[i] ^= xor2;
 }
 
 static bstr find_control_block(const io::path &path)
 {
-    auto dir = path.parent();
+    const auto dir = path.parent();
     for (const auto &path : io::recursive_directory_range(dir))
     {
         if (!io::is_regular_file(path))
             continue;
 
-        auto fn = path.str();
+        const auto fn = path.str();
         if (fn.find(".tpm") != fn.size() - 4)
             continue;
 
         io::FileStream tmp_stream(path, io::FileMode::Read);
-        bstr content = tmp_stream.read_to_eof();
-        auto pos = content.find(control_block_magic);
+        const auto content = tmp_stream.read_to_eof();
+        const auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)
         {
             throw err::CorruptDataError(
@@ -495,13 +493,13 @@ Xp3Plugin au::dec::kirikiri::create_cxdec_plugin(
         return [=](bstr &data, u32 adlr_key)
         {
             KeyDeriver key_deriver(settings);
-            size_t size = std::min<size_t>(
+            const auto size = std::min<size_t>(
                 data.size(), (adlr_key & settings.key1) + settings.key2);
 
-            auto hash1 = adlr_key;
-            auto hash2 = (adlr_key >> 16) ^ adlr_key;
-            size_t offset1 = 0;
-            size_t offset2 = size;
+            const auto hash1 = adlr_key;
+            const auto hash2 = (adlr_key >> 16) ^ adlr_key;
+            const auto offset1 = 0;
+            const auto offset2 = size;
             decrypt_chunk(key_deriver, data, hash1, offset1, offset2);
             decrypt_chunk(
                 key_deriver, data, hash2, offset2, data.size() - offset2);

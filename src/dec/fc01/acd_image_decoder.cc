@@ -56,11 +56,11 @@ res::Image AcdImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto data_offset = input_file.stream.read_le<u32>();
-    auto size_comp = input_file.stream.read_le<u32>();
-    auto size_orig = input_file.stream.read_le<u32>();
-    auto width = input_file.stream.read_le<u32>();
-    auto height = input_file.stream.read_le<u32>();
+    const auto data_offset = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(data_offset);
     auto pixel_data = input_file.stream.read(size_comp);

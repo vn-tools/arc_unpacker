@@ -17,7 +17,7 @@ namespace
 
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     if (file_count)
     {
         input_file.stream.skip((file_count - 1) * 32 + 24);
@@ -34,12 +34,12 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    u32 file_count = input_file.stream.read_le<u32>();
-    for (auto i : algo::range(file_count))
+    const auto file_count = input_file.stream.read_le<u32>();
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto tmp = input_file.stream.read(20);
-        for (auto i : algo::range(tmp.size()))
+        for (const auto i : algo::range(tmp.size()))
             tmp[i] ^= tmp[tmp.size() - 1];
         entry->path = tmp.str(true);
         entry->size_orig = input_file.stream.read_le<u32>();
@@ -56,9 +56,8 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }

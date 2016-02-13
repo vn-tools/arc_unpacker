@@ -8,10 +8,10 @@ using namespace au::dec::wild_bug::wpx;
 static std::vector<u8> build_dict()
 {
     std::vector<u8> dict(0x100 * 0x100);
-    for (auto i : algo::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
         u8 n = -1 - i;
-        for (auto j : algo::range(0x100))
+        for (const auto j : algo::range(0x100))
             dict[0x100 * i + j] = n--;
     }
     return dict;
@@ -20,14 +20,14 @@ static std::vector<u8> build_dict()
 static std::vector<u8> build_table(io::BaseBitStream &bit_stream)
 {
     std::vector<u8> sizes(0x100);
-    for (auto n : algo::range(0, 0x100, 2))
+    for (const auto n : algo::range(0, 0x100, 2))
     {
         sizes[n + 1] = bit_stream.read(4);
         sizes[n] = bit_stream.read(4);
     }
 
     std::vector<u8> table(0x10000);
-    for (auto n : algo::range(0x100))
+    for (const auto n : algo::range(0x100))
     {
         auto size = sizes[n];
         if (!size)

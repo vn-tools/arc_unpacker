@@ -13,7 +13,7 @@ HuffmanNode::HuffmanNode()
 
 HuffmanTree::HuffmanTree()
 {
-    for (auto i : algo::range(0x100))
+    for (const auto i : algo::range(0x100))
         sym_lookup[i] = HuffmanNodes::Null;
     escape = HuffmanNodes::Null;
     tree_pointer = HuffmanNodes::Root;

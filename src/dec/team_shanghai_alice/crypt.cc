@@ -35,10 +35,10 @@ static void decrypt(
         auto input_block = input_stream.read(current_block_size);
         auto *input_block_ptr = input_block.get<const char>();
         bstr output_block(current_block_size);
-        for (auto j : algo::range(2))
+        for (const auto j : algo::range(2))
         {
             u8 *output_block_ptr = &output_block[current_block_size - j - 1];
-            for (auto i : algo::range((current_block_size - j + 1) >> 1))
+            for (const auto i : algo::range((current_block_size - j + 1) >> 1))
             {
                 *output_block_ptr = *input_block_ptr++ ^ key;
                 output_block_ptr -= 2;

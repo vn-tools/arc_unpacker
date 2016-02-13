@@ -67,7 +67,7 @@ MblArchiveDecoder::MblArchiveDecoder()
         "Candy Toys",
         [](bstr &data)
         {
-            for (auto i : algo::range(data.size()))
+            for (const auto i : algo::range(data.size()))
                 data[i] = -data[i];
         });
 
@@ -78,7 +78,7 @@ MblArchiveDecoder::MblArchiveDecoder()
         {
             static const bstr key =
                 "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
-            for (auto i : algo::range(data.size()))
+            for (const auto i : algo::range(data.size()))
                 data[i] ^= key[i % key.size()];
         });
 
@@ -106,7 +106,7 @@ std::unique_ptr<dec::ArchiveMeta> MblArchiveDecoder::read_meta_impl(
     const auto name_size = version == 2
         ? input_file.stream.read_le<u32>()
         : 16;
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(

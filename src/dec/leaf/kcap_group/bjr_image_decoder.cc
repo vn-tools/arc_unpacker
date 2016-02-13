@@ -22,7 +22,7 @@ res::Image BjrImageDecoder::decode_impl(
     u32 key1 = 0x10000;
     u32 key2 = 0;
     u32 key3 = 0;
-    for (auto i : algo::range(name.size()))
+    for (const auto i : algo::range(name.size()))
     {
         key1 -= name[i];
         key2 += name[i];
@@ -30,13 +30,13 @@ res::Image BjrImageDecoder::decode_impl(
     }
 
     res::Image output(input.width(), input.height());
-    for (auto y : algo::range(output.height()))
+    for (const auto y : algo::range(output.height()))
     {
         key3 += 7;
 
         const auto src_line = &input.at(0, key3 % output.height());
         const auto dst_line = &output.at(0, y);
-        for (auto x : algo::range(output.width()))
+        for (const auto x : algo::range(output.width()))
         {
             if (x & 1)
             {

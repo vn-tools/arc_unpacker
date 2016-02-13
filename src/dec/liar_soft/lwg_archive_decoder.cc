@@ -26,22 +26,22 @@ std::unique_ptr<dec::ArchiveMeta> LwgArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    size_t image_width = input_file.stream.read_le<u32>();
-    size_t image_height = input_file.stream.read_le<u32>();
+    const auto image_width = input_file.stream.read_le<u32>();
+    const auto image_height = input_file.stream.read_le<u32>();
 
-    size_t file_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    size_t table_size = input_file.stream.read_le<u32>();
-    size_t file_data_start = input_file.stream.pos() + table_size + 4;
+    const auto table_size = input_file.stream.read_le<u32>();
+    const auto file_data_start = input_file.stream.pos() + table_size + 4;
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.skip(9);
         entry->offset = file_data_start + input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
-        auto name_size = input_file.stream.read<u8>();
+        const auto name_size = input_file.stream.read<u8>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         meta->entries.push_back(std::move(entry));
@@ -55,9 +55,8 @@ std::unique_ptr<io::File> LwgArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
 

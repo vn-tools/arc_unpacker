@@ -47,10 +47,10 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     res::Palette palette(256);
-    for (auto i : algo::range(palette.size()))
+    for (const auto i : algo::range(palette.size()))
     {
         input_file.stream.skip(1);
         palette[i].a = 0xFF;
