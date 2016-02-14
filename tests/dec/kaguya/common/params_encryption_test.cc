@@ -26,6 +26,79 @@ static void write_utf16(io::BaseByteStream &stream, const bstr &str)
     stream.write(algo::utf8_to_utf16(str));
 }
 
+static void write_body_v1(
+    io::BaseByteStream &output_stream, const bstr &key, const bstr &game_title)
+{
+    output_stream.write_le<u32>('?');
+    output_stream.write_le<u32>('?');
+    const auto unk0 = {1, 2, 3};
+    output_stream.write_le<u32>(unk0.size());
+    for (const auto b : unk0)
+        output_stream.write_le<u32>(b);
+    output_stream.write(algo::utf8_to_sjis(game_title));
+    output_stream.write<u8>(0);
+    write_raw(output_stream, "???"_b);
+    output_stream.write<u8>(0);
+    output_stream.write("producer"_b);
+    output_stream.write<u8>(0);
+    output_stream.write("copyright"_b);
+    output_stream.write<u8>(0);
+    for (const auto i : algo::range(2))
+    {
+        output_stream.write_le<u32>('?');
+        output_stream.write("???"_b);
+        output_stream.write<u8>(0);
+    }
+
+    const std::vector<std::pair<bstr, bstr>> arc_names
+        = {{"bla"_b, "bla"_b}, {"herp"_b, "derp"_b}};
+    output_stream.write_le<u32>(arc_names.size());
+    for (const auto &kv : arc_names)
+    {
+        output_stream.write(kv.first);
+        output_stream.write<u8>(0);
+        output_stream.write(kv.second);
+        output_stream.write<u8>(0);
+    }
+
+    const std::vector<std::vector<bstr>> unk1 = {
+        {"12"_b, "3"_b, "45"_b, "67"_b, "89"_b},
+        {"123"_b, "45"_b, "67"_b, "89"_b}};
+    const std::vector<bstr> unk2 = {"12"_b, "3"_b, "45"_b};
+    const std::vector<bstr> unk3 = {"12"_b, "3"_b, "45"_b, "67"_b, "89"_b};
+    output_stream.write_le<u32>(unk1.size());
+    for (const auto &t : unk1)
+    {
+        output_stream.write_le<u32>('?');
+        output_stream.write<u8>('?');
+        output_stream.write_le<u32>(t.at(0).size());
+        output_stream.write(t.at(0));
+        output_stream.write_le<u32>(t.size());
+        for (const auto &s : t)
+        {
+            output_stream.write(s);
+            output_stream.write<u8>(0);
+        }
+        output_stream.write<u8>('?');
+        output_stream.write_le<u32>(t.at(0).size());
+        output_stream.write(t.at(0));
+    }
+    output_stream.write_le<u32>(unk2.size());
+    for (const auto &s : unk2)
+    {
+        output_stream.write(s);
+        output_stream.write<u8>(0);
+    }
+    output_stream.write_le<u32>(unk3.size());
+    for (const auto &s : unk3)
+    {
+        output_stream.write(s);
+        output_stream.write<u8>(0);
+    }
+    output_stream.write_le<u32>(key.size());
+    output_stream.write(key);
+}
+
 static void write_body_v2(
     io::BaseByteStream &output_stream, const bstr &key, const bstr &game_title)
 {
@@ -391,6 +464,20 @@ static void write_body_v5_3(
 TEST_CASE("Atelier Kaguya params decryption", "[dec]")
 {
     // for unknown data, serialize nonempty junk to test skipping
+
+    SECTION("Version 1")
+    {
+        const auto key = bstr(240000, 0xFF);
+        const auto game_title = "毎日がＭ！"_b;
+        io::MemoryStream output_stream;
+
+        output_stream.write("[SCR-PARAMS]v01"_b);
+        write_body_v1(output_stream, key, game_title);
+
+        const auto params = parse_params_file(output_stream);
+        REQUIRE(params.key == key);
+        REQUIRE(params.game_title == game_title);
+    }
 
     SECTION("Version 2 - variant A")
     {

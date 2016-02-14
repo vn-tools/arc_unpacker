@@ -60,7 +60,52 @@ static int get_scr_version(io::BaseByteStream &input_stream)
     if (verify_magic(input_stream, "[SCR-PARAMS]v04"_b)) return 40;
     if (verify_magic(input_stream, "[SCR-PARAMS]v03"_b)) return 30;
     if (verify_magic(input_stream, "[SCR-PARAMS]v02"_b)) return 20;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v01"_b)) return 10;
     throw err::RecognitionError();
+}
+
+static common::Params parse_params_file_v1(io::BaseByteStream &input_stream)
+{
+    input_stream.skip(8);
+    input_stream.skip(4 * input_stream.read_le<u32>());
+    const auto game_title = algo::sjis_to_utf8(input_stream.read_to_zero());
+    input_stream.read_to_zero();
+    const auto producer = algo::sjis_to_utf8(input_stream.read_to_zero());
+    const auto copyright = algo::sjis_to_utf8(input_stream.read_to_zero());
+    for (const auto i : algo::range(2))
+    {
+        input_stream.skip(4);
+        input_stream.read_to_zero();
+    }
+    for (const auto i : algo::range(input_stream.read_le<u32>()))
+    {
+        input_stream.read_to_zero();
+        input_stream.read_to_zero();
+    }
+
+    for (const auto i : algo::range(input_stream.read_le<u32>()))
+    {
+        input_stream.skip(4);
+        input_stream.skip(1);
+        input_stream.skip(input_stream.read_le<u32>());
+        for (const auto j : algo::range(input_stream.read_le<u32>()))
+            input_stream.read_to_zero();
+        input_stream.skip(1);
+        input_stream.skip(input_stream.read_le<u32>());
+    }
+
+    for (const auto i : algo::range(input_stream.read_le<u32>()))
+        input_stream.read_to_zero();
+
+    for (const auto i : algo::range(input_stream.read_le<u32>()))
+        input_stream.read_to_zero();
+
+    const auto key_size = std::min<size_t>(240000, input_stream.read_le<u32>());
+    common::Params params;
+    params.decrypt_anm = false;
+    params.game_title = game_title;
+    params.key = input_stream.read(key_size);
+    return params;
 }
 
 static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
@@ -238,9 +283,9 @@ static common::Params parse_params_file_v3_or_later(
 common::Params common::parse_params_file(io::BaseByteStream &input_stream)
 {
     const auto version = get_scr_version(input_stream);
-    return version == 20
-        ? parse_params_file_v2(input_stream)
-        : parse_params_file_v3_or_later(input_stream, version);
+    if (version < 20) return parse_params_file_v1(input_stream);
+    if (version < 30) return parse_params_file_v2(input_stream);
+    return parse_params_file_v3_or_later(input_stream, version);
 }
 
 void common::decrypt(
