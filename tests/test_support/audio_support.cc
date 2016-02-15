@@ -18,22 +18,22 @@ static res::Audio audio_from_file(io::File &file)
 void tests::compare_audio(
     const res::Audio &actual, const res::Audio &expected)
 {
-    REQUIRE(expected.codec == actual.codec);
-    REQUIRE(expected.channel_count == actual.channel_count);
-    REQUIRE(expected.sample_rate == actual.sample_rate);
-    REQUIRE(expected.bits_per_sample == actual.bits_per_sample);
-    REQUIRE(expected.extra_codec_headers == actual.extra_codec_headers);
-    REQUIRE(expected.samples.size() == actual.samples.size());
-    REQUIRE(expected.samples == actual.samples);
+    REQUIRE(actual.codec == expected.codec);
+    REQUIRE(actual.channel_count == expected.channel_count);
+    REQUIRE(actual.sample_rate == expected.sample_rate);
+    REQUIRE(actual.bits_per_sample == expected.bits_per_sample);
+    REQUIRE(actual.extra_codec_headers == expected.extra_codec_headers);
+    REQUIRE(actual.samples.size() == expected.samples.size());
+    REQUIRE(actual.samples == expected.samples);
 
-    REQUIRE(expected.loops.size() == actual.loops.size());
+    REQUIRE(actual.loops.size() == expected.loops.size());
     for (const auto i : algo::range(expected.loops.size()))
     {
         const auto &expected_loop = expected.loops[i];
         const auto &actual_loop = actual.loops[i];
-        REQUIRE(expected_loop.start == actual_loop.start);
-        REQUIRE(expected_loop.end == actual_loop.end);
-        REQUIRE(expected_loop.play_count == actual_loop.play_count);
+        REQUIRE(actual_loop.start == expected_loop.start);
+        REQUIRE(actual_loop.end == expected_loop.end);
+        REQUIRE(actual_loop.play_count == expected_loop.play_count);
     }
 }
 
@@ -60,7 +60,7 @@ void tests::compare_audio(
     const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool compare_file_paths)
 {
-    REQUIRE(expected_files.size() == actual_files.size());
+    REQUIRE(actual_files.size() == expected_files.size());
     for (const auto i : algo::range(actual_files.size()))
     {
         INFO(algo::format("Audio at index %d differs", i));

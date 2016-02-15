@@ -66,8 +66,8 @@ res::Image tests::get_transparent_test_image()
 void tests::compare_images(
     const res::Image &actual_image, const res::Image &expected_image)
 {
-    REQUIRE(expected_image.width() == actual_image.width());
-    REQUIRE(expected_image.height() == actual_image.height());
+    REQUIRE(actual_image.width() == expected_image.width());
+    REQUIRE(actual_image.height() == expected_image.height());
 
     bool images_match = true;
     for (const auto y : algo::range(expected_image.height()))
@@ -109,7 +109,7 @@ void tests::compare_images(
     const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool compare_file_paths)
 {
-    REQUIRE(expected_files.size() == actual_files.size());
+    REQUIRE(actual_files.size() == expected_files.size());
     for (const auto i : algo::range(expected_files.size()))
     {
         INFO(algo::format("Images at index %d differ", i));

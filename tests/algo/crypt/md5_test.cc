@@ -8,7 +8,7 @@ using namespace au::algo::crypt;
 static void compare_hashes(const bstr &expected, const bstr &actual)
 {
     INFO(algo::hex(expected.str()) << " != " << algo::hex(actual.str()));
-    REQUIRE(expected == actual);
+    REQUIRE(actual == expected);
 }
 
 TEST_CASE("MD5", "[algo][crypt]")

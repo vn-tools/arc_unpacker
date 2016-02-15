@@ -40,7 +40,7 @@ void tests::compare_paths(
         "Expected file path: %s, actual: %s\n",
         expected_file_path.c_str(),
         actual_file_path.c_str()));
-    REQUIRE(expected_file_path == actual_file_path);
+    REQUIRE(actual_file_path == expected_file_path);
 }
 
 void tests::compare_files(
@@ -65,7 +65,7 @@ void tests::compare_files(
 {
     if (compare_file_paths)
         tests::compare_paths(actual_file.path, expected_file.path);
-    REQUIRE(expected_file.stream.size() == actual_file.stream.size());
+    REQUIRE(actual_file.stream.size() == expected_file.stream.size());
     expected_file.stream.seek(0);
     actual_file.stream.seek(0);
     const auto expected_content = expected_file.stream.read_to_eof();
@@ -76,7 +76,7 @@ void tests::compare_files(
     INFO("Actual content: " << (actual_content.size() < 1000
         ? actual_content.str()
         : "(too big to display)"));
-    REQUIRE(expected_content == actual_content);
+    REQUIRE(actual_content == expected_content);
 }
 
 void tests::dump_file(io::File &input_file, const io::path &path)
