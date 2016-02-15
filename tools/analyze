@@ -1,0 +1,3 @@
+#!/bin/sh
+./build/arc_unpacker "$@" | grep -io 'recog.*' | sort | uniq -c
+./tools/extensions-histogram ./*~*
