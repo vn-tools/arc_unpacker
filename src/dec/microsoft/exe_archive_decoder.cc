@@ -520,6 +520,8 @@ std::unique_ptr<dec::ArchiveMeta> ExeArchiveDecoder::read_meta_impl(
         nt_header.optional_header.section_alignment,
         sections);
 
+    if (data_dirs.size() < 2)
+        throw err::CorruptDataError("Unusual file layout");
     const auto resource_dir = data_dirs[2];
     const auto base_offset
         = rva_helper.rva_to_offset(resource_dir.virtual_address);
