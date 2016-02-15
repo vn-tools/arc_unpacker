@@ -65,7 +65,6 @@ void tests::compare_files(
 {
     if (compare_file_paths)
         tests::compare_paths(actual_file.path, expected_file.path);
-    REQUIRE(actual_file.stream.size() == expected_file.stream.size());
     expected_file.stream.seek(0);
     actual_file.stream.seek(0);
     const auto expected_content = expected_file.stream.read_to_eof();
@@ -76,6 +75,7 @@ void tests::compare_files(
     INFO("Actual content: " << (actual_content.size() < 1000
         ? actual_content.str()
         : "(too big to display)"));
+    REQUIRE(actual_file.stream.size() == expected_file.stream.size());
     REQUIRE(actual_content == expected_content);
 }
 
