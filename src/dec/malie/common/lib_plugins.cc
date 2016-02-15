@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::dec::malie;
 
-static std::vector<u32> convert_decryption_key_to_encryption_key(
+std::vector<u32> common::convert_decryption_key_to_encryption_key(
     const std::vector<u32> &input)
 {
     std::vector<u32> output(input.size());
