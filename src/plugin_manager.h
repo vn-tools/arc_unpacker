@@ -4,6 +4,7 @@
 #include <string>
 #include "algo/any.h"
 #include "arg_parser.h"
+#include "arg_parser_decorator.h"
 #include "err.h"
 
 namespace au {
