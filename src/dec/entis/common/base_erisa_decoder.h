@@ -11,6 +11,7 @@ namespace common {
     class BaseErisaDecoder : public BaseDecoder
     {
     public:
+        virtual ~BaseErisaDecoder() {}
         int decode_erisa_code(ProbModel &model);
         int decode_erisa_code_index(const ProbModel &model);
 

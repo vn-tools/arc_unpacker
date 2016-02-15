@@ -15,6 +15,8 @@ namespace algo {
         {
         }
 
+        virtual ~BasePtr() {}
+
         inline T *operator->()
         {
             return cur_ptr;

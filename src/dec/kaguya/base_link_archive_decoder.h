@@ -9,6 +9,7 @@ namespace kaguya {
     class BaseLinkArchiveDecoder : public BaseArchiveDecoder
     {
     public:
+        virtual ~BaseLinkArchiveDecoder() {}
         std::vector<std::string> get_linked_formats() const override;
 
     protected:

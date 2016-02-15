@@ -25,6 +25,7 @@ namespace pack {
     class BaseLzssWriter
     {
     public:
+        virtual ~BaseLzssWriter() {}
         virtual void write_literal(const u8 literal) = 0;
         virtual void write_repetition(
             const size_t position_bits,
