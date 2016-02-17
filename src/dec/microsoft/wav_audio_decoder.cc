@@ -19,10 +19,10 @@ res::Audio WavAudioDecoder::decode_impl(
     input_file.stream.seek(12);
     while (input_file.stream.left())
     {
-        const auto chunk_name = input_file.stream.read(4);
+        const auto chunk_name = input_file.stream.read(4).str(true);
         const auto chunk_size = input_file.stream.read_le<u32>();
         const auto chunk_start = input_file.stream.pos();
-        if (chunk_name == "fmt\x20"_b)
+        if (chunk_name == "fmt\x20")
         {
             audio.codec = input_file.stream.read_le<u16>();
             audio.channel_count = input_file.stream.read_le<u16>();
@@ -39,7 +39,7 @@ res::Audio WavAudioDecoder::decode_impl(
             }
             input_file.stream.seek(chunk_start + chunk_size);
         }
-        else if (chunk_name == "data"_b)
+        else if (chunk_name == "data")
         {
             audio.samples = input_file.stream.read(chunk_size);
         }
