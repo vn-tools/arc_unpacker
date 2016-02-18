@@ -12,22 +12,17 @@ using namespace au::dec::kaguya;
 static std::unique_ptr<io::File> create_scr_file(const bstr &key)
 {
     auto output_file = std::make_unique<io::File>("params.dat", ""_b);
-    output_file->stream.write("[SCR-PARAMS]v02"_b);
-    output_file->stream.write_le<u32>('?');
-    output_file->stream.write_le<u32>('?');
+    output_file->stream.write("[SCR-PARAMS]v05.2"_b);
+    output_file->stream.write("TRASHTRASH"_b);
     output_file->stream.write<u8>(0);
-    const auto game_title
-        = algo::utf8_to_sjis("幼なじみと甘～くエッチに過ごす方法"_b);
-    output_file->stream.write<u8>(game_title.size());
-    output_file->stream.write(game_title);
-    output_file->stream.write<u8>(0);
-    output_file->stream.write<u8>(0);
-    output_file->stream.write<u8>(0);
+    output_file->stream.write_le<u16>(0);
+    output_file->stream.write_le<u16>(0);
+    output_file->stream.write_le<u16>(0);
     output_file->stream.write<u8>('?');
+    output_file->stream.write_le<u16>(0);
+    output_file->stream.write_le<u16>(0);
     output_file->stream.write<u8>(0);
-    output_file->stream.write<u8>(0);
-    output_file->stream.write<u8>(0);
-    output_file->stream.write<u8>('?');
+    output_file->stream.write("JUNKJUNKJUNKJUNK"_b);
     output_file->stream.write<u8>(0);
     output_file->stream.write<u8>(0);
     output_file->stream.write<u8>(0);
