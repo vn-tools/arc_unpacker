@@ -1,3 +1,5 @@
 #!/bin/sh
+rm -f ./*.wav ./*.png
+rm -rf ./*\~*
 ./build/arc_unpacker "$@" | grep -io 'recog.*' | sort | uniq -c
 ./tools/extensions-histogram ./*~*
