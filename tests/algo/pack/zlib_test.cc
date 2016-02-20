@@ -29,4 +29,11 @@ TEST_CASE("ZLIB compression", "[algo][pack]")
     {
         REQUIRE(zlib_inflate(zlib_deflate(output)) == output);
     }
+
+    SECTION("Deflating ZLIB with RawDeflate")
+    {
+        const auto deflated = zlib_deflate(output, ZlibKind::RawDeflate);
+        const auto inflated = zlib_inflate(deflated, ZlibKind::RawDeflate);
+        REQUIRE(inflated == output);
+    }
 }
