@@ -3169,7 +3169,11 @@ var games = [
 
     var $vndbLink = $('<a class="vndb" title="VNDB"/>').text('VNDB');
     if (game.hasOwnProperty('vndb')) {
-      $vndbLink.attr('href', 'https://vndb.org/v' + game.vndb);
+      if (game.vndb.constructor === Array) {
+        $vndbLink.attr('href', 'https://vndb.org/v/all?q=' + encodeURIComponent(game.title) + '&fil=&rfil=');
+      } else {
+        $vndbLink.attr('href', 'https://vndb.org/v' + game.vndb);
+      }
     }
     $miscArea.append($('<li/>').append($vndbLink));
 
