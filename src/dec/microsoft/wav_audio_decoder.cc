@@ -1,4 +1,6 @@
 #include "dec/microsoft/wav_audio_decoder.h"
+#include "algo/str.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::dec::microsoft;
@@ -17,11 +19,15 @@ res::Audio WavAudioDecoder::decode_impl(
 {
     res::Audio audio;
     input_file.stream.seek(12);
-    while (input_file.stream.left())
+    bool head_found = false;
+    bool data_found = false;
+
+    while (input_file.stream.left() >= 8)
     {
         const auto chunk_name = input_file.stream.read(4).str(true);
         const auto chunk_size = input_file.stream.read_le<u32>();
         const auto chunk_start = input_file.stream.pos();
+
         if (chunk_name == "fmt\x20")
         {
             audio.codec = input_file.stream.read_le<u16>();
@@ -38,17 +44,33 @@ res::Audio WavAudioDecoder::decode_impl(
                     = input_file.stream.read(extra_data_size);
             }
             input_file.stream.seek(chunk_start + chunk_size);
+            head_found = true;
         }
         else if (chunk_name == "data")
         {
             audio.samples = input_file.stream.read(chunk_size);
+            data_found = true;
         }
         else
         {
-            logger.warn("Unknown chunk: %s\n", chunk_name.c_str());
-            input_file.stream.skip(chunk_size);
+            logger.warn("Unknown chunk: %s\n", algo::hex(chunk_name).c_str());
+            if (input_file.stream.left() < chunk_size)
+            {
+                logger.warn("Invalid chunk size, ignoring rest of the file\n");
+                break;
+            }
+            else
+            {
+                input_file.stream.skip(chunk_size);
+            }
         }
     }
+
+    if (!head_found)
+        throw err::CorruptDataError("No header data found");
+    if (!data_found)
+        throw err::CorruptDataError("No samples data found");
+
     return audio;
 }
 
