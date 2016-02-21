@@ -17,6 +17,8 @@ Image::Image(const Image &other) : Image(other.width(), other.height())
 Image::Image(const size_t width, const size_t height)
     : pixels(width * height), _width(width), _height(height)
 {
+    if (!width || !height)
+        throw err::BadDataSizeError();
 }
 
 Image::Image(
@@ -26,6 +28,8 @@ Image::Image(
     const PixelFormat fmt) : Image(width, height)
 {
     if (input.size() < pixel_format_to_bpp(fmt) * width * height)
+        throw err::BadDataSizeError();
+    if (!width || !height)
         throw err::BadDataSizeError();
     read_pixels(input.get<const u8>(), pixels, fmt);
 }
@@ -106,6 +110,8 @@ Image &Image::flip_horizontally()
 Image &Image::crop(const size_t new_width, const size_t new_height)
 {
     std::vector<Pixel> old_pixels(pixels.begin(), pixels.end());
+    if (!new_width || !new_height)
+        throw err::BadDataSizeError();
     const auto old_width = _width;
     const auto old_height = _height;
     _width = new_width;
