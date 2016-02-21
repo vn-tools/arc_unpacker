@@ -15,6 +15,14 @@ static res::Audio audio_from_file(io::File &file)
     return wav_audio_decoder.decode(dummy_logger, file);
 }
 
+res::Audio tests::get_test_audio()
+{
+    io::File input_file(
+        "tests/dec/entis/files/mio/explosion-out.wav",
+        io::FileMode::Read);
+    return audio_from_file(input_file);
+}
+
 void tests::compare_audio(
     const res::Audio &actual, const res::Audio &expected)
 {

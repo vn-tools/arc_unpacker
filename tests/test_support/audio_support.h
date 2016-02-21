@@ -7,6 +7,8 @@
 namespace au {
 namespace tests {
 
+    res::Audio get_test_audio();
+
     void compare_audio(
         const res::Audio &actual_audio,
         const res::Audio &expected_audio);
