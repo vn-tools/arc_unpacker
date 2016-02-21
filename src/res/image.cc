@@ -122,6 +122,12 @@ Image &Image::crop(const size_t new_width, const size_t new_height)
     {
         pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
+    for (const auto y : algo::range(old_height, new_height))
+    for (const auto x : algo::range(new_width))
+        pixels[y * new_width + x] = {0, 0, 0, 0};
+    for (const auto y : algo::range(old_height))
+    for (const auto x : algo::range(old_width, new_width))
+        pixels[y * new_width + x] = {0, 0, 0, 0};
     return *this;
 }
 
