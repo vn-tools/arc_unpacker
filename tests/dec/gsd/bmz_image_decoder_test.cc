@@ -31,5 +31,5 @@ TEST_CASE("GSD BMZ images", "[dec]")
 
     const auto decoder = BmzImageDecoder();
     const auto actual_image = tests::decode(decoder, input_file);
-    tests::compare_images(expected_image, actual_image);
+    tests::compare_images(actual_image, expected_image);
 }

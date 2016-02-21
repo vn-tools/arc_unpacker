@@ -168,7 +168,7 @@ static void do_test(const bstr &magic, const size_t width, const size_t height)
             input_file.stream.write<u8>(input_image.at(x, y).r);
         }
         const auto actual_image = tests::decode(decoder, input_file);
-        tests::compare_images(expected_image, actual_image);
+        tests::compare_images(actual_image, expected_image);
     }
 
     SECTION("LZSS compressed")
@@ -192,7 +192,7 @@ static void do_test(const bstr &magic, const size_t width, const size_t height)
             algo::pack::lzss_compress(
                 tmp_stream.seek(0).read_to_eof(), settings));
         const auto actual_image = tests::decode(decoder, input_file);
-        tests::compare_images(expected_image, actual_image);
+        tests::compare_images(actual_image, expected_image);
     }
 
     SECTION("Custom compressed")
@@ -201,7 +201,7 @@ static void do_test(const bstr &magic, const size_t width, const size_t height)
         input_file.stream.write("?");
         input_file.stream.write(compress_custom(input_image));
         const auto actual_image = tests::decode(decoder, input_file);
-        tests::compare_images(expected_image, actual_image);
+        tests::compare_images(actual_image, expected_image);
     }
 }
 

@@ -6,14 +6,14 @@
 using namespace au;
 
 static inline void compare_pixels(
-    const res::Pixel expected, const res::Pixel actual)
+    const res::Pixel actual, const res::Pixel expected)
 {
-    if (expected != actual)
+    if (actual != expected)
     {
         FAIL(algo::format(
             "Pixels differ: %02x%02x%02x%02x != %02x%02x%02x%02x",
-            expected.b, expected.g, expected.r, expected.a,
-            actual.b, actual.g, actual.r, actual.a));
+            actual.b, actual.g, actual.r, actual.a,
+            expected.b, expected.g, expected.r, expected.a));
     }
 }
 

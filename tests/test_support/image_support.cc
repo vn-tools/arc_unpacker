@@ -16,9 +16,9 @@ static inline bool compare_pixels(
     const size_t x,
     const size_t y)
 {
-    if (expected != actual)
+    if (actual != expected)
     {
-        if (expected.a == 0 && actual.a == 0)
+        if (actual.a == 0 && expected.a == 0)
             return true;
         WARN(algo::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",

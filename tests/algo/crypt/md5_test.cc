@@ -5,9 +5,9 @@
 using namespace au;
 using namespace au::algo::crypt;
 
-static void compare_hashes(const bstr &expected, const bstr &actual)
+static void compare_hashes(const bstr &actual, const bstr &expected)
 {
-    INFO(algo::hex(expected.str()) << " != " << algo::hex(actual.str()));
+    INFO(algo::hex(actual.str()) << " != " << algo::hex(expected.str()));
     REQUIRE(actual == expected);
 }
 
