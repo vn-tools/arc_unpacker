@@ -72,6 +72,7 @@ namespace res {
         Image &invert();
         Image &flip_vertically();
         Image &flip_horizontally();
+        Image &offset(const int x, const int y);
         Image &crop(const size_t width, const size_t height);
         Image &apply_mask(const Image &other);
         Image &apply_palette(const Palette &palette);

@@ -199,3 +199,56 @@ TEST_CASE("Image cropping", "[res]")
         }
     }
 }
+
+TEST_CASE("Image offsetting", "[res]")
+{
+    SECTION("Cutting pixels")
+    {
+        const auto offset_x = 4;
+        const auto offset_y = 3;
+        const auto orig_width = 5;
+        const auto orig_height = 5;
+        auto image = create_test_image(orig_width, orig_height);
+        image.offset(-offset_x, -offset_y);
+        REQUIRE(image.width() == orig_width - offset_x);
+        REQUIRE(image.height() == orig_height - offset_y);
+        for (const auto x : algo::range(image.width()))
+        for (const auto y : algo::range(image.height()))
+        {
+            REQUIRE(image.at(x, y).r == x + offset_x);
+            REQUIRE(image.at(x, y).g == y + offset_y);
+        }
+    }
+
+    SECTION("Expanding pixels")
+    {
+        const auto offset_x = 4;
+        const auto offset_y = 3;
+        const auto orig_width = 5;
+        const auto orig_height = 5;
+        auto image = create_test_image(orig_width, orig_height);
+        image.offset(offset_x, offset_y);
+        REQUIRE(image.width() == orig_width + offset_x);
+        REQUIRE(image.height() == orig_height + offset_y);
+        for (const auto x : algo::range(offset_x, image.width()))
+        for (const auto y : algo::range(offset_y, image.height()))
+        {
+            REQUIRE(image.at(x, y).r == x - offset_x);
+            REQUIRE(image.at(x, y).g == y - offset_y);
+        }
+        for (const auto x : algo::range(offset_x))
+        for (const auto y : algo::range(image.height()))
+        {
+            REQUIRE(image.at(x, y).r == 0);
+            REQUIRE(image.at(x, y).g == 0);
+            REQUIRE(image.at(x, y).a == 0);
+        }
+        for (const auto x : algo::range(image.width()))
+        for (const auto y : algo::range(offset_y))
+        {
+            REQUIRE(image.at(x, y).r == 0);
+            REQUIRE(image.at(x, y).g == 0);
+            REQUIRE(image.at(x, y).a == 0);
+        }
+    }
+}

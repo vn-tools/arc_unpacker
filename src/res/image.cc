@@ -107,6 +107,15 @@ Image &Image::flip_horizontally()
     return *this;
 }
 
+Image &Image::offset(const int x_offset, const int y_offset)
+{
+    res::Image old_image(*this);
+    crop(_width + x_offset, _height + y_offset);
+    for (auto &c : pixels)
+        c = {0, 0, 0, 0};
+    return overlay(old_image, x_offset, y_offset, OverlayKind::OverwriteAll);
+}
+
 Image &Image::crop(const size_t new_width, const size_t new_height)
 {
     std::vector<Pixel> old_pixels(pixels.begin(), pixels.end());
