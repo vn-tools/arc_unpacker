@@ -14,8 +14,6 @@ size_t BaseStream::left() const
 
 io::BaseStream &BaseStream::skip(const int offset)
 {
-    if (static_cast<int>(left()) < offset)
-        throw err::EofError();
     return seek(pos() + offset);
 }
 
