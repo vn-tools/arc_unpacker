@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <memory>
 #include "types.h"
 
 namespace au {

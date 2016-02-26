@@ -2,7 +2,6 @@
 
 #include "algo/crypt/camellia.h"
 #include "io/base_byte_stream.h"
-#include "plugin_manager.h"
 
 namespace au {
 namespace dec {
