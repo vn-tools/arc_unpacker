@@ -92,7 +92,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     {
         const auto decoder = SpbImageDecoder();
         const auto encoder = enc::png::PngImageEncoder();
-        io::File spb_file("dummy.spb", data);
+        io::File spb_file("dummy.bmp", data);
         return encoder.encode(
             logger, decoder.decode(logger, spb_file), entry->path);
     }
