@@ -7,6 +7,8 @@
 using namespace au;
 using namespace au::res;
 
+static const Pixel transparent_pixel = {0, 0, 0, 0};
+
 Image::Image(const Image &other) : Image(other.width(), other.height())
 {
     for (const auto y : algo::range(_height))
@@ -112,7 +114,7 @@ Image &Image::offset(const int x_offset, const int y_offset)
     res::Image old_image(*this);
     crop(_width + x_offset, _height + y_offset);
     for (auto &c : pixels)
-        c = {0, 0, 0, 0};
+        c = transparent_pixel;
     return overlay(old_image, x_offset, y_offset, OverlayKind::OverwriteAll);
 }
 
@@ -133,10 +135,10 @@ Image &Image::crop(const size_t new_width, const size_t new_height)
     }
     for (const auto y : algo::range(old_height, new_height))
     for (const auto x : algo::range(new_width))
-        pixels[y * new_width + x] = {0, 0, 0, 0};
+        pixels[y * new_width + x] = transparent_pixel;
     for (const auto y : algo::range(old_height))
     for (const auto x : algo::range(old_width, new_width))
-        pixels[y * new_width + x] = {0, 0, 0, 0};
+        pixels[y * new_width + x] = transparent_pixel;
     return *this;
 }
 
@@ -158,7 +160,7 @@ Image &Image::apply_palette(const Palette &palette)
         if (c.r < palette_size)
             c = palette[c.r];
         else
-            c.a = 0x00;
+            c.a = 0;
     }
     return *this;
 }
