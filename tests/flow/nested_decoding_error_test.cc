@@ -2,6 +2,7 @@
 #include "dec/base_file_decoder.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/file_support.h"
 #include "test_support/flow_support.h"
 

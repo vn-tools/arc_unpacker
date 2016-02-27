@@ -1,19 +1,13 @@
 #include "algo/crypt/hmac.h"
-#include "algo/str.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo::crypt;
 
-static void compare_hashes(const bstr &actual, const bstr &expected)
-{
-    INFO(algo::hex(actual.str()) << " != " << algo::hex(expected.str()));
-    REQUIRE(actual == expected);
-}
-
 TEST_CASE("HMAC", "[algo][crypt]")
 {
-    compare_hashes(
+    tests::compare_binary(
         algo::crypt::hmac("test"_b, "key"_b, algo::crypt::HmacKind::Sha512),
         "\x28\x7A\x0F\xB8\x9A\x7F\xBD\xFA\x5B\x55\x38\x63\x69\x18\xE5\x37"
         "\xA5\xB8\x30\x65\xE4\xFF\x33\x12\x68\xB7\xAA\xA1\x15\xDD\xE0\x47"

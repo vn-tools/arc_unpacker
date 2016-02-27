@@ -3,6 +3,7 @@
 #include "algo/range.h"
 #include "dec/microsoft/wav_audio_decoder.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -32,7 +33,7 @@ void tests::compare_audio(
     REQUIRE(actual.bits_per_sample == expected.bits_per_sample);
     REQUIRE(actual.extra_codec_headers == expected.extra_codec_headers);
     REQUIRE(actual.samples.size() == expected.samples.size());
-    REQUIRE(actual.samples == expected.samples);
+    tests::compare_binary(actual.samples, expected.samples);
 
     REQUIRE(actual.loops.size() == expected.loops.size());
     for (const auto i : algo::range(expected.loops.size()))

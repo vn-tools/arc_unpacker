@@ -3,6 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
 
@@ -32,17 +33,6 @@ std::unique_ptr<io::File> tests::zlib_file_from_path(
         decompressed_data);
 }
 
-void tests::compare_paths(
-    const io::path &actual_file_path,
-    const io::path &expected_file_path)
-{
-    INFO(algo::format(
-        "Expected file path: %s, actual: %s\n",
-        expected_file_path.c_str(),
-        actual_file_path.c_str()));
-    REQUIRE(actual_file_path == expected_file_path);
-}
-
 void tests::compare_files(
     const std::vector<std::shared_ptr<io::File>> &actual_files,
     const std::vector<std::shared_ptr<io::File>> &expected_files,
@@ -69,14 +59,7 @@ void tests::compare_files(
     actual_file.stream.seek(0);
     const auto expected_content = expected_file.stream.read_to_eof();
     const auto actual_content = actual_file.stream.read_to_eof();
-    INFO("Expected content: " << (expected_content.size() < 1000
-        ? expected_content.str()
-        : "(too big to display)"));
-    INFO("Actual content: " << (actual_content.size() < 1000
-        ? actual_content.str()
-        : "(too big to display)"));
-    REQUIRE(actual_file.stream.size() == expected_file.stream.size());
-    REQUIRE(actual_content == expected_content);
+    tests::compare_binary(actual_content, expected_content);
 }
 
 void tests::dump_file(io::File &input_file, const io::path &path)

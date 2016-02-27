@@ -2,6 +2,7 @@
 #include "algo/range.h"
 #include "dec/base_archive_decoder.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 

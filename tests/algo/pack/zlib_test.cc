@@ -1,6 +1,7 @@
 #include "algo/pack/zlib.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo::pack;
@@ -15,25 +16,25 @@ TEST_CASE("ZLIB compression", "[algo][pack]")
 
     SECTION("Inflating ZLIB from bstr")
     {
-        REQUIRE(zlib_inflate(input) == output);
+        tests::compare_binary(zlib_inflate(input), output);
     }
 
     SECTION("Inflating ZLIB from stream")
     {
         io::MemoryStream input_stream(input);
-        REQUIRE(zlib_inflate(input_stream) == output);
+        tests::compare_binary(zlib_inflate(input_stream), output);
         REQUIRE(input_stream.left() == 0);
     }
 
     SECTION("Deflating ZLIB from bstr")
     {
-        REQUIRE(zlib_inflate(zlib_deflate(output)) == output);
+        tests::compare_binary(zlib_inflate(zlib_deflate(output)), output);
     }
 
     SECTION("Deflating ZLIB with RawDeflate")
     {
         const auto deflated = zlib_deflate(output, ZlibKind::RawDeflate);
         const auto inflated = zlib_inflate(deflated, ZlibKind::RawDeflate);
-        REQUIRE(inflated == output);
+        tests::compare_binary(inflated, output);
     }
 }

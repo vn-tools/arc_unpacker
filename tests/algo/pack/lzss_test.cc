@@ -1,6 +1,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo::pack;
@@ -13,17 +14,13 @@ static void test_bits(const bstr &input, const bstr &expected)
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 0xFEE;
     const auto actual = lzss_decompress(input, expected.size(), settings);
-    INFO("Actual: " + actual.str());
-    INFO("Expected: " + expected.str());
-    REQUIRE(actual == expected);
+    tests::compare_binary(actual, expected);
 }
 
 static void test_bytes(const bstr &input, const bstr &expected)
 {
     const auto actual = lzss_decompress(input, expected.size());
-    INFO("Actual: " + actual.str());
-    INFO("Expected: " + expected.str());
-    REQUIRE(actual == expected);
+    tests::compare_binary(actual, expected);
 }
 
 static void test_bytes(const bstr &input, size_t size)
@@ -113,7 +110,9 @@ TEST_CASE("LZSS packing", "[algo][pack]")
         settings.initial_dictionary_pos = 1;
         settings.min_match_size = 3;
         const auto x = lzss_compress(input, settings);
-        REQUIRE(lzss_decompress(x, input.size(), settings) == input);
+        tests::compare_binary(
+            lzss_decompress(x, input.size(), settings),
+            input);
     }
 
     SECTION("Bytewise")
@@ -130,6 +129,8 @@ TEST_CASE("LZSS packing", "[algo][pack]")
         BytewiseLzssSettings settings;
         settings.initial_dictionary_pos = 1;
         const auto x = lzss_compress(input, settings);
-        REQUIRE(lzss_decompress(x, input.size(), settings) == input);
+        tests::compare_binary(
+            lzss_decompress(x, input.size(), settings),
+            input);
     }
 }

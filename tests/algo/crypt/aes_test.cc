@@ -1,6 +1,6 @@
 #include "algo/crypt/aes.h"
 #include "test_support/catch.h"
-#include "types.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo::crypt;
@@ -35,6 +35,6 @@ TEST_CASE("AES decoding", "[algo][crypt]")
         const auto enc = aes256_encrypt_cbc(test_string, test_iv, test_key);
         const auto dec = aes256_decrypt_cbc(enc, test_iv, test_key);
         REQUIRE(dec != enc);
-        REQUIRE(dec == test_string);
+        tests::compare_binary(dec, test_string);
     }
 }

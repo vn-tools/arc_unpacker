@@ -6,6 +6,7 @@
 #include "dec/png/png_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/file_support.h"
 
 using namespace au;

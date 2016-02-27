@@ -1,19 +1,13 @@
 #include "algo/crypt/sha1.h"
-#include "algo/str.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo::crypt;
 
-static void compare_hashes(const bstr &actual, const bstr &expected)
-{
-    INFO(algo::hex(actual.str()) << " != " << algo::hex(expected.str()));
-    REQUIRE(actual == expected);
-}
-
 TEST_CASE("SHA1", "[algo][crypt]")
 {
-    compare_hashes(
+    tests::compare_binary(
         algo::crypt::sha1("test"_b),
         "\xA9\x4A\x8F\xE5"
         "\xCC\xB1\x9B\xA6"

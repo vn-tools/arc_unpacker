@@ -1,6 +1,7 @@
 #include "enc/microsoft/bmp_image_encoder.h"
 #include "dec/microsoft/bmp_image_decoder.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 
@@ -23,7 +24,8 @@ TEST_CASE("Microsoft BMP images encoding", "[enc]")
         const auto output_file
             = bmp_encoder.encode(dummy_logger, input_image, "test.dat");
         REQUIRE(output_file->path.name() == "test.bmp");
-        REQUIRE(output_file->stream.seek(0).read_to_eof() ==
+        tests::compare_binary(
+            output_file->stream.seek(0).read_to_eof(),
             "\x42\x4D\x3A\x00\x00\x00\x00\x00\x00\x00\x36\x00\x00\x00\x28\x00"
             "\x00\x00\x01\x00\x00\x00\xFF\xFF\xFF\xFF\x01\x00\x20\x00\x00\x00"
             "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"

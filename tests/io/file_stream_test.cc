@@ -1,6 +1,7 @@
 #include "io/file_stream.h"
 #include "io/file_system.h"
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/stream_test.h"
 
 using namespace au;
@@ -12,7 +13,7 @@ TEST_CASE("FileStream", "[io][stream]")
         static const bstr png_magic = "\x89PNG"_b;
         io::FileStream stream(
             "tests/dec/png/files/reimu_transparent.png", io::FileMode::Read);
-        REQUIRE(stream.read(png_magic.size()) == png_magic);
+        tests::compare_binary(stream.read(png_magic.size()), png_magic);
     }
 
     SECTION("Creating to files")

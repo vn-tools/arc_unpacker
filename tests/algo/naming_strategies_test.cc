@@ -1,6 +1,6 @@
 #include "algo/naming_strategies.h"
 #include "test_support/catch.h"
-#include "test_support/file_support.h"
+#include "test_support/common.h"
 
 using namespace au;
 using namespace au::algo;

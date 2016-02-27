@@ -1,6 +1,6 @@
 ﻿#include "algo/locale.h"
 #include "test_support/catch.h"
-#include "types.h"
+#include "test_support/common.h"
 
 using namespace au;
 
@@ -26,11 +26,11 @@ TEST_CASE("Converting text encoding", "[algo]")
 
     SECTION("Converting SJIS to UTF8")
     {
-        REQUIRE(algo::sjis_to_utf8(sjis) == utf8);
+        tests::compare_binary(algo::sjis_to_utf8(sjis), utf8);
     }
 
     SECTION("Converting UTF8 to SJIS")
     {
-        REQUIRE(algo::utf8_to_sjis(utf8) == sjis);
+        tests::compare_binary(algo::utf8_to_sjis(utf8), sjis);
     }
 }

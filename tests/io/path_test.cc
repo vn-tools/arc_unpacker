@@ -1,15 +1,9 @@
 ﻿#include "io/path.h"
 #include <cstring>
 #include "test_support/catch.h"
+#include "test_support/common.h"
 
 using namespace au;
-
-static void compare_paths(
-    const io::path &actual_path, const io::path &expected_path)
-{
-    INFO(actual_path.str() << " != " << expected_path.str());
-    REQUIRE(actual_path == expected_path);
-}
 
 static void test_concatenating(
     const io::path &path,
@@ -17,12 +11,12 @@ static void test_concatenating(
     const io::path &expected_path)
 {
     // copy
-    compare_paths(path / other_path, expected_path);
+    tests::compare_paths(path / other_path, expected_path);
 
     // in place
     io::path path_copy(path);
     path_copy /= other_path;
-    compare_paths(path_copy, expected_path);
+    tests::compare_paths(path_copy, expected_path);
 }
 
 static void test_changing_extension(
@@ -32,7 +26,7 @@ static void test_changing_extension(
 {
     io::path path_copy(path);
     path_copy.change_extension(new_extension);
-    compare_paths(path_copy, expected_path);
+    tests::compare_paths(path_copy, expected_path);
 }
 
 static void test_changing_stem(
@@ -42,7 +36,7 @@ static void test_changing_stem(
 {
     io::path path_copy(path);
     path_copy.change_stem(new_stem);
-    compare_paths(path_copy, expected_path);
+    tests::compare_paths(path_copy, expected_path);
 }
 
 TEST_CASE("Paths", "[io]")
@@ -124,23 +118,24 @@ TEST_CASE("Paths", "[io]")
 
     SECTION("Retrieving parent")
     {
-        compare_paths(io::path("test").parent(), "");
-        compare_paths(io::path("test.dat").parent(), "");
-        compare_paths(io::path("/test").parent(), "/");
-        compare_paths(io::path("1/test").parent(), "1");
-        compare_paths(io::path("1/test.dat").parent(), "1");
-        compare_paths(io::path("/1/2/test.dat").parent(), "/1/2");
-        compare_paths(io::path("/").parent(), "");
-        compare_paths(io::path("test/").parent(), "test");
-        compare_paths(io::path(".").parent(), "");
-        compare_paths(io::path("..").parent(), "");
-        compare_paths(io::path("./").parent(), ".");
-        compare_paths(io::path("../").parent(), "..");
-        compare_paths(io::path("./.").parent(), ".");
-        compare_paths(io::path("../..").parent(), "..");
+        tests::compare_paths(io::path("test").parent(), "");
+        tests::compare_paths(io::path("test.dat").parent(), "");
+        tests::compare_paths(io::path("/test").parent(), "/");
+        tests::compare_paths(io::path("1/test").parent(), "1");
+        tests::compare_paths(io::path("1/test.dat").parent(), "1");
+        tests::compare_paths(io::path("/1/2/test.dat").parent(), "/1/2");
+        tests::compare_paths(io::path("/").parent(), "");
+        tests::compare_paths(io::path("test/").parent(), "test");
+        tests::compare_paths(io::path(".").parent(), "");
+        tests::compare_paths(io::path("..").parent(), "");
+        tests::compare_paths(io::path("./").parent(), ".");
+        tests::compare_paths(io::path("../").parent(), "..");
+        tests::compare_paths(io::path("./.").parent(), ".");
+        tests::compare_paths(io::path("../..").parent(), "..");
 
-        compare_paths(io::path("/dir/file.txt").parent().name(), "dir");
-        compare_paths(io::path("/dir.ext/file.txt").parent().name(), "dir.ext");
+        tests::compare_paths(io::path("/dir/file.txt").parent().name(), "dir");
+        tests::compare_paths(
+            io::path("/dir.ext/file.txt").parent().name(), "dir.ext");
     }
 
     SECTION("Concatenating")
