@@ -146,14 +146,14 @@ namespace algo {
         {
             if (cyclic)
             {
-                while (pos() + relative_position < 0)
+                if (static_cast<int>(pos() + relative_position) < 0)
                     relative_position += size();
                 while (pos() + relative_position >= size())
                     relative_position -= size();
             }
             else
             {
-                if (pos() + relative_position < 0)
+                if (static_cast<int>(pos() + relative_position) < 0)
                     throw err::BadDataOffsetError();
                 if (pos() + relative_position + n > size())
                     throw err::BadDataOffsetError();
