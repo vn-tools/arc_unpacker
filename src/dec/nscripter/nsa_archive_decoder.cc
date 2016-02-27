@@ -1,6 +1,7 @@
 #include "dec/nscripter/nsa_archive_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
+#include "dec/nscripter/nsa_encrypted_stream.h"
 #include "dec/nscripter/spb_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
@@ -10,11 +11,11 @@ using namespace au::dec::nscripter;
 
 namespace
 {
-    enum CompressionType
+    enum class CompressionType : u8
     {
-        COMPRESSION_NONE = 0,
-        COMPRESSION_SPB = 1,
-        COMPRESSION_LZSS = 2,
+        None    = 0,
+        Spb     = 1,
+        Lzss    = 2,
     };
 
     struct CustomArchiveEntry final : dec::CompressedArchiveEntry
@@ -23,40 +24,45 @@ namespace
     };
 }
 
+NsaArchiveDecoder::NsaArchiveDecoder()
+{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--nsa-key"})
+                ->set_value_name("KEY")
+                ->set_description("Decryption key");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("nsa-key"))
+                key = arg_parser.get_switch("nsa-key");
+        });
+}
+
 bool NsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    const auto file_count = input_file.stream.read_be<u16>();
-    const auto offset_to_files = input_file.stream.read_be<u32>();
-    if (file_count == 0)
-        return false;
-    for (const auto i : algo::range(file_count))
-    {
-        input_file.stream.read_to_zero();
-        input_file.stream.read<u8>();
-        const auto offset = input_file.stream.read_be<u32>();
-        const auto size_comp = input_file.stream.read_be<u32>();
-        const auto size_orig = input_file.stream.read_be<u32>();
-        if (offset_to_files + offset + size_comp > input_file.stream.size())
-            return false;
-    }
-    return true;
+    return input_file.path.has_extension("nsa")
+        || input_file.path.has_extension("dat");
 }
 
 std::unique_ptr<dec::ArchiveMeta> NsaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
+    NsaEncryptedStream input_stream(input_file.stream, key);
+    input_stream.seek(0);
+
     auto meta = std::make_unique<ArchiveMeta>();
-    const auto file_count = input_file.stream.read_be<u16>();
-    const auto offset_to_data = input_file.stream.read_be<u32>();
+    const auto file_count = input_stream.read_be<u16>();
+    const auto offset_to_data = input_stream.read_be<u32>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<CustomArchiveEntry>();
-        entry->path = input_file.stream.read_to_zero().str();
-        entry->compression_type =
-            static_cast<CompressionType>(input_file.stream.read<u8>());
-        entry->offset = input_file.stream.read_be<u32>() + offset_to_data;
-        entry->size_comp = input_file.stream.read_be<u32>();
-        entry->size_orig = input_file.stream.read_be<u32>();
+        entry->path = input_stream.read_to_zero().str(true);
+        entry->compression_type = input_stream.read<CompressionType>();
+        entry->offset = input_stream.read_be<u32>() + offset_to_data;
+        entry->size_comp = input_stream.read_be<u32>();
+        entry->size_orig = input_stream.read_be<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -68,15 +74,17 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
+    NsaEncryptedStream input_stream(input_file.stream, key);
+
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
-    const auto data = input_file.stream
+    const auto data = input_stream
         .seek(entry->offset)
         .read(entry->size_comp);
 
-    if (entry->compression_type == COMPRESSION_NONE)
+    if (entry->compression_type == CompressionType::None)
         return std::make_unique<io::File>(entry->path, data);
 
-    if (entry->compression_type == COMPRESSION_LZSS)
+    if (entry->compression_type == CompressionType::Lzss)
     {
         algo::pack::BitwiseLzssSettings settings;
         settings.position_bits = 8;
@@ -88,7 +96,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
             algo::pack::lzss_decompress(data, entry->size_orig, settings));
     }
 
-    if (entry->compression_type == COMPRESSION_SPB)
+    if (entry->compression_type == CompressionType::Spb)
     {
         const auto decoder = SpbImageDecoder();
         const auto encoder = enc::png::PngImageEncoder();

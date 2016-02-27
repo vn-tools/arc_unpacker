@@ -6,7 +6,7 @@ using namespace au;
 using namespace au::dec::nscripter;
 
 static res::Image decode_image(
-    size_t width, size_t height, io::BaseBitStream &bit_stream)
+    size_t width, size_t height, io::BaseBitStream &input_stream)
 {
     res::Image output(width, height);
     for (auto &c : output)
@@ -19,13 +19,13 @@ static res::Image decode_image(
         u8 *channel_ptr = channel_data.get<u8>();
         const u8 *channel_end = channel_ptr + channel_data.size();
 
-        u8 ch = bit_stream.read(8);
+        u8 ch = input_stream.read(8);
         if (channel_ptr >= channel_end) break;
         *channel_ptr++ = ch;
 
         while (channel_ptr < channel_end)
         {
-            size_t t = bit_stream.read(3);
+            size_t t = input_stream.read(3);
             if (t == 0)
             {
                 if (channel_ptr >= channel_end)
@@ -43,16 +43,16 @@ static res::Image decode_image(
                 continue;
             }
 
-            const auto mask = t == 7 ? bit_stream.read(1) + 1 : t + 2;
+            const auto mask = t == 7 ? input_stream.read(1) + 1 : t + 2;
             for (const auto i : algo::range(4))
             {
                 if (mask == 8)
                 {
-                    ch = bit_stream.read(8);
+                    ch = input_stream.read(8);
                 }
                 else
                 {
-                    t = bit_stream.read(mask);
+                    t = input_stream.read(mask);
                     if (t & 1)
                         ch += (t >> 1) + 1;
                     else

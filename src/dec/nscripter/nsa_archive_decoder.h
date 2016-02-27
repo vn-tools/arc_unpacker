@@ -8,6 +8,9 @@ namespace nscripter {
 
     class NsaArchiveDecoder final : public BaseArchiveDecoder
     {
+    public:
+        NsaArchiveDecoder();
+
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
 
@@ -20,6 +23,9 @@ namespace nscripter {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+    private:
+        bstr key;
     };
 
 } } }
