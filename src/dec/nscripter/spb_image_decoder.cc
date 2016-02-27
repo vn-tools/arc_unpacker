@@ -1,45 +1,34 @@
 #include "dec/nscripter/spb_image_decoder.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
+#include "err.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::nscripter;
 
 static res::Image decode_image(
-    size_t width, size_t height, io::BaseBitStream &input_stream)
+    io::BaseBitStream &input_stream, const size_t width, const size_t height)
 {
     res::Image output(width, height);
     for (auto &c : output)
         c.a = 0xFF;
 
-    bstr channel_data(width * height);
-
-    for (int rgb = 2; rgb >= 0; rgb--)
+    for (const auto rgb : algo::range(3))
     {
-        u8 *channel_ptr = channel_data.get<u8>();
-        const u8 *channel_end = channel_ptr + channel_data.size();
+        bstr channel_data(width * height + width);
+        auto channel_ptr = algo::make_ptr(channel_data);
 
         u8 ch = input_stream.read(8);
-        if (channel_ptr >= channel_end) break;
         *channel_ptr++ = ch;
 
-        while (channel_ptr < channel_end)
+        while (channel_ptr.pos() < width * height)
         {
-            size_t t = input_stream.read(3);
-            if (t == 0)
+            const auto t = input_stream.read(3);
+            if (!t)
             {
-                if (channel_ptr >= channel_end)
-                    break;
-                *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end)
-                    break;
-                *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end)
-                    break;
-                *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end)
-                    break;
-                *channel_ptr++ = ch;
+                for (const auto i : algo::range(4))
+                    *channel_ptr++ = ch;
                 continue;
             }
 
@@ -52,31 +41,24 @@ static res::Image decode_image(
                 }
                 else
                 {
-                    t = input_stream.read(mask);
-                    if (t & 1)
-                        ch += (t >> 1) + 1;
+                    const auto tmp = input_stream.read(mask);
+                    if (tmp & 1)
+                        ch += (tmp >> 1) + 1;
                     else
-                        ch -= (t >> 1);
+                        ch -= (tmp >> 1);
                 }
-                if (channel_ptr >= channel_end)
-                    break;
                 *channel_ptr++ = ch;
             }
         }
 
-        const u8 *p = channel_data.get<const u8>();
-        for (const auto y : algo::range(0, height))
+        channel_ptr = algo::make_ptr(channel_data);
+        for (const auto y : algo::range(height))
+        for (const auto x : algo::range(width))
         {
             if (y & 1)
-            {
-                for (const auto x : algo::range(width))
-                    output.at(width - 1 - x, y)[2 - rgb] = *p++;
-            }
+                output.at(width - 1 - x, y)[rgb] = *channel_ptr++;
             else
-            {
-                for (const auto x : algo::range(width))
-                    output.at(x, y)[2 - rgb] = *p++;
-            }
+                output.at(x, y)[rgb] = *channel_ptr++;
         }
     }
 
@@ -102,7 +84,7 @@ res::Image SpbImageDecoder::decode_impl(
     const auto width = input_file.stream.read_be<u16>();
     const auto height = input_file.stream.read_be<u16>();
     io::MsbBitStream bit_stream(input_file.stream.read_to_eof());
-    return decode_image(width, height, bit_stream);
+    return decode_image(bit_stream, width, height);
 }
 
 static auto _ = dec::register_decoder<SpbImageDecoder>("nscripter/spb");
