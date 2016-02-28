@@ -68,6 +68,9 @@ namespace au {
             const std::string &description,
             const algo::any value)
         {
+            for (const auto &def : definitions)
+                if (def->name == name)
+                    throw std::logic_error("Plugin " + name + " defined twice");
             auto def = std::make_unique<PluginDefinition>();
             def->name = name;
             def->description = description;
