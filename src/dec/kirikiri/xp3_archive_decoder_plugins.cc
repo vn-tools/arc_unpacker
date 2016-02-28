@@ -109,6 +109,11 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         create_cxdec_plugin(
             0x167, 0x498, {1,0,2}, {4,2,3,5,6,1,7,0}, {1,0,5,4,3,2}));
 
+    plugin_manager.add(
+        "dracuriot", "Dracu-Riot!",
+        create_cxdec_plugin(
+            0x2F0, 0x418, {2,0,1}, {5,3,0,2,1,4,6,7}, {0,3,5,4,2,1}));
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects XP3 decryption routine."));
