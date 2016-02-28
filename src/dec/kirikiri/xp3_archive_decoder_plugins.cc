@@ -104,6 +104,11 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         create_cxdec_plugin(
             0x2F5, 0x6F0, {2,0,1}, {7,2,3,6,1,0,5,4}, {2,3,4,0,1,5}));
 
+    plugin_manager.add(
+        "tenshin", "Tenshin Ranman - Lucky or Unlucky!?",
+        create_cxdec_plugin(
+            0x167, 0x498, {1,0,2}, {4,2,3,5,6,1,7,0}, {1,0,5,4,3,2}));
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects XP3 decryption routine."));
