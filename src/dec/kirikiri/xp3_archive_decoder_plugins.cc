@@ -99,6 +99,11 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         create_cxdec_plugin(
             0x22A, 0x2A2, {1,0,2}, {7,6,5,1,0,3,4,2}, {3,2,1,4,5,0}));
 
+    plugin_manager.add(
+        "natsuzora", "Natsuzora Kanata",
+        create_cxdec_plugin(
+            0x2F5, 0x6F0, {2,0,1}, {7,2,3,6,1,0,5,4}, {2,3,4,0,1,5}));
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects XP3 decryption routine."));
