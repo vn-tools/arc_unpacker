@@ -1,33 +1,8 @@
 #pragma once
 
 #include <algorithm>
-#include <climits>
 #include <stdexcept>
 #include "types.h"
-
-#ifndef __BYTE_ORDER__
-    #if defined(_WIN32)
-        #include <winsock2.h>
-
-        #if BYTE_ORDER == LITTLE_ENDIAN
-            #define AU_UTIL_ENDIAN_LITTLE_ENDIAN
-        #elif BYTE_ORDER == BIG_ENDIAN
-            #define AU_UTIL_ENDIAN_BIG_ENDIAN
-        #else
-            #error "unsupported endianness"
-        #endif
-    #else
-        #error "byte order not defined"
-    #endif
-#else
-    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        #define AU_UTIL_ENDIAN_LITTLE_ENDIAN
-    #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-        #define AU_UTIL_ENDIAN_BIG_ENDIAN
-    #else
-        #error "unsupported endianness"
-    #endif
-#endif
 
 namespace au {
 namespace algo {
@@ -52,11 +27,8 @@ namespace algo {
 
     constexpr Endianness get_machine_endianness()
     {
-        #if defined(AU_UTIL_ENDIAN_LITTLE_ENDIAN)
-            return Endianness::LittleEndian;
-        #elif defined(AU_UTIL_ENDIAN_BIG_ENDIAN)
-            return Endianness::BigEndian;
-        #endif
+        // this is verified in the tests
+        return Endianness::LittleEndian;
     }
 
     template<typename T> inline T from_little_endian(const T value)

@@ -3,6 +3,14 @@
 
 using namespace au;
 
+TEST_CASE("Machine endianness", "[algo]")
+{
+    const char *temp = "\x44\x33\x22\x11";
+    const auto temp2 = *reinterpret_cast<const u32*>(temp);
+    INFO("arc_unpacker is designed for little-endian machines");
+    REQUIRE(temp2 == 0x11223344);
+}
+
 TEST_CASE("Converting endianness", "[algo]")
 {
     const auto x = "\x12\x34\x56\x78";
