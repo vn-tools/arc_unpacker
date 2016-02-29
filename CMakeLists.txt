@@ -60,8 +60,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # build in parallel
     add_definitions(-DNOMINMAX)                 # disable retarded macros
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)  # _wfopen
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)  # _wfopen is okay
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
