@@ -82,10 +82,6 @@ variable):
     - [`openssl`](https://slproweb.com/products/Win32OpenSSL.html)
     - [`iconv`](https://github.com/win-iconv/win-iconv)
 
-    Depending on your environment, you might need to patch `iconv()` signature
-    in `iconv.h` to use `char**` rather than `const char**`. This is to match
-    glibc, which is arc_unpacker's compiler of choice.
-
 3. In the `arc_unpacker`'s directory run following:
 
         mkdir build-vs
