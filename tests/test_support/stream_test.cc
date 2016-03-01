@@ -1,4 +1,5 @@
 #include "test_support/catch.h"
+#include "test_support/common.h"
 #include "test_support/stream_test.h"
 
 using namespace au;
@@ -109,41 +110,41 @@ void tests::stream_test(
         SECTION("Reading NULL-terminated strings")
         {
             stream->write("abc\x00""def\x00"_b).seek(0);
-            REQUIRE(stream->read_to_zero() == "abc"_b);
-            REQUIRE(stream->read_to_zero() == "def"_b);
+            tests::compare_binary(stream->read_to_zero(), "abc"_b);
+            tests::compare_binary(stream->read_to_zero(), "def"_b);
         }
 
         SECTION("Reading lines")
         {
             stream->write("line1\nline2\n"_b).seek(0);
-            REQUIRE(stream->read_line() == "line1"_b);
-            REQUIRE(stream->read_line() == "line2"_b);
+            tests::compare_binary(stream->read_line(), "line1"_b);
+            tests::compare_binary(stream->read_line(), "line2"_b);
         }
 
         SECTION("Reading unterminated lines")
         {
             stream->write("line"_b).seek(0);
-            REQUIRE(stream->read_line() == "line"_b);
+            tests::compare_binary(stream->read_line(), "line"_b);
         }
 
         SECTION("Reading NULL-terminated lines")
         {
             stream->write("line\x00"_b).seek(0);
-            REQUIRE(stream->read_line() == "line"_b);
+            tests::compare_binary(stream->read_line(), "line"_b);
         }
 
         SECTION("Reading lines containing carriage returns")
         {
             stream->write("line1\r\nline2\r\n"_b).seek(0);
-            REQUIRE(stream->read_line() == "line1"_b);
-            REQUIRE(stream->read_line() == "line2"_b);
+            tests::compare_binary(stream->read_line(), "line1"_b);
+            tests::compare_binary(stream->read_line(), "line2"_b);
         }
 
         SECTION("Reading strings")
         {
             stream->write("abc\x00"_b).seek(0);
             const auto result = stream->read(2);
-            REQUIRE(result == "ab"_b);
+            tests::compare_binary(result, "ab"_b);
         }
 
         SECTION("Writing strings")
@@ -152,7 +153,7 @@ void tests::stream_test(
             stream->write("xy"_b);
             stream->skip(-2);
             const auto result = stream->read(3);
-            REQUIRE(result == "xyc"_b);
+            tests::compare_binary(result, "xyc"_b);
         }
 
         SECTION("Reading integers with endianness conversions")
