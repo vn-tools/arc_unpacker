@@ -15,7 +15,7 @@ namespace
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t width, height;
-        size_t offset;
+        uoff_t offset;
         u32 flags;
     };
 }
@@ -147,7 +147,7 @@ std::unique_ptr<dec::ArchiveMeta> S25ImageArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_le<u32>();
-    std::vector<size_t> offsets;
+    std::vector<uoff_t> offsets;
     for (const auto i : algo::range(file_count))
     {
         const auto offset = input_file.stream.read_le<u32>();

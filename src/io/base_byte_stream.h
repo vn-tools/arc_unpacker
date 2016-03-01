@@ -15,19 +15,19 @@ namespace io {
         virtual ~BaseByteStream() = 0;
 
         // allow method chaining via BaseByteStream
-        BaseByteStream &skip(const int offset) override
+        BaseByteStream &skip(const soff_t offset) override
         {
             BaseStream::skip(offset);
             return *this;
         }
 
-        BaseByteStream &seek(const size_t offset) override
+        BaseByteStream &seek(const uoff_t offset) override
         {
             seek_impl(offset);
             return *this;
         }
 
-        BaseByteStream &resize(const size_t new_size) override
+        BaseByteStream &resize(const uoff_t new_size) override
         {
             resize_impl(new_size);
             return *this;
@@ -137,8 +137,8 @@ namespace io {
     protected:
         virtual void read_impl(void *input, const size_t size) = 0;
         virtual void write_impl(const void *str, const size_t size) = 0;
-        virtual void seek_impl(const size_t offset) = 0;
-        virtual void resize_impl(const size_t new_size) = 0;
+        virtual void seek_impl(const uoff_t offset) = 0;
+        virtual void resize_impl(const uoff_t new_size) = 0;
     };
 
 } }

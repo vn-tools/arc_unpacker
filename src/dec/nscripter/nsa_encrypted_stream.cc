@@ -70,7 +70,7 @@ NsaEncryptedStream::~NsaEncryptedStream()
 {
 }
 
-void NsaEncryptedStream::seek_impl(const size_t offset)
+void NsaEncryptedStream::seek_impl(const uoff_t offset)
 {
     parent_stream->seek(offset);
 }
@@ -94,7 +94,7 @@ void NsaEncryptedStream::read_impl(void *destination, const size_t size)
     {
         const auto block_num = parent_stream->pos() / block_size;
         auto block = parent_stream->read(
-            std::min<size_t>(parent_stream->left(), block_size));
+            std::min<uoff_t>(parent_stream->left(), block_size));
         transform_block(key, block_num, block);
         full_buffer += block;
     }
@@ -109,17 +109,17 @@ void NsaEncryptedStream::write_impl(const void *source, const size_t size)
     throw err::NotSupportedError("Not implemented");
 }
 
-size_t NsaEncryptedStream::pos() const
+uoff_t NsaEncryptedStream::pos() const
 {
     return parent_stream->pos();
 }
 
-size_t NsaEncryptedStream::size() const
+uoff_t NsaEncryptedStream::size() const
 {
     return parent_stream->size();
 }
 
-void NsaEncryptedStream::resize_impl(const size_t new_size)
+void NsaEncryptedStream::resize_impl(const uoff_t new_size)
 {
     parent_stream->resize(new_size);
 }

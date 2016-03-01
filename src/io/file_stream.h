@@ -20,16 +20,16 @@ namespace io {
         FileStream(const path &path, const FileMode mode);
         ~FileStream();
 
-        size_t size() const override;
-        size_t pos() const override;
+        uoff_t size() const override;
+        uoff_t pos() const override;
 
         std::unique_ptr<BaseByteStream> clone() const override;
 
     protected:
         void read_impl(void *destination, const size_t size) override;
         void write_impl(const void *source, const size_t size) override;
-        void seek_impl(const size_t offset) override;
-        void resize_impl(const size_t new_size) override;
+        void seek_impl(const uoff_t offset) override;
+        void resize_impl(const uoff_t new_size) override;
 
     private:
         struct Priv;

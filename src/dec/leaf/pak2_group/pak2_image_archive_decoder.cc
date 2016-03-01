@@ -15,7 +15,8 @@ namespace
 {
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
-        size_t color_offset, mask_offset, size;
+        uoff_t color_offset, mask_offset;
+        size_t size;
         size_t width, height, bpp;
     };
 }

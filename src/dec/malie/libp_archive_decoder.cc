@@ -18,8 +18,8 @@ namespace
 
 static void read_dir(
     io::BaseByteStream &input_stream,
-    const size_t base_offset,
-    const std::vector<size_t> &offsets,
+    const uoff_t base_offset,
+    const std::vector<uoff_t> &offsets,
     CustomArchiveMeta &output_meta,
 
     const size_t base_index = 0,
@@ -86,7 +86,7 @@ std::unique_ptr<dec::ArchiveMeta> LibpArchiveDecoder::read_meta_impl(
     camellia_stream.skip(4);
 
     io::MemoryStream table(camellia_stream.read(0x20 * entry_count));
-    std::vector<size_t> offsets;
+    std::vector<uoff_t> offsets;
     for (const auto i : algo::range(offset_count))
         offsets.push_back(camellia_stream.read_le<u32>());
     const auto base_offset = (camellia_stream.pos() + 0xFFF) & ~0xFFF;

@@ -22,7 +22,7 @@ namespace
         size_t width;
         size_t height;
         size_t bpp;
-        size_t input_offset;
+        uoff_t input_offset;
         size_t output_size;
         bool flip;
         bool use_transparency;

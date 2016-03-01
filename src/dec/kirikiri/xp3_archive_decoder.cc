@@ -13,17 +13,17 @@ namespace
     struct InfoChunk final
     {
         u32 flags;
-        u64 file_size_orig;
-        u64 file_size_comp;
+        size_t file_size_orig;
+        size_t file_size_comp;
         std::string name;
     };
 
     struct SegmChunk final
     {
         u32 flags;
-        u64 offset;
-        u64 size_orig;
-        u64 size_comp;
+        uoff_t offset;
+        size_t size_orig;
+        size_t size_comp;
     };
 
     struct AdlrChunk final
@@ -64,14 +64,15 @@ static int detect_version(io::BaseByteStream &input_stream)
     return 1;
 }
 
-static u64 get_table_offset(io::BaseByteStream &input_stream, int version)
+static uoff_t get_table_offset(
+    io::BaseByteStream &input_stream, const int version)
 {
     input_stream.seek(xp3_magic.size());
     if (version == 1)
         return input_stream.read_le<u64>();
 
-    const u64 additional_header_offset = input_stream.read_le<u64>();
-    const u32 minor_version = input_stream.read_le<u32>();
+    const auto additional_header_offset = input_stream.read_le<u64>();
+    const auto minor_version = input_stream.read_le<u32>();
     if (minor_version != 1)
         throw err::CorruptDataError("Unexpected XP3 version");
 

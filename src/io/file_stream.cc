@@ -19,6 +19,24 @@ static FILE *utf8_fopen(const path &path, const char *mode)
     #endif
 }
 
+static uoff_t custom_ftell(FILE *file)
+{
+#if defined (_WIN32)
+    return _ftelli64(file);
+#else
+    return ftello(file);
+#endif
+}
+
+static int custom_fseek(FILE *file, const uoff_t offset, const int whence)
+{
+#if defined (_WIN32)
+    return _fseeki64(file, offset, whence);
+#else
+    return fseeko(file, offset, whence);
+#endif
+}
+
 struct FileStream::Priv final
 {
     FILE *file;
@@ -42,9 +60,9 @@ FileStream::~FileStream()
         fclose(p->file);
 }
 
-void FileStream::seek_impl(const size_t offset)
+void FileStream::seek_impl(const uoff_t offset)
 {
-    if (offset > size() || fseek(p->file, offset, SEEK_SET) != 0)
+    if (offset > size() || custom_fseek(p->file, offset, SEEK_SET) != 0)
         throw err::EofError();
 }
 
@@ -62,21 +80,21 @@ void FileStream::write_impl(const void *source, const size_t size)
         throw err::IoError("Could not write full data");
 }
 
-size_t FileStream::pos() const
+uoff_t FileStream::pos() const
 {
-    return ftell(p->file);
+    return custom_ftell(p->file);
 }
 
-size_t FileStream::size() const
+uoff_t FileStream::size() const
 {
-    const auto old_pos = ftell(p->file);
-    fseek(p->file, 0, SEEK_END);
-    const auto size = ftell(p->file);
-    fseek(p->file, old_pos, SEEK_SET);
+    const auto old_pos = custom_ftell(p->file);
+    custom_fseek(p->file, 0, SEEK_END);
+    const auto size = custom_ftell(p->file);
+    custom_fseek(p->file, old_pos, SEEK_SET);
     return size;
 }
 
-void FileStream::resize_impl(const size_t new_size)
+void FileStream::resize_impl(const uoff_t new_size)
 {
     if (new_size == size())
         return;

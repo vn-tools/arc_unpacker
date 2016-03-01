@@ -7,7 +7,10 @@ using namespace au::dec::kid;
 
 static const bstr magic = "CPS\x00"_b;
 
-static bstr decrypt(const bstr &input, size_t size_comp, size_t offset)
+static bstr decrypt(
+    const bstr &input,
+    const size_t size_comp,
+    const uoff_t offset)
 {
     io::MemoryStream input_stream(input);
     io::MemoryStream output_stream;

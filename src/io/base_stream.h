@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include "types.h"
 
 namespace au {
 namespace io {
@@ -11,16 +12,16 @@ namespace io {
     public:
         virtual ~BaseStream() = 0;
 
-        size_t left() const;
-        virtual size_t size() const = 0;
-        virtual size_t pos() const = 0;
-        virtual BaseStream &seek(const size_t offset) = 0;
-        virtual BaseStream &resize(const size_t new_size) = 0;
+        uoff_t left() const;
+        virtual uoff_t size() const = 0;
+        virtual uoff_t pos() const = 0;
+        virtual BaseStream &seek(const uoff_t offset) = 0;
+        virtual BaseStream &resize(const uoff_t new_size) = 0;
 
         // virtual allows changing return type in method chaining
-        virtual BaseStream &skip(const int offset);
+        virtual BaseStream &skip(const soff_t offset);
         virtual BaseStream &peek(
-            const size_t offset, const std::function<void()> func);
+            const uoff_t offset, const std::function<void()> &func);
     };
 
 } }

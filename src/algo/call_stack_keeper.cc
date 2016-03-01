@@ -27,7 +27,7 @@ bool CallStackKeeper::recursion_limit_reached() const
     return p->depth >= p->limit;
 }
 
-void CallStackKeeper::recurse(const std::function<void()> action)
+void CallStackKeeper::recurse(const std::function<void()> &action)
 {
     if (recursion_limit_reached())
         throw err::GeneralError("Recursion limit reached");

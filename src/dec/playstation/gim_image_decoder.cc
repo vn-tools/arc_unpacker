@@ -14,7 +14,8 @@ namespace
     struct Chunk final
     {
         int type;
-        size_t offset, size;
+        uoff_t offset;
+        size_t size;
     };
 }
 

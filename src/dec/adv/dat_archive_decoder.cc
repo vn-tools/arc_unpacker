@@ -15,8 +15,8 @@ namespace
         bstr game_key;
         bstr arc_key;
         size_t file_count;
-        size_t header_offset;
-        size_t table_offset;
+        uoff_t header_offset;
+        uoff_t table_offset;
     };
 }
 

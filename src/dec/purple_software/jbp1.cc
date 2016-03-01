@@ -15,7 +15,7 @@ namespace
         size_t height;
         size_t depth;
         u32 flags;
-        size_t data_offset;
+        uoff_t data_offset;
         size_t bit_pool_1_size;
         size_t bit_pool_2_size;
         size_t blocks_width;

@@ -10,7 +10,7 @@ namespace
 {
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
-        size_t offset;
+        uoff_t offset;
     };
 }
 

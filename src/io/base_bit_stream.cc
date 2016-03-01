@@ -24,7 +24,7 @@ BaseBitStream::BaseBitStream(io::BaseByteStream &input_stream) :
 {
 }
 
-BaseStream &BaseBitStream::seek(const size_t new_pos)
+BaseStream &BaseBitStream::seek(const uoff_t new_pos)
 {
     if (new_pos > size())
         throw err::EofError();
@@ -36,17 +36,17 @@ BaseStream &BaseBitStream::seek(const size_t new_pos)
     return *this;
 }
 
-BaseStream &BaseBitStream::resize(const size_t new_size)
+BaseStream &BaseBitStream::resize(const uoff_t new_size)
 {
     throw err::NotSupportedError("Not implemented");
 }
 
-size_t BaseBitStream::pos() const
+uoff_t BaseBitStream::pos() const
 {
     return position;
 }
 
-size_t BaseBitStream::size() const
+uoff_t BaseBitStream::size() const
 {
     return input_stream->size() * 8;
 }

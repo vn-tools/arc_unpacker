@@ -14,10 +14,10 @@ namespace io {
         BaseBitStream(io::BaseByteStream &input_stream);
         virtual ~BaseBitStream() = 0;
 
-        size_t pos() const override;
-        size_t size() const override;
-        BaseStream &seek(const size_t offset) override;
-        BaseStream &resize(const size_t new_size) override;
+        uoff_t pos() const override;
+        uoff_t size() const override;
+        BaseStream &seek(const uoff_t offset) override;
+        BaseStream &resize(const uoff_t new_size) override;
 
         u32 read_gamma(const bool stop_mark);
         virtual u32 read(const size_t n) = 0;

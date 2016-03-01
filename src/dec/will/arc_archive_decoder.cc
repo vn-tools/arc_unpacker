@@ -12,7 +12,7 @@ namespace
     struct Directory final
     {
         std::string extension;
-        size_t offset;
+        uoff_t offset;
         size_t file_count;
     };
 }

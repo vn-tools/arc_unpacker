@@ -21,7 +21,7 @@ std::unique_ptr<dec::ArchiveMeta> WbpArchiveDecoder::read_meta_impl(
     const auto table_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
-    std::vector<size_t> dir_offsets;
+    std::vector<uoff_t> dir_offsets;
     for (const auto i : algo::range(0x100))
     {
         const auto offset = input_file.stream.read_le<u32>();
@@ -29,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> WbpArchiveDecoder::read_meta_impl(
             dir_offsets.push_back(offset);
     }
 
-    std::vector<size_t> file_offsets;
+    std::vector<uoff_t> file_offsets;
     for (const auto i : algo::range(0x100))
     {
         const auto offset = input_file.stream.read_le<u32>();

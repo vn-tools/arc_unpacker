@@ -70,6 +70,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14") # for stupid travis
 endif()
 
+add_definitions(-D_FILE_OFFSET_BITS=64) # 64-bit off_t
+
 # ------------
 # Source files
 # ------------

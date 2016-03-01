@@ -11,18 +11,14 @@ namespace
     struct Header final
     {
         bool encrypted;
-        size_t data_offset;
-        size_t data_size;
-        size_t regions_offset;
-        size_t regions_size;
+        uoff_t data_offset; size_t data_size;
+        uoff_t regions_offset; size_t regions_size;
     };
 
     struct Region final
     {
-        size_t width;
-        size_t height;
-        size_t x;
-        size_t y;
+        size_t width, height;
+        size_t x, y;
     };
 }
 

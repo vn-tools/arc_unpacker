@@ -23,7 +23,7 @@ std::unique_ptr<dec::ArchiveMeta> DpkArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t current_offset = magic.size() + 2 + 4 + file_count * 0x14;
+    uoff_t current_offset = magic.size() + 2 + 4 + file_count * 0x14;
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<PlainArchiveEntry>();

@@ -60,8 +60,7 @@ BaseByteStream &BaseByteStream::write(
     size_t left = size;
     for (const auto i : algo::range(0, size, buffer_size))
     {
-        const auto bytes_to_transcribe
-            = std::min<size_t>(buffer_size, left);
+        const auto bytes_to_transcribe = std::min<size_t>(buffer_size, left);
         write(other_stream.read(bytes_to_transcribe));
         left -= bytes_to_transcribe;
     }

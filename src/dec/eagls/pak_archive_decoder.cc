@@ -37,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         data[i] ^= key[lcg.next() % key.size()];
 
     io::MemoryStream data_stream(data);
-    size_t min_offset = 0xFFFFFFFF;
+    uoff_t min_offset = std::numeric_limits<uoff_t>::max();
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)
     {

@@ -11,10 +11,8 @@ namespace
 {
     struct EntrySpec final
     {
-        size_t name_offset;
-        size_t name_size;
-        size_t data_offset;
-        size_t data_size;
+        uoff_t name_offset; size_t name_size;
+        uoff_t data_offset; size_t data_size;
     };
 }
 

@@ -11,7 +11,7 @@ namespace
 {
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
-        size_t offset;
+        uoff_t offset;
         size_t x, y;
         size_t width, height;
         size_t channels;

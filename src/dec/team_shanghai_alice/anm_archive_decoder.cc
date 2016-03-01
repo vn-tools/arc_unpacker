@@ -18,7 +18,7 @@ namespace
         size_t x, y;
         size_t format;
         int version;
-        size_t texture_offset;
+        uoff_t texture_offset;
         bool has_data;
     };
 
@@ -30,19 +30,19 @@ namespace
 
 static const bstr texture_magic = "THTX"_b;
 
-static std::string read_name(io::BaseByteStream &input_stream, size_t offset)
+static std::string read_name(
+    io::BaseByteStream &input_stream, const uoff_t offset)
 {
     std::string name;
     input_stream.peek(
-        offset,
-        [&]() { name = input_stream.read_to_zero().str(); });
+        offset, [&]() { name = input_stream.read_to_zero().str(); });
     return name;
 }
 
 static size_t read_old_texture_info(
     TextureInfo &texture_info,
     io::BaseByteStream &input_stream,
-    const size_t base_offset)
+    const uoff_t base_offset)
 {
     input_stream.skip(4); // sprite count
     input_stream.skip(4); // script count
@@ -71,7 +71,7 @@ static size_t read_old_texture_info(
 static size_t read_new_texture_info(
     TextureInfo &texture_info,
     io::BaseByteStream &input_stream,
-    const size_t base_offset)
+    const uoff_t base_offset)
 {
     texture_info.version = input_stream.read_le<u32>();
     input_stream.skip(2); // sprite count

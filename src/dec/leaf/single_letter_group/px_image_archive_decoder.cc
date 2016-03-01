@@ -33,7 +33,7 @@ namespace
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t width, height;
-        std::vector<size_t> block_offsets;
+        std::vector<uoff_t> block_offsets;
     };
 }
 
@@ -240,7 +240,7 @@ static void decode_7(
 static bstr read_blocks(
     DecoderContext &context,
     io::BaseByteStream &input_stream,
-    const std::vector<size_t> &block_offsets)
+    const std::vector<uoff_t> &block_offsets)
 {
     bstr data(context.image_width * context.image_height * 4);
     for (const auto block_offset : block_offsets)
@@ -326,7 +326,7 @@ static void read_meta(
     {
         const auto block_count = input_stream.seek(base_offset).read_le<u32>();
         const auto data_offset = table_offset + block_count * 4;
-        std::vector<size_t> offsets;
+        std::vector<uoff_t> offsets;
         for (const auto i : algo::range(block_count))
         {
             offsets.push_back(data_offset

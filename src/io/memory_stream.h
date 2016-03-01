@@ -18,24 +18,24 @@ namespace io {
         MemoryStream(BaseByteStream &other_stream);
         ~MemoryStream();
 
-        size_t size() const override;
-        size_t pos() const override;
+        uoff_t size() const override;
+        uoff_t pos() const override;
 
-        BaseByteStream &reserve(const size_t count);
+        BaseByteStream &reserve(const uoff_t count);
 
         std::unique_ptr<BaseByteStream> clone() const override;
 
     protected:
         void read_impl(void *destination, const size_t size) override;
         void write_impl(const void *source, const size_t size) override;
-        void seek_impl(const size_t offset) override;
-        void resize_impl(const size_t new_size) override;
+        void seek_impl(const uoff_t offset) override;
+        void resize_impl(const uoff_t new_size) override;
 
     private:
         MemoryStream(const std::shared_ptr<bstr> buffer);
 
         std::shared_ptr<bstr> buffer;
-        size_t buffer_pos;
+        uoff_t buffer_pos;
     };
 
 } }

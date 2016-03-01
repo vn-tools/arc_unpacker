@@ -22,7 +22,7 @@ std::unique_ptr<dec::ArchiveMeta> AldArchiveDecoder::read_meta_impl(
 {
     const auto file_count = read_24_le(input_file.stream) / 3;
 
-    std::vector<size_t> offsets(file_count);
+    std::vector<uoff_t> offsets(file_count);
     for (const auto i : algo::range(file_count))
         offsets[i] = read_24_le(input_file.stream);
 

@@ -173,13 +173,13 @@ namespace
         ResourceCrawlerArgs(
             const Logger &logger,
             const RvaHelper &rva_helper,
-            const size_t base_offset,
+            const uoff_t base_offset,
             io::BaseByteStream &input_stream,
             dec::ArchiveMeta &meta);
 
         const Logger &logger;
         const RvaHelper &rva_helper;
-        const size_t base_offset;
+        const uoff_t base_offset;
         io::BaseByteStream &input_stream;
         dec::ArchiveMeta &meta;
     };
@@ -191,8 +191,8 @@ namespace
 
     private:
         ResourceCrawler(const ResourceCrawlerArgs &args);
-        void process_entry(size_t offset, const std::string &path);
-        void process_dir(size_t offset, const std::string path = "");
+        void process_entry(uoff_t offset, const std::string &path);
+        void process_dir(uoff_t offset, const std::string path = "");
         std::string read_entry_name(const ImageResourceDirEntry &entry);
 
         const ResourceCrawlerArgs &args;
@@ -387,7 +387,7 @@ u32 RvaHelper::adjust_section_alignment(u32 offset) const
 ResourceCrawlerArgs::ResourceCrawlerArgs(
     const Logger &logger,
     const RvaHelper &helper,
-    const size_t base_offset,
+    const uoff_t base_offset,
     io::BaseByteStream &input_stream,
     dec::ArchiveMeta &meta) :
         logger(logger),
@@ -408,7 +408,7 @@ ResourceCrawler::ResourceCrawler(const ResourceCrawlerArgs &args) : args(args)
 {
 }
 
-void ResourceCrawler::process_dir(const size_t offset, const std::string path)
+void ResourceCrawler::process_dir(const uoff_t offset, const std::string path)
 {
     args.input_stream.seek(args.base_offset + offset);
     ImageResourceDir dir(args.input_stream);
@@ -442,7 +442,7 @@ void ResourceCrawler::process_dir(const size_t offset, const std::string path)
     }
 }
 
-void ResourceCrawler::process_entry(size_t offset, const std::string &path)
+void ResourceCrawler::process_entry(uoff_t offset, const std::string &path)
 {
     args.input_stream.seek(args.base_offset + offset);
     ImageResourceDataEntry resource_entry(args.input_stream);

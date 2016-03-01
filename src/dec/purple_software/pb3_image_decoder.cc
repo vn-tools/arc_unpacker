@@ -93,8 +93,8 @@ static res::Image unpack_v1(
     for (const auto channel : algo::range(channel_count))
         data_sizes.push_back(input_stream.read_le<u32>());
 
-    std::vector<size_t> main_offsets;
-    std::vector<size_t> data_offsets;
+    std::vector<uoff_t> main_offsets;
+    std::vector<uoff_t> data_offsets;
     main_offsets.push_back(main_sizes_offset + 4 * channel_count);
     data_offsets.push_back(data_sizes_offset + 4 * channel_count);
     for (const auto channel : algo::range(1, channel_count))
@@ -226,8 +226,8 @@ static res::Image unpack_v5(
     res::Image output_image(header.width, header.height);
 
     input_stream.seek(0x34);
-    std::vector<size_t> control_offsets;
-    std::vector<size_t> data_offsets;
+    std::vector<uoff_t> control_offsets;
+    std::vector<uoff_t> data_offsets;
     for (const auto i : algo::range(channel_count))
     {
         control_offsets.push_back(0x54 + input_stream.read_le<u32>());

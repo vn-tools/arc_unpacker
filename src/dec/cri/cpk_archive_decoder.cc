@@ -39,7 +39,7 @@ namespace
         u32 id;
         std::string dir_name;
         std::string file_name;
-        size_t file_offset;
+        uoff_t file_offset;
         size_t file_size;
         size_t extract_size;
         std::string user_string;
@@ -233,11 +233,11 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
 
 static void read_toc(
     io::BaseByteStream &input_stream,
-    const size_t toc_offset,
-    const size_t content_offset,
+    const uoff_t toc_offset,
+    const uoff_t content_offset,
     Toc &toc)
 {
-    const auto data_offset_base = std::min<size_t>(content_offset, toc_offset);
+    const auto data_offset_base = std::min<uoff_t>(content_offset, toc_offset);
 
     input_stream.seek(toc_offset);
     if (input_stream.read(4) != "TOC\x20"_b)
@@ -262,7 +262,7 @@ static void read_toc(
 }
 
 static void read_etoc(
-    io::BaseByteStream &input_stream, const size_t etoc_offset, Toc &toc)
+    io::BaseByteStream &input_stream, const uoff_t etoc_offset, Toc &toc)
 {
     input_stream.seek(etoc_offset);
     if (input_stream.read(4) != "ETOC"_b)
@@ -281,8 +281,8 @@ static void read_etoc(
 
 static void read_itoc(
     io::BaseByteStream &input_stream,
-    const size_t itoc_offset,
-    const size_t content_offset,
+    const uoff_t itoc_offset,
+    const uoff_t content_offset,
     const size_t align,
     Toc &toc)
 {
@@ -312,7 +312,7 @@ static void read_itoc(
             if (row.at("ExtractSize"))
                 toc[entry_id].extract_size = row.at("ExtractSize").get<u32>();
         }
-        size_t offset = content_offset;
+        uoff_t offset = content_offset;
         std::vector<u32> ids;
         for (const auto &kv : toc)
             ids.push_back(kv.first);

@@ -38,14 +38,14 @@ MemoryStream::~MemoryStream()
 {
 }
 
-io::BaseByteStream &MemoryStream::reserve(const size_t size)
+io::BaseByteStream &MemoryStream::reserve(const uoff_t size)
 {
     if (buffer->size() < size)
         buffer->resize(size);
     return *this;
 }
 
-void MemoryStream::seek_impl(const size_t offset)
+void MemoryStream::seek_impl(const uoff_t offset)
 {
     if (offset > buffer->size())
         throw err::EofError();
@@ -73,17 +73,17 @@ void MemoryStream::write_impl(const void *source, size_t size)
     std::memcpy(destination_ptr, source_ptr, size);
 }
 
-size_t MemoryStream::pos() const
+uoff_t MemoryStream::pos() const
 {
     return buffer_pos;
 }
 
-size_t MemoryStream::size() const
+uoff_t MemoryStream::size() const
 {
     return buffer->size();
 }
 
-void MemoryStream::resize_impl(const size_t new_size)
+void MemoryStream::resize_impl(const uoff_t new_size)
 {
     buffer->resize(new_size);
     if (buffer_pos > new_size)

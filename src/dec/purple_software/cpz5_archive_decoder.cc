@@ -43,9 +43,9 @@ namespace
     struct DirectoryInfo final
     {
         size_t file_count;
-        size_t file_table_offset;
-        size_t file_table_main_key;
+        uoff_t file_table_offset;
         size_t file_table_size;
+        u32 file_table_main_key;
         io::path path;
     };
 }

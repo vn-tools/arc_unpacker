@@ -14,7 +14,7 @@ namespace
     {
         std::array<u32, 4> table_keys[4];
         bstr magic;
-        size_t table_offset;
+        uoff_t table_offset;
         size_t table_size;
     };
 
@@ -78,8 +78,8 @@ static Header read_header(
 static std::unique_ptr<CustomArchiveEntry> read_table_entry(
     io::BaseByteStream &table_stream,
     const std::vector<std::unique_ptr<CustomArchiveEntry>> &entries,
-    size_t file_names_start,
-    size_t file_headers_start)
+    uoff_t file_names_start,
+    uoff_t file_headers_start)
 {
     auto entry = std::make_unique<CustomArchiveEntry>();
 
@@ -168,10 +168,10 @@ std::unique_ptr<dec::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
     if (table_stream.read(table_magic.size()) != table_magic)
         throw err::CorruptDataError("Corrupt table data");
 
-    size_t file_count = table_stream.read_le<u32>();
-    size_t file_names_start = file_count * 0x18 + 0x10;
-    size_t file_headers_start = table_stream.read_le<u32>() + 0x10;
-    size_t file_headers_size = table_stream.read_le<u32>();
+    const auto file_count = table_stream.read_le<u32>();
+    const auto file_names_start = file_count * 0x18 + 0x10;
+    const auto file_headers_start = table_stream.read_le<u32>() + 0x10;
+    const auto file_headers_size = table_stream.read_le<u32>();
 
     std::vector<std::unique_ptr<CustomArchiveEntry>> entries;
     for (const auto i : algo::range(file_count))
@@ -200,7 +200,7 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
 
     const size_t chunk_size = 0x20000;
-    size_t offset = 0;
+    uoff_t offset = 0;
     std::vector<std::unique_ptr<glib2::Decoder>> decoders(4);
     for (const auto i : algo::range(4))
     {

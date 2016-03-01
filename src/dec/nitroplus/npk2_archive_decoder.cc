@@ -14,7 +14,7 @@ namespace
 {
     struct Segment final
     {
-        size_t offset;
+        uoff_t offset;
         size_t size_aligned;
         size_t size_comp;
         size_t size_orig;

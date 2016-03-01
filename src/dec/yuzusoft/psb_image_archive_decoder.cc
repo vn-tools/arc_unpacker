@@ -29,8 +29,8 @@ namespace
         io::BaseByteStream &get(const size_t index);
 
     private:
-        size_t base_offset;
-        std::vector<size_t> data_offsets;
+        uoff_t base_offset;
+        std::vector<uoff_t> data_offsets;
         io::BaseByteStream &input_stream;
     };
 
@@ -46,22 +46,22 @@ namespace
         io::BaseByteStream &get(const std::string &name);
 
     private:
-        size_t base_offset;
+        uoff_t base_offset;
         std::vector<size_t> name_indices;
-        std::vector<size_t> data_offsets;
+        std::vector<uoff_t> data_offsets;
         io::BaseByteStream &input_stream;
         const std::vector<std::string> &names;
     };
 
     struct BasicInfo final
     {
-        size_t offset_names;
-        size_t offset_strings;
-        size_t offset_strings_data;
-        size_t offset_chunk_offsets;
-        size_t offset_chunk_sizes;
-        size_t offset_chunk_data;
-        size_t offset_directory;
+        uoff_t offset_names;
+        uoff_t offset_strings;
+        uoff_t offset_strings_data;
+        uoff_t offset_chunk_offsets;
+        uoff_t offset_chunk_sizes;
+        uoff_t offset_chunk_data;
+        uoff_t offset_directory;
     };
 }
 
@@ -134,7 +134,7 @@ static double read_number(io::BaseByteStream &input_stream)
 static std::string read_string(
     io::BaseByteStream &input_stream,
     const std::vector<unsigned long> &string_offsets,
-    const size_t offset_strings_data)
+    const uoff_t offset_strings_data)
 {
     const auto n = input_stream.read<u8>() - 0x14;
     const auto string_idx = read_variable_integer(input_stream, n);

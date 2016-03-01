@@ -122,13 +122,13 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
 
     struct Traversal final
     {
-        size_t offset;
+        uoff_t offset;
         std::string current_name;
     };
 
     struct MiniEntry final
     {
-        size_t offset;
+        uoff_t offset;
         std::string name;
     };
 

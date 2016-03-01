@@ -15,8 +15,8 @@ CamelliaStream::CamelliaStream(
 CamelliaStream::CamelliaStream(
     io::BaseByteStream &parent_stream,
     const std::vector<u32> &key,
-    const size_t offset,
-    const size_t size) :
+    const uoff_t offset,
+    const uoff_t size) :
         key(key),
         parent_stream(parent_stream.clone()),
         parent_stream_offset(offset),
@@ -30,7 +30,7 @@ CamelliaStream::~CamelliaStream()
 {
 }
 
-void CamelliaStream::seek_impl(const size_t offset)
+void CamelliaStream::seek_impl(const uoff_t offset)
 {
     parent_stream->seek(parent_stream_offset + offset);
 }
@@ -79,17 +79,17 @@ void CamelliaStream::write_impl(const void *source, const size_t size)
     throw err::NotSupportedError("Not implemented");
 }
 
-size_t CamelliaStream::pos() const
+uoff_t CamelliaStream::pos() const
 {
     return parent_stream->pos() - parent_stream_offset;
 }
 
-size_t CamelliaStream::size() const
+uoff_t CamelliaStream::size() const
 {
     return parent_stream_size;
 }
 
-void CamelliaStream::resize_impl(const size_t new_size)
+void CamelliaStream::resize_impl(const uoff_t new_size)
 {
     parent_stream->resize(new_size);
 }

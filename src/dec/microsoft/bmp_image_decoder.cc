@@ -14,7 +14,7 @@ namespace
 {
     struct Header final
     {
-        size_t data_offset;
+        uoff_t data_offset;
         u32 width;
         u32 height;
         u16 planes;

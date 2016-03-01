@@ -7,18 +7,18 @@ using namespace au::io;
 
 BaseStream::~BaseStream() {}
 
-size_t BaseStream::left() const
+uoff_t BaseStream::left() const
 {
     return size() - pos();
 }
 
-io::BaseStream &BaseStream::skip(const int offset)
+io::BaseStream &BaseStream::skip(const soff_t offset)
 {
     return seek(pos() + offset);
 }
 
 io::BaseStream &BaseStream::peek(
-    const size_t offset, std::function<void()> func)
+    const uoff_t offset, const std::function<void()> &func)
 {
     const auto old_pos = pos();
     seek(offset);

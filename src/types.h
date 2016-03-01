@@ -18,6 +18,11 @@ namespace au {
     using f32 = float;
     using f64 = double;
 
+    // off_t is not used here because it may be 32 bit only on Windows.
+    // see file_stream.cc for details on handling big files
+    using soff_t = s64;
+    using uoff_t = u64;
+
     struct bstr final
     {
         static const size_t npos;

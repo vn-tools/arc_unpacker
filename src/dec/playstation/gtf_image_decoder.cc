@@ -54,7 +54,7 @@ namespace
         size_t header_size;
         u32 mipmap, dimensions, cube, flags;
         size_t width, height, depth;
-        size_t offset;
+        uoff_t offset;
     };
 }
 

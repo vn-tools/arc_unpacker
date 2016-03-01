@@ -14,14 +14,14 @@ namespace dec {
     struct PlainArchiveEntry : ArchiveEntry
     {
         virtual ~PlainArchiveEntry() {}
-        size_t offset;
+        uoff_t offset;
         size_t size;
     };
 
     struct CompressedArchiveEntry : ArchiveEntry
     {
         virtual ~CompressedArchiveEntry() {}
-        size_t offset;
+        uoff_t offset;
         size_t size_orig, size_comp;
     };
 
