@@ -64,6 +64,18 @@ Caveats:
   bug in `arc_unpacker`'s decoders, but both are unlikely. If you are unable to
   unpack the files, do not hesitate to report the issue to the issue tracker.
 
+- **How can I help with development?**  
+  Thanks for asking this! There are a number of ways you can help:
+
+  - By documenting games that are already supported but are not present on the
+    games list.
+  - By porting existing decoders from other projects. Example projects can be
+    found in THANKS.md.
+  - By reverse engineering games that are not yet supported, and coding new
+    decoders for them.
+
+  For details, hit the IRC channel.
+
 - **What's the license?**  
   All the code is licensed under
   [`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
