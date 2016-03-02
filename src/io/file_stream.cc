@@ -3,94 +3,147 @@
 #include "algo/locale.h"
 #include "err.h"
 
+#if _WIN32
+    #include <fcntl.h>
+    #include <io.h>
+    #include <sys/stat.h>
+    #include <sys/types.h>
+#endif
+
 using namespace au;
 using namespace au::io;
 
-static FILE *utf8_fopen(const path &path, const char *mode)
-{
-    #ifdef _WIN32
-        const auto cmode = algo::utf8_to_utf16(std::string(mode)).str();
-        std::wstring widemode(
-            reinterpret_cast<const wchar_t*>(cmode.c_str()),
-            cmode.size() / 2);
-        return _wfopen(path.wstr().c_str(), widemode.c_str());
-    #else
-        return std::fopen(path.c_str(), mode);
-    #endif
-}
-
-static uoff_t custom_ftell(FILE *file)
-{
-#if defined (_WIN32)
-    return _ftelli64(file);
-#else
-    return ftello(file);
-#endif
-}
-
-static int custom_fseek(FILE *file, const uoff_t offset, const int whence)
-{
-#if defined (_WIN32)
-    return _fseeki64(file, offset, whence);
-#else
-    return fseeko(file, offset, whence);
-#endif
-}
-
 struct FileStream::Priv final
 {
-    FILE *file;
+    #if _WIN32
+        Priv(const path &path, FileMode mode) : path(path), mode(mode)
+        {
+            fd = _wopen(
+                path.wstr().c_str(),
+                (mode == FileMode::Write
+                    ? (_O_RDWR | _O_CREAT | _O_TRUNC)
+                    : _O_RDONLY)
+                | _O_BINARY,
+                _S_IREAD | _S_IWRITE);
+            if (fd == -1)
+                throw err::FileNotFoundError("Could not open " + path.str());
+        }
+
+        ~Priv()
+        {
+            _close(fd);
+        }
+
+        uoff_t tell()
+        {
+            return _telli64(fd);
+        }
+
+        void seek(const uoff_t offset, const int whence)
+        {
+            _lseeki64(fd, offset, whence);
+        }
+
+        void read(void *source, const size_t size)
+        {
+            const size_t ret = _read(fd, source, size);
+            if (ret != size)
+                throw err::EofError();
+        }
+
+        void write(const void *destination, const size_t size)
+        {
+            const size_t ret = _write(fd, destination, size);
+            if (ret != size)
+                throw err::IoError("Could not write full data");
+        }
+
+        int fd;
+    #else
+        Priv(const path &path, FileMode mode) : path(path), mode(mode)
+        {
+            fd = std::fopen(
+                path.c_str(),
+                mode == FileMode::Write ? "w+b" : "r+b");
+            if (!fd)
+                throw err::FileNotFoundError("Could not open " + path.str());
+        }
+
+        ~Priv()
+        {
+            fclose(fd);
+        }
+
+        uoff_t tell()
+        {
+            return ftello(fd);
+        }
+
+        void seek(const uoff_t offset, const int whence)
+        {
+            const auto ret = fseeko(fd, offset, whence);
+            if (ret != 0)
+                throw err::EofError();
+        }
+
+        void read(void *source, const size_t size)
+        {
+            if (fread(source, 1, size, fd) != size)
+                throw err::EofError();
+        }
+
+        void write(const void *destination, const size_t size)
+        {
+            if (fwrite(destination, 1, size, fd) != size)
+                throw err::IoError("Could not write full data");
+        }
+
+        FILE *fd;
+    #endif
+
     io::path path;
     FileMode mode;
 };
 
 FileStream::FileStream(const path &path, const FileMode mode)
-    : p(new Priv())
+    : p(new Priv(path, mode))
 {
-    p->file = utf8_fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
-    p->path = path;
-    p->mode = mode;
-    if (!p->file)
-        throw err::FileNotFoundError("Could not open " + path.str());
 }
 
 FileStream::~FileStream()
 {
-    if (p->file)
-        fclose(p->file);
 }
 
 void FileStream::seek_impl(const uoff_t offset)
 {
-    if (offset > size() || custom_fseek(p->file, offset, SEEK_SET) != 0)
+    if (offset > size())
         throw err::EofError();
+    p->seek(offset, SEEK_SET);
 }
 
 void FileStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1
-    if (fread(destination, 1, size, p->file) != size)
-        throw err::EofError();
+    p->read(destination, size);
 }
 
 void FileStream::write_impl(const void *source, const size_t size)
 {
     // source MUST exist and size MUST be at least 1
-    if (fwrite(source, 1, size, p->file) != size)
-        throw err::IoError("Could not write full data");
+    p->write(source, size);
 }
 
 uoff_t FileStream::pos() const
 {
-    return custom_ftell(p->file);
+    return p->tell();
 }
 
 uoff_t FileStream::size() const
 {
-    const auto old_pos = custom_ftell(p->file);
-    custom_fseek(p->file, 0, SEEK_END);
-    const auto size = custom_ftell(p->file);
-    custom_fseek(p->file, old_pos, SEEK_SET);
+    const auto old_pos = p->tell();
+    p->seek(0, SEEK_END);
+    const auto size = p->tell();
+    p->seek(old_pos, SEEK_SET);
     return size;
 }
 
