@@ -39,4 +39,9 @@ std::unique_ptr<io::File> AcpPk1ArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> AcpPk1ArchiveDecoder::get_linked_formats() const
+{
+    return {"escude/acp", "microsoft/bmp"};
+}
+
 static auto _ = dec::register_decoder<AcpPk1ArchiveDecoder>("escude/acp-pk1");
