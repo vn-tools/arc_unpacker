@@ -523,12 +523,31 @@ std::unique_ptr<dec::ArchiveMeta> ExeArchiveDecoder::read_meta_impl(
 
     if (data_dirs.size() < 2)
         throw err::CorruptDataError("Unusual file layout");
+
     const auto resource_dir = data_dirs[2];
     const auto base_offset
         = rva_helper.rva_to_offset(resource_dir.virtual_address);
     auto meta = std::make_unique<ArchiveMeta>();
     ResourceCrawler::crawl(ResourceCrawlerArgs(
         logger, rva_helper, base_offset, input_file.stream, *meta));
+
+    soff_t extra_data_offset = -1;
+    for (const auto &section : sections)
+    {
+        const soff_t section_end
+            = section.pointer_to_raw_data + section.size_of_raw_data;
+        extra_data_offset = std::max(section_end, extra_data_offset);
+    }
+    const auto extra_data_size = input_file.stream.size() - extra_data_offset;
+    if (extra_data_offset != -1 && extra_data_size > 0)
+    {
+        auto entry = std::make_unique<dec::PlainArchiveEntry>();
+        entry->path = "extra_data";
+        entry->offset = extra_data_offset;
+        entry->size = extra_data_size;
+        meta->entries.push_back(std::move(entry));
+    }
+
     return meta;
 }
 
