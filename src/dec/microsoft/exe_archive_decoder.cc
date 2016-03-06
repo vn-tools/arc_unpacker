@@ -3,6 +3,7 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "err.h"
+#include "io/slice_stream.h"
 
 using namespace au;
 using namespace au::dec::microsoft;
@@ -538,8 +539,10 @@ std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const PlainArchiveEntry*>(&e);
-    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->path, data);
+    auto output_file = std::make_unique<io::File>(
+        entry->path,
+        std::make_unique<io::SliceStream>(
+            input_file.stream, entry->offset, entry->size));
     output_file->guess_extension();
     return output_file;
 }
