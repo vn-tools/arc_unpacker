@@ -4,17 +4,19 @@
 using namespace au;
 using namespace au::dec::escude;
 
-static const auto magic = "ACP_PK.1"_b;
+static const auto magic1 = "ACP_PK.1"_b;
+static const auto magic2 = "ACPXPK01"_b;
 
 bool AcpPk1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.seek(0).read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic1.size()) == magic1
+        || input_file.stream.seek(0).read(magic2.size()) == magic2;
 }
 
 std::unique_ptr<dec::ArchiveMeta> AcpPk1ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(magic.size());
+    input_file.stream.seek(8);
     const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
