@@ -50,17 +50,32 @@ static Header read_header(io::BaseByteStream &input_stream)
     auto header_size = input_stream.read_le<u32>();
     io::MemoryStream header_stream(input_stream.read(header_size - 4));
 
-    h.width = header_stream.read_le<u32>();
-    const auto height = header_stream.read_le<s32>();
+    s32 height;
+    if (header_stream.size() == 8)
+    {
+        h.width = header_stream.read_le<u16>();
+        height = header_stream.read_le<s16>();
+        h.planes = header_stream.read_le<u16>();
+        h.depth = header_stream.read_le<u16>();
+        h.compression = 0;
+        h.image_size = 0;
+        h.palette_size = 0;
+        h.important_colors = 0;
+    }
+    else
+    {
+        h.width = header_stream.read_le<u32>();
+        height = header_stream.read_le<s32>();
+        h.planes = header_stream.read_le<u16>();
+        h.depth = header_stream.read_le<u16>();
+        h.compression = header_stream.read_le<u32>();
+        h.image_size = header_stream.read_le<u32>();
+        header_stream.skip(8);
+        h.palette_size = header_stream.read_le<u32>();
+        h.important_colors = header_stream.read_le<u32>();
+    }
     h.height = std::abs(height);
     h.flip = height > 0;
-    h.planes = header_stream.read_le<u16>();
-    h.depth = header_stream.read_le<u16>();
-    h.compression = header_stream.read_le<u32>();
-    h.image_size = header_stream.read_le<u32>();
-    header_stream.skip(8);
-    h.palette_size = header_stream.read_le<u32>();
-    h.important_colors = header_stream.read_le<u32>();
 
     if (h.depth <= 8 && !h.palette_size)
         h.palette_size = 256;
