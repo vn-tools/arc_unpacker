@@ -8,6 +8,7 @@ projects are listed below in alphabetical order.
 - [chinesize](https://github.com/regomne/chinesize)
 - Crass / CUI
 - [CriPakTools](https://github.com/esperknight/CriPakTools)
+- [disunity](https://github.com/ata4/disunity)
 - [ExtractData](https://github.com/lioncash/ExtractData)
 - [GARbro](https://github.com/morkt/GARbro)
 - HCA decoder
