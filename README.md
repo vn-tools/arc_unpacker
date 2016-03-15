@@ -89,5 +89,3 @@ Caveats:
 - Game requests: [GitHub issue
   tracker](https://github.com/vn-tools/arc_unpacker/issues)
 - IRC channel: `#arc_unpacker` on `irc.rizon.net`
-
-I can also help with translation projects - drop an email at rr-@sakuya.pl.
