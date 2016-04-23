@@ -21,6 +21,7 @@ namespace
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr game_title;
+        bstr game_key;
     };
 
     struct CustomArchiveEntry final : dec::CompressedArchiveEntry
@@ -131,9 +132,9 @@ static void transform_regular_content(
 }
 
 static void transform_script_content(
-    bstr &buffer, const u64 hash, const bstr &game_title)
+    bstr &buffer, const u64 hash, const bstr &game_key)
 {
-    const u32 xor_value = (hash ^ crc64(game_title)) & 0xFFFFFFFF;
+    const u32 xor_value = (hash ^ crc64(game_key)) & 0xFFFFFFFF;
     for (const auto i : algo::range(buffer.size() / 4))
         buffer.get<u32>()[i] ^= xor_value;
 }
@@ -149,6 +150,7 @@ static void dump(const CustomArchiveMeta &meta, const std::string &dump_path)
     // about the last archive
     static io::FileStream stream(dump_path, io::FileMode::Write);
 
+    stream.write(meta.game_title.str() + "\n");
     for (const auto &e : meta.entries)
     {
         const auto entry = static_cast<CustomArchiveEntry*>(e.get());
@@ -194,7 +196,8 @@ DatArchiveDecoder::DatArchiveDecoder()
 
 void DatArchiveDecoder::set_game_title(const std::string &new_game_title)
 {
-    game_title = algo::utf8_to_sjis(new_game_title);
+    game_title = new_game_title;
+    game_key = algo::utf8_to_sjis(new_game_title);
 }
 
 void DatArchiveDecoder::add_file_name(const std::string &file_name)
@@ -215,6 +218,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<CustomArchiveMeta>();
+    meta->game_key = game_key;
     meta->game_title = game_title;
 
     const auto file_count = read_file_count(input_file.stream);
@@ -284,7 +288,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
 
     if (entry->type == TableEntryType::Compressed)
     {
-        transform_script_content(data, entry->hash, meta->game_title);
+        transform_script_content(data, entry->hash, game_key);
         data = algo::pack::zlib_inflate(data);
     }
     else

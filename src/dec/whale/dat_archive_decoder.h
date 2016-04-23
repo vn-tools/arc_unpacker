@@ -30,6 +30,7 @@ namespace whale {
 
     private:
         bstr game_title;
+        bstr game_key;
         std::map<u64, bstr> file_names_map;
         std::string dump_path;
     };
