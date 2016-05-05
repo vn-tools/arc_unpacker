@@ -74,7 +74,9 @@ Caveats:
   - By reverse engineering games that are not yet supported, and coding new
     decoders for them.
 
-  For details, hit the IRC channel.
+  For details, check out
+  [`CONTRIBUTING.md`](https://github.com/vn-tools/arc_unpacker/blob/master/CONTRIBUTING.md)
+  and hit the IRC channel.
 
 - **What's the license?**  
   All the code is licensed under
