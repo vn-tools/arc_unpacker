@@ -10,31 +10,41 @@ cd "$ROOT_DIR"
 VERSION="$(git describe --tags)"
 ZIP_NAME=arc_unpacker-"$VERSION"-bin.zip
 
+echo "fetching changes..."
 cd "$ROOT_DIR"
 git checkout master
 git pull
 
+echo "cleaning previous build artifacts..."
 rm -f "$ROOT_DIR"/*.zip
 rm -f "$BUILD_DIR"/arc_unpacker.exe
 #rm -rf "$BUILD_DIR"
 [ ! -d "$BUILD_DIR" ] && mkdir "$BUILD_DIR"
 
+echo "compiling..."
 cd "$BUILD_DIR"
 "$MXE_DIR"/usr/bin/i686-w64-mingw32.static-cmake .. -DCMAKE_BUILD_TYPE=release
 make -j"$(nproc)" arc_unpacker
 
+echo "compressing executable..."
 strip --strip-all "$BUILD_DIR"/arc_unpacker.exe
 upx "$BUILD_DIR"/arc_unpacker.exe
 
+echo "creating archives..."
 cd "$ROOT_DIR"
-7z a "$ZIP_NAME" "$BUILD_DIR"/arc_unpacker.exe
-7z a "$ZIP_NAME" "$ROOT_DIR"/etc
+7z a "$ROOT_DIR/$ZIP_NAME" "$BUILD_DIR"/arc_unpacker.exe
+7z a "$ROOT_DIR/$ZIP_NAME" "$ROOT_DIR"/etc
+echo "created $ROOT_DIR/$ZIP_NAME"
 
-for source_path in *.zip; do
+echo "moving output files..."
+for source_path in "$ROOT_DIR"/*.zip; do
+    echo "discovered $source_path"
     target_path="$TARGET_DIR"/"$(basename "$source_path")"
     if [ -e "$target_path" ]; then
+        echo "$target_path exists, removing $source_path"
         rm "$source_path"
     else
+        echo "$target_path does not exist, moving $source_path to $target_path"
         mv "$source_path" "$target_path"
     fi
 done
