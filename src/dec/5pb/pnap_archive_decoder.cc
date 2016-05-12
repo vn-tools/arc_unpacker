@@ -23,7 +23,8 @@ std::unique_ptr<dec::ArchiveMeta> PnapArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<PlainArchiveEntry>();
         input_file.stream.skip(36);
         entry->size = input_file.stream.read_le<u32>();
-        meta->entries.push_back(std::move(entry));
+        if (entry->size)
+            meta->entries.push_back(std::move(entry));
     }
     auto current_offset = input_file.stream.pos();
     for (const auto &e : meta->entries)
