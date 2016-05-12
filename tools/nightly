@@ -6,14 +6,15 @@ BUILD_DIR="$ROOT_DIR"/build-nightly
 TARGET_DIR=/srv/www/tmp.sakuya.pl/public_html/au/
 MXE_DIR="$HOME"/src/ext/mxe
 
-cd "$ROOT_DIR"
-VERSION="$(git describe --tags)"
-ZIP_NAME=arc_unpacker-"$VERSION"-bin.zip
-
 echo "fetching changes..."
 cd "$ROOT_DIR"
 git checkout master
 git pull
+
+echo "getting version..."
+VERSION="$(git describe --tags)"
+ZIP_NAME=arc_unpacker-"$VERSION"-bin.zip
+echo "$VERSION"
 
 echo "cleaning previous build artifacts..."
 rm -f "$ROOT_DIR"/*.zip
