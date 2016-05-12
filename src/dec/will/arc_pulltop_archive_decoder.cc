@@ -1,9 +1,9 @@
-#include "dec/5pb/arc_archive_decoder.h"
+#include "dec/will/arc_pulltop_archive_decoder.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 
 using namespace au;
-using namespace au::dec::_5pb;
+using namespace au::dec::will;
 
 static const std::string read_string(io::BaseByteStream &input_stream)
 {
@@ -18,7 +18,7 @@ static const std::string read_string(io::BaseByteStream &input_stream)
     return algo::utf16_to_utf8(str).str();
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
+bool ArcPulltopArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     const auto file_count = input_file.stream.read_le<u32>();
     const auto table_size = input_file.stream.read_le<u32>();
@@ -39,7 +39,7 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return last_file_offset + last_file_size == input_file.stream.size();
 }
 
-std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
+std::unique_ptr<dec::ArchiveMeta> ArcPulltopArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
@@ -56,7 +56,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     return meta;
 }
 
-std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+std::unique_ptr<io::File> ArcPulltopArchiveDecoder::read_file_impl(
     const Logger &logger,
     io::File &input_file,
     const dec::ArchiveMeta &m,
@@ -69,9 +69,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+std::vector<std::string> ArcPulltopArchiveDecoder::get_linked_formats() const
 {
-    return {"5pb/pnap"};
+    return {"will/pnap"};
 }
 
-static auto _ = dec::register_decoder<ArcArchiveDecoder>("5pb/arc");
+static auto _
+    = dec::register_decoder<ArcPulltopArchiveDecoder>("will/arc-pulltop");

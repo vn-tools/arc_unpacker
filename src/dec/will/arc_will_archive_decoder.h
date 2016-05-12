@@ -4,9 +4,9 @@
 
 namespace au {
 namespace dec {
-namespace _5pb {
+namespace will {
 
-    class ArcArchiveDecoder final : public BaseArchiveDecoder
+    class ArcWillArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;

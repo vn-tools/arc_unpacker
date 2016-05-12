@@ -1,4 +1,4 @@
-#include "dec/will/arc_archive_decoder.h"
+#include "dec/will/arc_will_archive_decoder.h"
 #include <map>
 #include "algo/range.h"
 #include "dec/will/wipf_image_archive_decoder.h"
@@ -49,14 +49,14 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
     return meta;
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
+bool ArcWillArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     Logger dummy_logger;
     dummy_logger.mute();
     return read_meta(dummy_logger, input_file)->entries.size() > 0;
 }
 
-std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
+std::unique_ptr<dec::ArchiveMeta> ArcWillArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     const auto dir_count = input_file.stream.read_le<u32>();
@@ -85,7 +85,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     throw err::CorruptDataError("Failed to read file table");
 }
 
-std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+std::unique_ptr<io::File> ArcWillArchiveDecoder::read_file_impl(
     const Logger &logger,
     io::File &input_file,
     const dec::ArchiveMeta &m,
@@ -101,9 +101,9 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+std::vector<std::string> ArcWillArchiveDecoder::get_linked_formats() const
 {
     return {"will/wipf"};
 }
 
-static auto _ = dec::register_decoder<ArcArchiveDecoder>("will/arc");
+static auto _ = dec::register_decoder<ArcWillArchiveDecoder>("will/arc-will");

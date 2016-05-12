@@ -1,9 +1,9 @@
-#include "dec/5pb/pnap_archive_decoder.h"
+#include "dec/will/pnap_archive_decoder.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 
 using namespace au;
-using namespace au::dec::_5pb;
+using namespace au::dec::will;
 
 static const bstr magic = "PNAP"_b;
 
@@ -49,4 +49,4 @@ std::unique_ptr<io::File> PnapArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto _ = dec::register_decoder<PnapArchiveDecoder>("5pb/pnap");
+static auto _ = dec::register_decoder<PnapArchiveDecoder>("will/pnap");

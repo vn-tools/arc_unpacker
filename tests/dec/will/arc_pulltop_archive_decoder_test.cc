@@ -1,4 +1,4 @@
-#include "dec/5pb/arc_archive_decoder.h"
+#include "dec/will/arc_pulltop_archive_decoder.h"
 #include "algo/locale.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
@@ -6,7 +6,7 @@
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::dec::_5pb;
+using namespace au::dec::will;
 
 static std::unique_ptr<io::File> get_arc_file(
     const std::vector<std::shared_ptr<io::File>> &expected_files)
@@ -30,7 +30,7 @@ static std::unique_ptr<io::File> get_arc_file(
     return output_file;
 }
 
-TEST_CASE("5pb ARC archives", "[dec]")
+TEST_CASE("Will Co. ARC Pulltop archives", "[dec]")
 {
     const std::vector<std::shared_ptr<io::File>> expected_files =
     {
@@ -39,7 +39,7 @@ TEST_CASE("5pb ARC archives", "[dec]")
     };
 
     auto input_file = get_arc_file(expected_files);
-    const auto decoder = ArcArchiveDecoder();
+    const auto decoder = ArcPulltopArchiveDecoder();
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(actual_files, expected_files, true);
 }

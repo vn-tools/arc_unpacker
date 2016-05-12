@@ -1,11 +1,11 @@
-#include "dec/5pb/pnap_archive_decoder.h"
+#include "dec/will/pnap_archive_decoder.h"
 #include "algo/range.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::dec::_5pb;
+using namespace au::dec::will;
 
 static std::unique_ptr<io::File> get_pnap_file(
     const std::vector<std::shared_ptr<io::File>> &expected_files)
@@ -26,7 +26,7 @@ static std::unique_ptr<io::File> get_pnap_file(
     return output_file;
 }
 
-TEST_CASE("5pb PNAP archives", "[dec]")
+TEST_CASE("Will Co. PNAP archives", "[dec]")
 {
     const std::vector<std::shared_ptr<io::File>> expected_files =
     {
