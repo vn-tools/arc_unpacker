@@ -69,4 +69,9 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     return output_file;
 }
 
+std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+{
+    return {"5pb/pnap"};
+}
+
 static auto _ = dec::register_decoder<ArcArchiveDecoder>("5pb/arc");
