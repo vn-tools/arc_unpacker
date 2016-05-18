@@ -164,7 +164,7 @@ std::unique_ptr<dec::ArchiveMeta> DxArchiveDecoder::read_meta_impl(
         decrypt(input_file.stream, header.table_size, key));
     read_file_table(table_stream, header, 0, "", *meta);
 
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<io::File> DxArchiveDecoder::read_file_impl(
