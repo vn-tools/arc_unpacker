@@ -141,6 +141,16 @@ question](#user-content-how-do-i-pass-additional-options--parameters).
   [`CONTRIBUTING.md`](https://github.com/vn-tools/arc_unpacker/blob/master/CONTRIBUTING.md)
   and hit the IRC channel.
 
+- ##### Packing / encoding support?
+
+  Not going to happen. Compiling files for games, especially from fan
+  translation standpoint, almost always needs rolling your own script compiler,
+  modifying the game .exe, fixing weird quirks, etc. - many things that
+  wouldn't make sense for `arc_unpacker` to support. At the same time, the user
+  base that might find encoders useful would be extremely small, and writing
+  encoders is often much more difficult than writing decoders, so it's not very
+  practical.
+
 - ##### What's the license?
 
   All the code is licensed under
