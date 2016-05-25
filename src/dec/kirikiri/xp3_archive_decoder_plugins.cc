@@ -114,6 +114,11 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         create_cxdec_plugin(
             0x2F0, 0x418, {2,0,1}, {5,3,0,2,1,4,6,7}, {0,3,5,4,2,1}));
 
+    plugin_manager.add(
+        "lavender", "Kourin no Machi, Lavender no Shoujo",
+        create_cxdec_plugin(
+            0x181, 0x635, {2,1,0}, {7,5,2,3,6,1,4,0}, {4,0,1,5,2,3}));
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects XP3 decryption routine."));
