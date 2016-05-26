@@ -46,7 +46,7 @@ std::unique_ptr<io::File> MedArchiveDecoder::read_file_impl(
 
 std::vector<std::string> MedArchiveDecoder::get_linked_formats() const
 {
-    return {"triangle/yb"};
+    return {"triangle/yb", "triangle/wady"};
 }
 
 static auto _ = dec::register_decoder<MedArchiveDecoder>("triangle/med");
