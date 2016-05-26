@@ -1,4 +1,5 @@
 #include "dec/whale/dat_archive_decoder.h"
+#include <cmath>
 #include <map>
 #include "algo/format.h"
 #include "algo/locale.h"
@@ -119,7 +120,7 @@ static void transform_regular_content(
     bstr &buffer, const bstr &file_name)
 {
     auto block_size = static_cast<size_t>(
-        floor(buffer.size() / static_cast<float>(file_name.size())));
+        std::floor(buffer.size() / static_cast<float>(file_name.size())));
     u8 *buffer_ptr = buffer.get<u8>();
     u8 *buffer_end = buffer_ptr + buffer.size();
     for (const auto j : algo::range(file_name.size() - 1))

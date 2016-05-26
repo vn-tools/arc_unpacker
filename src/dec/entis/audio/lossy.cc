@@ -1,4 +1,5 @@
 #include "dec/entis/audio/lossy.h"
+#include <cmath>
 #include "algo/range.h"
 #include "dec/entis/common/gamma_decoder.h"
 #include "dec/entis/common/huffman_decoder.h"

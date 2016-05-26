@@ -1,4 +1,5 @@
 ﻿#include "dec/shiina_rio/warc/decrypt.h"
+#include <cmath>
 #include "algo/endian.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
