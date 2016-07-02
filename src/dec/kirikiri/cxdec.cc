@@ -22,8 +22,6 @@ namespace
     struct CxdecSettings final
     {
         bstr control_block;
-        u16 key1;
-        u16 key2;
         std::array<size_t, 3> key_derivation_order1;
         std::array<size_t, 8> key_derivation_order2;
         std::array<size_t, 6> key_derivation_order3;
@@ -476,16 +474,17 @@ Xp3Plugin au::dec::kirikiri::create_cxdec_plugin(
     const u16 key2,
     const std::array<size_t, 3> key_derivation_order1,
     const std::array<size_t, 8> key_derivation_order2,
-    const std::array<size_t, 6> key_derivation_order3)
+    const std::array<size_t, 6> key_derivation_order3,
+    const bstr &control_block)
 {
     Xp3Plugin plugin;
     plugin.create_decrypt_func = [=](const io::path &arc_path)
         -> std::function<void(bstr &, u32)> // fixes crash in clang
     {
         CxdecSettings settings;
-        settings.control_block = find_control_block(arc_path);
-        settings.key1 = key1;
-        settings.key2 = key2;
+        settings.control_block = control_block.empty()
+            ? find_control_block(arc_path)
+            : control_block;
         settings.key_derivation_order1 = key_derivation_order1;
         settings.key_derivation_order2 = key_derivation_order2;
         settings.key_derivation_order3 = key_derivation_order3;
@@ -493,13 +492,11 @@ Xp3Plugin au::dec::kirikiri::create_cxdec_plugin(
         return [=](bstr &data, u32 adlr_key)
         {
             KeyDeriver key_deriver(settings);
-            const auto size = std::min<size_t>(
-                data.size(), (adlr_key & settings.key1) + settings.key2);
-
             const auto hash1 = adlr_key;
             const auto hash2 = (adlr_key >> 16) ^ adlr_key;
             const auto offset1 = 0;
-            const auto offset2 = size;
+            const auto offset2 = std::min<size_t>(
+                data.size(), (adlr_key & key1) + key2);
             decrypt_chunk(key_deriver, data, hash1, offset1, offset2);
             decrypt_chunk(
                 key_deriver, data, hash2, offset2, data.size() - offset2);

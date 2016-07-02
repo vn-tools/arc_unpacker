@@ -12,6 +12,7 @@ namespace kirikiri {
         const u16 key2,
         const std::array<size_t, 3> key_derivation_order1,
         const std::array<size_t, 8> key_derivation_order2,
-        const std::array<size_t, 6> key_derivation_order3);
+        const std::array<size_t, 6> key_derivation_order3,
+        const bstr &control_block = ""_b);
 
 } } }
