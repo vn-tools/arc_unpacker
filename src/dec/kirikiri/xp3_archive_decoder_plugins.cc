@@ -2,9 +2,17 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/kirikiri/cxdec.h"
+#include "io/program_path.h"
 
 using namespace au;
 using namespace au::dec::kirikiri;
+
+static bstr read_etc_file(const std::string &name)
+{
+    const auto path = io::get_assets_dir_path() / "xp3" / name;
+    io::File file(path, io::FileMode::Read);
+    return file.stream.seek(0).read_to_eof();
+}
 
 static Xp3Plugin create_simple_plugin(const Xp3DecryptFunc &xp3_decrypt_func)
 {
@@ -118,6 +126,12 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         "lavender", "Kourin no Machi, Lavender no Shoujo",
         create_cxdec_plugin(
             0x181, 0x635, {2,1,0}, {7,5,2,3,6,1,4,0}, {4,0,1,5,2,3}));
+
+    plugin_manager.add(
+        "karakara", "Karakara",
+        create_cxdec_plugin(
+            0x190, 0x4A7, {1,0,2}, {2,0,7,3,5,1,4,6}, {2,1,0,5,4,3},
+            read_etc_file("karakara.dat")));
 
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
