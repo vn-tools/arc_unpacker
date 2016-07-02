@@ -90,6 +90,7 @@ static std::unique_ptr<res::Image> read_image(
         else if (format_id == 1) format = res::PixelFormat::RGBA5551;
         else if (format_id == 2) format = res::PixelFormat::RGBA4444;
         else if (format_id == 3) format = res::PixelFormat::RGBA8888;
+        else throw err::NotSupportedError("Unknown pixel format");
 
         const auto data = read_data(
             input_stream,
