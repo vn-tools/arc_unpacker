@@ -64,6 +64,42 @@ res::Image tests::get_transparent_test_image()
     return image_from_file(*input_file);
 }
 
+std::tuple<res::Image, algo::Grid<int>, res::Palette>
+    tests::get_palette_test_image()
+{
+    auto input_image = tests::get_opaque_test_image();
+    res::Palette output_palette(256);
+    for (const auto i : algo::range(256))
+    {
+        // make colors a bit funky so that tests catch channel-wise mistakes
+        output_palette[i].r = 255 - i;
+        output_palette[i].g = 254 - i;
+        output_palette[i].b = 253 - i;
+        output_palette[i].a = i;
+    }
+
+    algo::Grid<int> output_grid(input_image.width(), input_image.height());
+    res::Image output_image(input_image.width(), input_image.height());
+    for (const auto y : algo::range(input_image.height()))
+    for (const auto x : algo::range(input_image.width()))
+    {
+        const auto &input_pixel = input_image.at(x, y);
+        const u8 palette_index = 255 - ((
+            input_pixel.r +
+            input_pixel.g +
+            input_pixel.b) / 3);
+
+        auto &output_pixel = output_image.at(x, y);
+        output_pixel.b = output_palette[palette_index].b;
+        output_pixel.g = output_palette[palette_index].g;
+        output_pixel.r = output_palette[palette_index].r;
+        output_pixel.a = output_palette[palette_index].a;
+
+        output_grid.at(x, y) = palette_index;
+    }
+    return std::make_tuple(output_image, output_grid, output_palette);
+}
+
 void tests::compare_images(
     const res::Image &actual_image, const res::Image &expected_image)
 {

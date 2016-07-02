@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <tuple>
 #include "io/file.h"
 #include "res/image.h"
 
@@ -9,6 +10,8 @@ namespace tests {
 
     res::Image get_opaque_test_image();
     res::Image get_transparent_test_image();
+    std::tuple<res::Image, algo::Grid<int>, res::Palette>
+        get_palette_test_image();
 
     void compare_images(
         const res::Image &actual_image,
