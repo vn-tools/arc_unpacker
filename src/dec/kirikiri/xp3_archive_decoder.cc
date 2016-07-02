@@ -51,6 +51,7 @@ namespace
 }
 
 static const bstr xp3_magic = "XP3\r\n\x20\x0A\x1A\x8B\x67\x01"_b;
+static const bstr hnfn_entry_magic = "hnfn"_b;
 static const bstr file_entry_magic = "File"_b;
 static const bstr info_chunk_magic = "info"_b;
 static const bstr segm_chunk_magic = "segm"_b;
@@ -128,21 +129,26 @@ static std::unique_ptr<TimeChunk> read_time_chunk(
     return time_chunk;
 }
 
-static std::unique_ptr<CustomArchiveEntry> read_entry(
-    const Logger &logger, io::BaseByteStream &input_stream)
+static void read_hnfn_entry(
+    io::BaseByteStream &input_stream,
+    std::map<u32, std::string> &fn_map)
 {
-    if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
-        throw err::CorruptDataError("Expected FILE entry");
+    const auto hash = input_stream.read_le<u32>();
+    const auto name_size = input_stream.read_le<u16>();
+    fn_map[hash] = algo::utf16_to_utf8(input_stream.read(name_size * 2)).str();
+}
 
-    const auto entry_size = input_stream.read_le<u64>();
-    io::MemoryStream entry_stream(input_stream.read(entry_size));
-
+static std::unique_ptr<CustomArchiveEntry> read_file_entry(
+    const Logger &logger,
+    io::BaseByteStream &input_stream,
+    const std::map<u32, std::string> &fn_map)
+{
     auto entry = std::make_unique<CustomArchiveEntry>();
-    while (entry_stream.left())
+    while (input_stream.left())
     {
-        const auto chunk_magic = entry_stream.read(4);
-        const auto chunk_size = entry_stream.read_le<u64>();
-        io::MemoryStream chunk_stream(entry_stream.read(chunk_size));
+        const auto chunk_magic = input_stream.read(4);
+        const auto chunk_size = input_stream.read_le<u64>();
+        io::MemoryStream chunk_stream(input_stream.read(chunk_size));
 
         if (chunk_magic == info_chunk_magic)
             entry->info_chunk = read_info_chunk(chunk_stream);
@@ -164,7 +170,7 @@ static std::unique_ptr<CustomArchiveEntry> read_entry(
                 "'%s' chunk contains data beyond EOF\n", chunk_magic.c_str());
         }
     }
-    if (entry_stream.left())
+    if (input_stream.left())
         throw err::CorruptDataError("FILE entry contains data beyond EOF");
 
     if (!entry->info_chunk)
@@ -174,7 +180,10 @@ static std::unique_ptr<CustomArchiveEntry> read_entry(
     if (entry->segm_chunks.empty())
         throw err::CorruptDataError("No SEGM chunks found");
 
-    entry->path = entry->info_chunk->name;
+    entry->path = fn_map.find(entry->adlr_chunk->key) != fn_map.end()
+        ? fn_map.at(entry->adlr_chunk->key)
+        : entry->info_chunk->name;
+
     return entry;
 }
 
@@ -205,8 +214,21 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     meta->decrypt_func = plugin_manager.get()
         .create_decrypt_func(input_file.path);
 
+    std::map<u32, std::string> fn_map;
     while (table_stream.left())
-        meta->entries.push_back(read_entry(logger, table_stream));
+    {
+        const auto entry_magic = table_stream.read(4);
+        const auto entry_size = table_stream.read_le<u64>();
+        io::MemoryStream entry_stream(table_stream.read(entry_size));
+
+        if (entry_magic == file_entry_magic)
+            meta->entries.push_back(
+                read_file_entry(logger, entry_stream, fn_map));
+        else if (entry_magic == hnfn_entry_magic)
+            read_hnfn_entry(entry_stream, fn_map);
+        else
+            throw err::NotSupportedError("Unknown entry");
+    }
     return std::move(meta);
 }
 
