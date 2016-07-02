@@ -9,18 +9,12 @@ using namespace au::res;
 
 static const Pixel transparent_pixel = {0, 0, 0, 0};
 
-Image::Image(const Image &other) : Image(other.width(), other.height())
+Image::Image(const Image &other) : Grid(other)
 {
-    for (const auto y : algo::range(_height))
-    for (const auto x : algo::range(_width))
-        at(x, y) = other.at(x, y);
 }
 
-Image::Image(const size_t width, const size_t height)
-    : pixels(width * height), _width(width), _height(height)
+Image::Image(const size_t width, const size_t height) : Grid(width, height)
 {
-    if (!width || !height)
-        throw err::BadDataSizeError();
 }
 
 Image::Image(
@@ -33,7 +27,7 @@ Image::Image(
         throw err::BadDataSizeError();
     if (!width || !height)
         throw err::BadDataSizeError();
-    read_pixels(input.get<const u8>(), pixels, fmt);
+    read_pixels(input.get<const u8>(), content, fmt);
 }
 
 Image::Image(
@@ -67,10 +61,6 @@ Image::Image(
         : Image(width, height, input_stream, PixelFormat::Gray8)
 {
     apply_palette(palette);
-}
-
-Image::~Image()
-{
 }
 
 Image &Image::invert()
@@ -113,32 +103,32 @@ Image &Image::offset(const int x_offset, const int y_offset)
 {
     res::Image old_image(*this);
     crop(_width + x_offset, _height + y_offset);
-    for (auto &c : pixels)
+    for (auto &c : content)
         c = transparent_pixel;
     return overlay(old_image, x_offset, y_offset, OverlayKind::OverwriteAll);
 }
 
 Image &Image::crop(const size_t new_width, const size_t new_height)
 {
-    std::vector<Pixel> old_pixels(pixels.begin(), pixels.end());
+    std::vector<Pixel> old_content(content.begin(), content.end());
     if (!new_width || !new_height)
         throw err::BadDataSizeError();
     const auto old_width = _width;
     const auto old_height = _height;
     _width = new_width;
     _height = new_height;
-    pixels.resize(new_width * new_height);
+    content.resize(new_width * new_height);
     for (const auto y : algo::range(std::min(old_height, new_height)))
     for (const auto x : algo::range(std::min(old_width, new_width)))
     {
-        pixels[y * new_width + x] = old_pixels[y * old_width + x];
+        content[y * new_width + x] = old_content[y * old_width + x];
     }
     for (const auto y : algo::range(old_height, new_height))
     for (const auto x : algo::range(new_width))
-        pixels[y * new_width + x] = transparent_pixel;
+        content[y * new_width + x] = transparent_pixel;
     for (const auto y : algo::range(old_height))
     for (const auto x : algo::range(old_width, new_width))
-        pixels[y * new_width + x] = transparent_pixel;
+        content[y * new_width + x] = transparent_pixel;
     return *this;
 }
 
@@ -155,7 +145,7 @@ Image &Image::apply_mask(const Image &other)
 Image &Image::apply_palette(const Palette &palette)
 {
     const auto palette_size = palette.size();
-    for (auto &c : pixels)
+    for (auto &c : content)
     {
         if (c.r < palette_size)
             c = palette[c.r];
@@ -217,24 +207,4 @@ Image &Image::overlay(
         throw std::logic_error("Unknown overlay kind");
     }
     return *this;
-}
-
-Pixel *Image::begin()
-{
-    return pixels.data();
-}
-
-Pixel *Image::end()
-{
-    return pixels.empty() ? nullptr : begin() + _width * _height;
-}
-
-const Pixel *Image::begin() const
-{
-    return pixels.data();
-}
-
-const Pixel *Image::end() const
-{
-    return pixels.empty() ? nullptr : begin() + _width * _height;
 }
