@@ -94,7 +94,7 @@ std::unique_ptr<io::File> BsaArchiveDecoder::read_file_impl(
 
 std::vector<std::string> BsaArchiveDecoder::get_linked_formats() const
 {
-    return {"bishop/bsg"};
+    return {"bishop/bsc", "bishop/bsg"};
 }
 
 static auto _ = dec::register_decoder<BsaArchiveDecoder>("bishop/bsa");
