@@ -1,0 +1,72 @@
+#!/bin/python3
+import re
+import argparse
+
+TEMPLATE = '''{ dev: %(dev)r,
+  date: %(date)r,
+  title: %(title)r,
+  title_orig: %(title_orig)r,
+  vndb: %(id)d,
+  fmt: {},
+  args: []},
+'''
+
+# why isn't there list.get(index, default=None)?!
+def get(self, index, default=None):
+    return self[index] if len(self) > index else default
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Gets info from VNDB and outputs GAMELIST-compatible JSON.')
+    parser.add_argument('id', nargs='+', help='ID or URL to the visual novel.')
+    return parser.parse_args()
+
+def parse_id(id):
+    match = re.match('^(?:https?://vndb.org/v|v|)(\d+)$', id)
+    if match:
+        return int(match.group(1))
+    return None
+
+def get_info(id):
+    # I know about the API, but it requires you to create an account.
+    # I don't want to require any kind of credentials in here.
+
+    import urllib.request
+    from lxml import etree
+
+    url = 'https://vndb.org/v%d' % id
+    with urllib.request.urlopen(url) as response:
+        data = response.read().decode()
+        doc = etree.fromstring(data)
+
+        details = {'id': id, 'releases': []}
+        for row in doc.cssselect('.vndetails tr:not(.nostripe)'):
+            key = row.cssselect('td')[0].text
+            value = ''.join(row.cssselect('td')[-1].itertext())
+            if not key:
+                pass
+            details[key.lower().replace(' ', '_')] = value
+
+        for row in doc.cssselect('.releases tr:not(.lang)'):
+            date = row.cssselect('td')[0].text
+            details['releases'].append(date)
+
+        return details
+
+def main():
+    args = parse_args()
+    for id in args.id:
+        id = parse_id(id)
+        if not id:
+            raise ValueError('Invalid ID: %r' % id)
+        details = get_info(id)
+        print(TEMPLATE % {
+            'id': id,
+            'dev': details.get('developer') or 'FILL',
+            'date': get(details['releases'], 0, None) or 'FILL',
+            'title': details.get('title') or 'FILL',
+            'title_orig': details.get('original_title') or 'FILL',
+        })
+
+if __name__ == '__main__':
+    main()
