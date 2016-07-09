@@ -1,5 +1,6 @@
 #include "dec/yuris/ypf_archive_decoder.h"
 #include <set>
+#include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
@@ -20,58 +21,80 @@ namespace
     };
 }
 
-static u8 get_name_size(io::BaseByteStream &input_stream, size_t initial_pos)
+static std::vector<u8> create_swap_table(
+    const std::vector<std::pair<u8, u8>> &swaps)
 {
-    const auto byte = input_stream.read<u8>() ^ 0xFF;
-    static const std::vector<u8> table =
-        {
-            0x03, 0x48, 0x06, 0x35, 0x0C, 0x10, 0x11, 0x19,
-            0x1C, 0x1E, 0x09, 0x0B, 0x0D, 0x13, 0x15, 0x1B,
-            0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x2E, 0x32,
-        };
-
-    const auto it = std::find(table.begin() + initial_pos, table.end(), byte);
-    if (it == table.end())
-        return byte;
-    const auto pos = it - table.begin();
-    return table[pos + ((pos & 1) ? -1 : 1)];
-}
-
-static bstr unxor(const bstr &input, const u8 key)
-{
-    bstr output(input);
-    for (auto &c : output)
-        c ^= key;
-    return output;
-}
-
-static size_t guess_name_crypt_pos(
-    io::BaseByteStream &table_stream,
-    const size_t version,
-    const size_t file_count)
-{
-    for (const auto initial_pos : {4, 0, 10})
+    std::vector<u8> ret;
+    for (const auto i : algo::range(256))
+        ret.push_back(i);
+    for (auto &pair : swaps)
     {
-        table_stream.seek(0);
+        ret[pair.first] = pair.second;
+        ret[pair.second] = pair.first;
+    }
+    return ret;
+}
+
+static const std::vector<std::vector<u8>> name_size_tables = {
+    create_swap_table({
+        {0x03, 0x48}, {0x06, 0x35}, {0x0C, 0x10}, {0x11, 0x19},
+        {0x1C, 0x1E}, {0x09, 0x0B}, {0x0D, 0x13}, {0x15, 0x1B},
+        {0x20, 0x23}, {0x26, 0x29}, {0x2C, 0x2F}, {0x2E, 0x32},
+    }),
+
+    create_swap_table({
+        {0x0C, 0x10}, {0x11, 0x19}, {0x1C, 0x1E}, {0x09, 0x0B},
+        {0x0D, 0x13}, {0x15, 0x1B}, {0x20, 0x23}, {0x26, 0x29},
+        {0x2C, 0x2F}, {0x2E, 0x32},
+    }),
+
+    create_swap_table({
+        {0x09, 0x0B}, {0x0D, 0x13}, {0x15, 0x1B}, {0x20, 0x23},
+        {0x26, 0x29}, {0x2C, 0x2F}, {0x2E, 0x32},
+    })
+};
+
+static bstr read_raw_name(
+    io::BaseByteStream &input_stream,
+    const std::vector<u8> &name_size_table)
+{
+    auto name_size = input_stream.read<u8>() ^ 0xFF;
+    return input_stream.read(name_size_table.at(name_size));
+}
+
+static size_t guess_extra_header_size(const int version)
+{
+    if (version == 0xDE)
+        return 12;
+    return 4;
+}
+
+static std::vector<u8> guess_name_size_table(
+    io::BaseByteStream &input_stream,
+    const size_t file_count,
+    const int version)
+{
+    const auto extra_header_size = guess_extra_header_size(version);
+    for (const auto &name_size_table : name_size_tables)
+    {
+        input_stream.seek(0);
         try
         {
             for (const auto i : algo::range(file_count))
             {
-                table_stream.skip(4);
-                const auto name_size = get_name_size(table_stream, initial_pos);
-                table_stream.skip(name_size);
-                table_stream.skip(14);
-                table_stream.skip(version == 0xDE ? 12 : 4);
+                input_stream.skip(4);
+                const auto name = read_raw_name(input_stream, name_size_table);
+                input_stream.skip(14);
+                input_stream.skip(extra_header_size);
             }
-            table_stream.seek(0);
-            return initial_pos;
+            input_stream.seek(0);
+            return name_size_table;
         }
         catch (...)
         {
-            continue;
         }
     }
-    throw err::NotSupportedError("Failed to guess the name crypt position");
+    throw err::NotSupportedError("Failed to guess name size permutation table");
 }
 
 static u8 guess_key(const std::vector<bstr> &names)
@@ -84,7 +107,7 @@ static u8 guess_key(const std::vector<bstr> &names)
         if (name.size() < 4)
             continue;
         const auto key = name.at(name.size() - 4) ^ '.';
-        const auto decoded_name = unxor(name, key);
+        const auto decoded_name = algo::unxor(name, key);
         const auto possible_extension = decoded_name.substr(-3).str();
         if (good_extensions.find(possible_extension) != good_extensions.end())
             return key;
@@ -108,8 +131,9 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(
         input_file.stream.seek(0x20).read(table_size));
 
-    const auto name_crypt_pos
-        = guess_name_crypt_pos(table_stream, version, file_count);
+    const auto name_size_table = guess_name_size_table(
+        table_stream, file_count, version);
+    const auto extra_header_size = guess_extra_header_size(version);
 
     std::vector<bstr> names;
     auto meta = std::make_unique<ArchiveMeta>();
@@ -117,8 +141,7 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
     {
         table_stream.skip(4);
 
-        const auto name_size = get_name_size(table_stream, name_crypt_pos);
-        const auto name = table_stream.read(name_size);
+        const auto name = read_raw_name(table_stream, name_size_table);
         names.push_back(name);
 
         auto entry = std::make_unique<CustomArchiveEntry>();
@@ -127,13 +150,17 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
         entry->size_orig = table_stream.read_le<u32>();
         entry->size_comp = table_stream.read_le<u32>();
         entry->offset = table_stream.read_le<u32>();
-        table_stream.skip(version == 0xDE ? 12 : 4);
+        table_stream.skip(extra_header_size);
         meta->entries.push_back(std::move(entry));
     }
 
     const auto key = guess_key(names);
     for (const auto i : algo::range(file_count))
-        meta->entries[i]->path = algo::sjis_to_utf8(unxor(names[i], key)).str();
+    {
+        meta->entries[i]->path = algo::sjis_to_utf8(
+            algo::unxor(names[i], key)).str();
+    }
+
     return meta;
 }
 
