@@ -6,6 +6,12 @@ namespace au {
 namespace dec {
 namespace tactics {
 
+    enum class CompressionMethod : u8
+    {
+        PlainLzss,
+        VariableLzss,
+    };
+
     class ArcArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
@@ -27,6 +33,7 @@ namespace tactics {
 
     public:
         bstr key;
+        CompressionMethod compression_method;
     };
 
 } } }
