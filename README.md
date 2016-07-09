@@ -138,8 +138,7 @@ question](#user-content-how-do-i-pass-additional-options--parameters).
     decoders for them.
 
   For details, check out
-  [`CONTRIBUTING.md`](https://github.com/vn-tools/arc_unpacker/blob/master/CONTRIBUTING.md)
-  and hit the IRC channel.
+  [`CONTRIBUTING.md`](https://github.com/vn-tools/arc_unpacker/blob/master/CONTRIBUTING.md).
 
 - ##### Packing / encoding support?
 
@@ -164,4 +163,3 @@ question](#user-content-how-do-i-pass-additional-options--parameters).
   tracker](https://github.com/vn-tools/arc_unpacker/issues)
 - Game requests: [GitHub issue
   tracker](https://github.com/vn-tools/arc_unpacker/issues)
-- IRC channel: `#arc_unpacker` on `irc.rizon.net`

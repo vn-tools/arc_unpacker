@@ -7,8 +7,7 @@ pull requests and/or issues. All contributions are welcome.
 ### Code submissions
 
 Please send a pull request to the `master` branch. Please include tests for new
-decoders. Feel free to ask questions via issues or
-irc://irc.rizon.net#arc_unpacker.
+decoders. Feel free to ask questions via issues.
 
 ##### Flow
 
