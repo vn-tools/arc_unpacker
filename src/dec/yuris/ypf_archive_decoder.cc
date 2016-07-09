@@ -185,4 +185,9 @@ std::unique_ptr<io::File> YpfArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> YpfArchiveDecoder::get_linked_formats() const
+{
+    return {"yuris/ycg"};
+}
+
 static auto _ = dec::register_decoder<YpfArchiveDecoder>("yuris/ypf");
