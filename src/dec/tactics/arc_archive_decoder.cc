@@ -13,13 +13,13 @@ static const bstr magic = "TACTICS_ARC_FILE"_b;
 
 namespace
 {
-    struct CustomArchiveEntry final : dec::CompressedArchiveEntry
+    struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         bstr key;
     };
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
+static std::unique_ptr<CustomArchiveMeta> read_meta_v0(io::File &input_file)
 {
     const auto size_comp = input_file.stream.read_le<u32>();
     const auto size_orig = input_file.stream.read_le<u32>();
@@ -34,15 +34,14 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
         algo::pack::lzss_decompress(table_data, size_orig));
 
     const auto data_start = input_file.stream.pos();
-    const auto key = table_stream.read_to_zero();
-    auto meta = std::make_unique<dec::ArchiveMeta>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
+    meta->key = table_stream.read_to_zero();
     for (const auto i : algo::range(file_count))
     {
-        auto entry = std::make_unique<CustomArchiveEntry>();
+        auto entry = std::make_unique<dec::CompressedArchiveEntry>();
         entry->offset = table_stream.read_le<u32>() + data_start;
         entry->size_comp = table_stream.read_le<u32>();
         entry->size_orig = table_stream.read_le<u32>();
-        entry->key = key;
         auto name_size = table_stream.read_le<u32>();
 
         table_stream.skip(8);
@@ -52,12 +51,12 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
     return meta;
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
+static std::unique_ptr<CustomArchiveMeta> read_meta_v1(io::File &input_file)
 {
-    auto meta = std::make_unique<dec::ArchiveMeta>();
+    auto meta = std::make_unique<CustomArchiveMeta>();
     while (input_file.stream.left())
     {
-        auto entry = std::make_unique<CustomArchiveEntry>();
+        auto entry = std::make_unique<dec::CompressedArchiveEntry>();
         entry->size_comp = input_file.stream.read_le<u32>();
         if (!entry->size_comp)
             break;
@@ -98,7 +97,7 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    std::vector<std::function<std::unique_ptr<dec::ArchiveMeta>(io::File &)>>
+    std::vector<std::function<std::unique_ptr<CustomArchiveMeta>(io::File &)>>
         meta_readers
         {
             read_meta_v0,
@@ -112,11 +111,8 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
         {
             auto meta = meta_reader(input_file);
             if (!key.empty())
-            {
-                for (auto &entry : meta->entries)
-                    static_cast<CustomArchiveEntry*>(entry.get())->key = key;
-            }
-            return meta;
+                meta->key = key;
+            return std::move(meta);
         }
         catch (const std::exception)
         {
@@ -133,10 +129,11 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto entry = static_cast<const CustomArchiveEntry*>(&e);
+    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
+    const auto entry = static_cast<const CompressedArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
-    if (entry->key.size())
-        data = algo::unxor(data, entry->key);
+    if (meta->key.size())
+        data = algo::unxor(data, meta->key);
     if (entry->size_orig)
         data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
