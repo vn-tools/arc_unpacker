@@ -54,7 +54,6 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
 
 static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
 {
-    static const bstr key = "mlnebzqm"_b; // found in .exe
     auto meta = std::make_unique<dec::ArchiveMeta>();
     while (input_file.stream.left())
     {
@@ -68,11 +67,27 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         entry->offset = input_file.stream.pos();
-        entry->key = key;
         input_file.stream.skip(entry->size_comp);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
+}
+
+ArcArchiveDecoder::ArcArchiveDecoder()
+{
+    add_arg_parser_decorator(
+        ArgParserDecorator(
+            [this](ArgParser &arg_parser)
+            {
+                auto sw = arg_parser.register_switch({"arc-key"})
+                    ->set_value_name("KEY")
+                    ->set_description("key used to decrypt the files");
+            },
+            [this](const ArgParser &arg_parser)
+            {
+                if (arg_parser.has_switch("arc-key"))
+                    key = arg_parser.get_switch("arc-key");
+            }));
 }
 
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -95,7 +110,13 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
         input_file.stream.seek(magic.size());
         try
         {
-            return meta_reader(input_file);
+            auto meta = meta_reader(input_file);
+            if (!key.empty())
+            {
+                for (auto &entry : meta->entries)
+                    static_cast<CustomArchiveEntry*>(entry.get())->key = key;
+            }
+            return meta;
         }
         catch (const std::exception)
         {
@@ -115,8 +136,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->key.size())
-        for (const auto i : algo::range(data.size()))
-            data[i] ^= entry->key[i % entry->key.size()];
+        data = algo::unxor(data, entry->key);
     if (entry->size_orig)
         data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);

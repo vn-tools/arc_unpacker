@@ -8,14 +8,15 @@ using namespace au::dec::tactics;
 
 static const std::string dir = "tests/dec/tactics/files/arc/";
 
-static void do_test(const std::string &input_path)
+static void do_test(const std::string &input_path, const bstr &key = ""_b)
 {
     const std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("123.txt", "123123123123123123123"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-    const auto decoder = ArcArchiveDecoder();
+    auto decoder = ArcArchiveDecoder();
+    decoder.key = key;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(actual_files, expected_files, true);
@@ -35,11 +36,11 @@ TEST_CASE("TACTICS ARC archives", "[dec]")
 
     SECTION("Version 1, uncompressed")
     {
-        do_test("v1-uncompressed.arc");
+        do_test("v1-uncompressed.arc", "mlnebzqm"_b);
     }
 
     SECTION("Version 1, compressed")
     {
-        do_test("v1-compressed.arc");
+        do_test("v1-compressed.arc", "mlnebzqm"_b);
     }
 }

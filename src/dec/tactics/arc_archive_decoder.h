@@ -9,6 +9,7 @@ namespace tactics {
     class ArcArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
+        ArcArchiveDecoder();
         std::vector<std::string> get_linked_formats() const override;
 
     protected:
@@ -23,6 +24,9 @@ namespace tactics {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+    public:
+        bstr key;
     };
 
 } } }
