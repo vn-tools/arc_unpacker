@@ -60,6 +60,21 @@
 </div>
 
 <script>
+  function getSearchText(game) {
+    var text = '';
+    if (game.dev) {
+      text += '[' + game.dev + ']';
+    }
+    if (game.date) {
+      text += '[' + game.date + ']';
+    }
+    text += game.title;
+    if (game.title_orig) {
+      text += '(' + game.title_orig + ')';
+    }
+    return text.toLowerCase();
+  }
+
   games = games.sort(function (a, b) {
     return a.title.localeCompare(b.title, ['en', 'jp'], {numeric: true});
   });
@@ -163,7 +178,7 @@
   var listSize = $listElements.length;
   var listSearchText = {};
   $.each(games, function(i, game) {
-    listSearchText[i] = ('[' + game.dev + '][' + game.date + ']' + game.title + '(' + game.title_orig + ')').toLowerCase();
+    listSearchText[i] = getSearchText(game);
   });
   var keyTimeout, lastFilter;
   $input.change(function() {
