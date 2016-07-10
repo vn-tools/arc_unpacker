@@ -3220,6 +3220,14 @@ var games = [
   fmt: {archives: ['arc'], gfx: ['png', 'dds'], audio: ['ogg', 'wav']},
   args: ['--dec=tactics/arc --arc-key=qkh873z1 --arc-pack=variable-lzss']},
 
+{ dev: ['Nitroplus', 'Regista'],
+  date: '2016-06-30',
+  title: 'Sonicomi: Communication with Sonico',
+  title_orig: 'ソニコミ',
+  vndb: 4234,
+  fmt: {archives: ['npk2'], gfx: ['png', 'dds', 'jpg'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=nitroplus/npk2 --plugin=sonicomi']},
+
 ];
 </script>
 
@@ -3333,7 +3341,7 @@ var games = [
 
     if (game.hasOwnProperty('dev')) {
       var $releaseInfo = $('<div class="release"/>');
-      $releaseInfo.text(game.dev);
+      $releaseInfo.text(game.dev.constructor === Array ? game.dev.join(' & ') : game.dev);
       if (game.hasOwnProperty('date')) {
         $releaseInfo.append(' (' + (game.date.constructor === Array ? game.date.join(', ') : game.date) + ')');
       }
