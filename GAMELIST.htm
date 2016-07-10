@@ -75,6 +75,18 @@
     return text.toLowerCase();
   }
 
+  function toggleDetails($gameNode, delay) {
+    var $detailsArea = $gameNode.find('.details-area');
+    var $detailsLink = $gameNode.find('.details');
+    var visible = !$detailsArea.is(':visible');
+    $detailsLink.fadeOut(delay / 2, function() {
+      $detailsLink.text(visible
+        ? 'Hide details'
+        : 'Show details').fadeIn(delay / 2);
+    });
+    $detailsArea.slideToggle(delay);
+  }
+
   games = games.sort(function (a, b) {
     return a.title.localeCompare(b.title, ['en', 'jp'], {numeric: true});
   });
@@ -116,16 +128,16 @@
       $detailsArea.append($('<p/>').html(game.info));
     }
 
-    var $li = $('<li/>');
+    var $gameNode = $('<li class="game"/>');
 
     var $titleEnglish = $('<div class="title-english"/>');
     $titleEnglish.text(game.title);
-    $li.append($titleEnglish);
+    $gameNode.append($titleEnglish);
 
     if (game.hasOwnProperty('title_orig')) {
       var $titleOriginal = $('<div class="title-original"/>');
       $titleOriginal.text(game.title_orig);
-      $li.append($titleOriginal);
+      $gameNode.append($titleOriginal);
     }
 
     if (game.hasOwnProperty('dev')) {
@@ -134,7 +146,7 @@
       if (game.hasOwnProperty('date')) {
         $releaseInfo.append(' (' + (game.date.constructor === Array ? game.date.join(', ') : game.date) + ')');
       }
-      $li.append($releaseInfo);
+      $gameNode.append($releaseInfo);
     }
 
     var $miscArea = $('<ul class="misc-area"/>');
@@ -142,13 +154,7 @@
     var $detailsLink = $('<a class="details" href="#" title="Show details">Show details</a>');
     $detailsLink.click(function(e) {
       e.preventDefault();
-      var visible = !$detailsArea.is(':visible');
-      $detailsLink.fadeOut(125, function() {
-        $detailsLink.text(visible
-          ? 'Hide details'
-          : 'Show details').fadeIn(125);
-      });
-      $detailsArea.slideToggle(250);
+      toggleDetails($gameNode, 250);
     });
     $miscArea.append($('<li/>').append($detailsLink));
 
@@ -166,30 +172,36 @@
       $miscArea.prepend($('<li><span>Requires extra CLI switches</span></li>'));
     }
 
-    $li.append($miscArea);
-    $li.append($('<div class="clear"/>'));
-    $li.append($detailsArea);
+    $gameNode.append($miscArea);
+    $gameNode.append($('<div class="clear"/>'));
+    $gameNode.append($detailsArea);
 
-    $ul.append($li);
+    $ul.append($gameNode);
   });
 
-  var $input = $('#live-search input');
-  var $listElements = $ul.children();
-  var listSize = $listElements.length;
-  var listSearchText = {};
-  $.each(games, function(i, game) {
-    listSearchText[i] = getSearchText(game);
-  });
-  var keyTimeout, lastFilter;
-  $input.change(function() {
-    var text = $input.val().toLowerCase();
-    if (text === '') {
-      $ul.find('li').show();
-    } else {
+  var filterResults = (function() {
+    var listSearchText = {};
+    $.each(games, function(i, game) {
+      listSearchText[i] = getSearchText(game);
+    });
+    var $listElements = $ul.children();
+    var listSize = $listElements.length;
+    return function(text) {
+      text = text.toLowerCase();
+      if (text === '') {
+        $ul.find('li').show();
+        return;
+      }
       for (var i = 0; i < listSize; i++) {
         $listElements[i].style.display = listSearchText[i].indexOf(text) !== -1 ? 'block' : 'none';
       }
     }
+  })();
+
+  var $input = $('#live-search input');
+  var keyTimeout, lastFilter;
+  $input.change(function() {
+    filterResults($input.val());
   }).keydown(function() {
     clearTimeout(keyTimeout);
     keyTimeout = setTimeout(function() {
@@ -197,17 +209,29 @@
         return;
       }
       lastFilter = $input.val();
-      $input.change();
+      filterResults($input.val());
     }, 50);
   });
   $('form').submit(function(e) {
     e.preventDefault();
-    input.change();
+    window.location.hash = encodeURIComponent($input.val());
   });
 
   $(function() {
-    $input.change();
+    if (window.location.hash) {
+      var hash = window.location.hash.replace(/^#/, '');
+      $input.val(decodeURIComponent(hash));
+    }
+    filterResults($input.val());
     $ul.width($ul.width());
+    if (window.location.hash) {
+      $visibleGameNodes = $ul.find('li.game:visible');
+      if ($visibleGameNodes.length <= 5) {
+        $visibleGameNodes.each(function(i, gameNode) {
+          toggleDetails($(gameNode), 0);
+        });
+      }
+    }
   });
 </script>
 </body>
