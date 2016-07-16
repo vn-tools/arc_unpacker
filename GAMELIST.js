@@ -3221,4 +3221,12 @@ var games = [
   fmt: {archives: ['npk2'], gfx: ['png', 'dds', 'jpg'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=nitroplus/npk2 --plugin=sonicomi']},
 
+{ dev: 'Alice Soft',
+  date: '2016-01-29',
+  title: 'Tsumamigui 3',
+  title_orig: '妻みぐい3',
+  vndb: 18486,
+  fmt: {archives: ['afa'], gfx: ['dcf', 'png'], audio: ['ogg'], video: ['atec'], misc: ['flat']},
+  args: ['--dec=alice-soft/afa']},
+
 ];
