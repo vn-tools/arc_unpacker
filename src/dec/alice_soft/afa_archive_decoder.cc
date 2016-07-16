@@ -23,11 +23,15 @@ bool AfaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(magic1.size() + 4 + magic2.size() + 4 * 2);
+    input_file.stream.seek(magic1.size());
+    input_file.stream.skip(4);
+    input_file.stream.skip(magic2.size());
+    const auto version = input_file.stream.read_le<u32>();
+    input_file.stream.skip(4);
     const auto file_data_start = input_file.stream.read_le<u32>();
+
     if (input_file.stream.read(magic3.size()) != magic3)
         throw err::CorruptDataError("Corrupt file table");
-
     const auto table_size_comp = input_file.stream.read_le<u32>();
     const auto table_size_orig = input_file.stream.read_le<u32>();
     const auto file_count = input_file.stream.read_le<u32>();
@@ -46,7 +50,9 @@ std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
         entry->path = algo::sjis_to_utf8(
             table_stream.read_to_zero(name_size)).str();
 
-        table_stream.skip(4 * 3); // for some games, apparently this is 4 * 2
+        table_stream.skip(8);
+        if (version == 1)
+            table_stream.skip(4);
         entry->offset = table_stream.read_le<u32>() + file_data_start;
         entry->size = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));

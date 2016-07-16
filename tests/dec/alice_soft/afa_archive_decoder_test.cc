@@ -1,4 +1,6 @@
 #include "dec/alice_soft/afa_archive_decoder.h"
+#include "algo/pack/zlib.h"
+#include "io/memory_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -6,22 +8,73 @@
 using namespace au;
 using namespace au::dec::alice_soft;
 
-static const std::string dir = "tests/dec/alice_soft/files/afa/";
-
-static void do_test(const std::string &input_path)
+static std::unique_ptr<io::File> create_file(
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
+    const int version)
 {
-    const std::vector<std::shared_ptr<io::File>> expected_files
+    off_t offset = 0;
+    io::MemoryStream table_stream;
+    for (const auto &file : expected_files)
     {
-        tests::stub_file("123.txt", "1234567890"_b),
-        tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
-    const auto decoder = AfaArchiveDecoder();
-    const auto input_file = tests::file_from_path(dir + input_path);
-    const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(actual_files, expected_files, true);
+        table_stream.write("JUNK"_b);
+        table_stream.write_le<u32>(file->path.str().size());
+        table_stream.write(file->path.str());
+        table_stream.write("JUNK"_b);
+        table_stream.write("JUNK"_b);
+        if (version == 1)
+            table_stream.write("JUNK"_b);
+        table_stream.write_le<u32>(offset);
+        table_stream.write_le<u32>(file->stream.size());
+        offset += file->stream.size();
+    }
+
+    const auto table_data_orig = table_stream.seek(0).read_to_eof();
+    const auto table_data_comp = algo::pack::zlib_deflate(table_data_orig);
+
+    auto output_file = std::make_unique<io::File>();
+    output_file->stream.write("AFAH"_b);
+    output_file->stream.write("JUNK"_b);
+    output_file->stream.write("AlicArch"_b);
+    output_file->stream.write_le<u32>(version);
+    output_file->stream.write("JUNK"_b);
+    const auto data_offset_stub = output_file->stream.pos();
+    output_file->stream.write("STUB"_b);
+
+    output_file->stream.write("INFO"_b);
+    output_file->stream.write_le<u32>(table_data_comp.size());
+    output_file->stream.write_le<u32>(table_data_orig.size());
+    output_file->stream.write_le<u32>(expected_files.size());
+    output_file->stream.write(table_data_comp);
+    const auto data_offset = output_file->stream.pos();
+
+    for (const auto &file : expected_files)
+        output_file->stream.write(file->stream);
+
+    output_file->stream.seek(data_offset_stub).write_le<u32>(data_offset);
+    return output_file;
 }
 
 TEST_CASE("Alice Soft AFA archives", "[dec]")
 {
-    do_test("test.afa");
+    const std::vector<std::shared_ptr<io::File>> expected_files =
+        {
+            tests::stub_file("123.txt", "1234567890"_b),
+            tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
+        };
+
+    std::unique_ptr<io::File> input_file;
+
+    SECTION("Version 1")
+    {
+        input_file = create_file(expected_files, 1);
+    }
+
+    SECTION("Version 2")
+    {
+        input_file = create_file(expected_files, 2);
+    }
+
+    const auto decoder = AfaArchiveDecoder();
+    const auto actual_files = tests::unpack(decoder, *input_file);
+    tests::compare_files(actual_files, expected_files, true);
 }
