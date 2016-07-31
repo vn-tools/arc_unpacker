@@ -3229,4 +3229,12 @@ var games = [
   fmt: {archives: ['afa'], gfx: ['dcf', 'png'], audio: ['ogg'], video: ['atec'], misc: ['flat']},
   args: ['--dec=alice-soft/afa']},
 
+{ dev: 'Regista',
+  date: '2016-04-27',
+  title: 'Root Double -Before Crime * After Days-',
+  title_orig: 'ルートダブル -Before Crime * After Days-',
+  vndb: 5000,
+  fmt: {archives: ['cpk'], gfx: ['xtx'], audio: ['hca'], video: ['wmv']},
+  args: ['--dec=cri/cpk']},
+
 ];
