@@ -27,6 +27,11 @@ TEST_CASE("CRI XTX images", "[dec]")
         do_test(xtx_dir / "unk_1186-zlib.xtx", xtx_dir / "unk_1186-out.png");
     }
 
+    SECTION("Extra header, format 0")
+    {
+        do_test(xtx_dir / "unk_3398-zlib.xtx", xtx_dir / "unk_3398-out.png");
+    }
+
     SECTION("Extra header, format 2")
     {
         do_test(xtx_dir / "unk_4140-zlib.xtx", xtx_dir / "unk_4140-out.png");
