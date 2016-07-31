@@ -78,6 +78,24 @@ static bstr read_tex_0(const Header &header, io::BaseByteStream &input_stream)
     return output;
 }
 
+static bstr read_tex_1(const Header &header, io::BaseByteStream &input_stream)
+{
+    const auto input = input_stream.read(header.aligned_canvas_size() * 2);
+    bstr output(header.canvas_size() * 2);
+    for (const auto i : algo::range(header.aligned_canvas_size()))
+    {
+        const auto x = get_x(i, header.aligned_width, 2);
+        const auto y = get_y(i, header.aligned_width, 2);
+        if (y >= header.height || x >= header.width)
+            continue;
+        const auto src = i * 2;
+        const auto dst = (x + y * header.width) * 2;
+        output[dst + 1] = input[src];
+        output[dst] = input[src + 1];
+    }
+    return output;
+}
+
 static bstr read_tex_2(const Header &header, io::BaseByteStream &input_stream)
 {
     const auto texture_width = header.aligned_width >> 2;
@@ -154,6 +172,15 @@ res::Image XtxImageDecoder::decode_impl(
             header.height,
             read_tex_0(header, input_file.stream),
             res::PixelFormat::BGRA8888);
+    }
+
+    if (header.format == 1)
+    {
+        return res::Image(
+            header.width,
+            header.height,
+            read_tex_1(header, input_file.stream),
+            res::PixelFormat::BGR565);
     }
 
     if (header.format == 2)
