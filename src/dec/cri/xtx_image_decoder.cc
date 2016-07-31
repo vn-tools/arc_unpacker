@@ -95,15 +95,28 @@ static bstr read_tex_2(const Header &header, io::BaseByteStream &input_stream)
     return new_output;
 }
 
+static soff_t locate_start(io::BaseByteStream &input_stream)
+{
+    if (input_stream.seek(0).read(magic.size()) == magic)
+        return 0;
+    const auto header_size = input_stream.seek(0).read_le<u32>();
+    if (header_size >= 0x1000)
+        return -1;
+    input_stream.seek(header_size);
+    if (input_stream.read(magic.size()) == magic)
+        return header_size;
+    return -1;
+}
+
 bool XtxImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.read(magic.size()) == magic;
+    return locate_start(input_file.stream) != -1;
 }
 
 res::Image XtxImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(magic.size());
+    input_file.stream.seek(locate_start(input_file.stream) + magic.size());
     Header header;
     header.format = input_file.stream.read<u8>();
     input_file.stream.skip(3);
