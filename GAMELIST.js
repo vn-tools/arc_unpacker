@@ -3237,4 +3237,11 @@ var games = [
   fmt: {archives: ['cpk'], gfx: ['xtx'], audio: ['hca'], video: ['wmv']},
   args: ['--dec=cri/cpk']},
 
+{ dev: 'Almond Collective',
+  date: '2016-03-05',
+  title: 'Panty pilferers and mermaid in school swimwear',
+  title_orig: 'パンツ泥棒たちとスク水マーメイド',
+  fmt: {archives: ['pac3'], gfx: ['png'], audio: ['ogg', 'wav'], video: ['avi']},
+  args: ['--dec=almond-collective/pac3']},
+
 ];
