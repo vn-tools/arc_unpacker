@@ -92,11 +92,6 @@ namespace
         u8 marker;
     };
 
-    struct CustomArchiveMeta final : dec::ArchiveMeta
-    {
-        BlockKey key;
-    };
-
     struct CustomArchiveEntry final : dec::PlainArchiveEntry
     {
         FileKey key;
@@ -377,8 +372,7 @@ std::unique_ptr<dec::ArchiveMeta> Pac3ArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(
         read_and_decrypt(input_file.stream, table_size, key));
     auto current_offset = input_file.stream.pos();
-    auto meta = std::make_unique<CustomArchiveMeta>();
-    meta->key = key;
+    auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<CustomArchiveEntry>();
@@ -394,8 +388,7 @@ std::unique_ptr<dec::ArchiveMeta> Pac3ArchiveDecoder::read_meta_impl(
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));
     }
-
-    return std::move(meta);
+    return meta;
 }
 
 std::unique_ptr<io::File> Pac3ArchiveDecoder::read_file_impl(
@@ -404,9 +397,7 @@ std::unique_ptr<io::File> Pac3ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    const auto meta = static_cast<const CustomArchiveMeta*>(&m);
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
-
     FileKey file_key_copy = entry->key;
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     decrypt_file_data(file_key_copy, entry->offset, data);
