@@ -3242,6 +3242,6 @@ var games = [
   title: 'Panty pilferers and mermaid in school swimwear',
   title_orig: 'パンツ泥棒たちとスク水マーメイド',
   fmt: {archives: ['pac3'], gfx: ['png'], audio: ['ogg', 'wav'], video: ['avi']},
-  args: ['--dec=almond-collective/pac3']},
+  args: ['--dec=almond-collective/pac3 --pac3-key=Mermaid!']},
 
 ];

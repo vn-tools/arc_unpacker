@@ -6,7 +6,6 @@
 using namespace au;
 using namespace au::dec::almond_collective;
 
-static const auto game_key = "Mermaid!"_b;
 static const bstr magic = "PAC3"_b;
 
 static const bstr sboxes[4] =
@@ -353,6 +352,22 @@ static void decrypt_file_data(
     }
 }
 
+Pac3ArchiveDecoder::Pac3ArchiveDecoder()
+{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--pac3-key"})
+                ->set_value_name("KEY")
+                ->set_description("Decryption key");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("pac3-key"))
+                game_key = arg_parser.get_switch("pac3-key");
+        });
+}
+
 bool Pac3ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -362,6 +377,9 @@ std::unique_ptr<dec::ArchiveMeta> Pac3ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(4);
+
+    if (game_key.empty())
+        throw err::UsageError("Please supply game key with --pac3-key switch.");
 
     const auto key = expand_key(game_key);
     const auto unk1 = read_and_decrypt(input_file.stream, 16, key);

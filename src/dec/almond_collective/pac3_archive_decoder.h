@@ -8,6 +8,9 @@ namespace almond_collective {
 
     class Pac3ArchiveDecoder final : public BaseArchiveDecoder
     {
+    public:
+        Pac3ArchiveDecoder();
+
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
 
@@ -20,6 +23,9 @@ namespace almond_collective {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+    private:
+        std::string game_key;
     };
 
 } } }
