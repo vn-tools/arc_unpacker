@@ -3251,4 +3251,11 @@ var games = [
   fmt: {archives: ['pac3'], gfx: ['png'], audio: ['ogg'], video: ['avi']},
   args: ['--dec=almond-collective/pac3 --pac3-key=OjikiMei']},
 
+{ dev: 'Almond Collective',
+  date: '2011-05-07',
+  title: 'Bloomers Lesson',
+  title_orig: 'ゴリマッチョとブルマレッスン',
+  fmt: {archives: ['pac2'], gfx: ['teyl'], audio: ['ogg'], video: ['avi']},
+  args: ['--dec=almond-collective/pac2']},
+
 ];
