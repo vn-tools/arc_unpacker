@@ -3244,4 +3244,11 @@ var games = [
   fmt: {archives: ['pac3'], gfx: ['png'], audio: ['ogg', 'wav'], video: ['avi']},
   args: ['--dec=almond-collective/pac3 --pac3-key=Mermaid!']},
 
+{ dev: 'Almond Collective',
+  date: '2013-11-03',
+  title: 'Ojiki to mei to',
+  title_orig: '叔父貴と姪と',
+  fmt: {archives: ['pac3'], gfx: ['png'], audio: ['ogg'], video: ['avi']},
+  args: ['--dec=almond-collective/pac3 --pac3-key=OjikiMei']},
+
 ];
