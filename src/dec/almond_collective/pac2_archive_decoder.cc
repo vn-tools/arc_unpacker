@@ -72,5 +72,10 @@ std::unique_ptr<io::File> Pac2ArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> Pac2ArchiveDecoder::get_linked_formats() const
+{
+    return {"almond-collective/teyl"};
+}
+
 static auto _ = dec::register_decoder<Pac2ArchiveDecoder>(
     "almond-collective/pac2");
