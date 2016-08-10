@@ -1,5 +1,6 @@
 #include "dec/almond_collective/pac3_archive_decoder.h"
 #include "algo/binary.h"
+#include "algo/locale.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
 
@@ -401,7 +402,7 @@ std::unique_ptr<dec::ArchiveMeta> Pac3ArchiveDecoder::read_meta_impl(
         const auto key = table_stream.read_le<u32>();
         const auto name_size = table_stream.read<u8>();
         const auto name = table_stream.read_to_zero(name_size).str(true);
-        entry->path = name;
+        entry->path = algo::sjis_to_utf8(name).str();
         entry->key = create_file_key(file_id, entry->size, name, key);
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));
