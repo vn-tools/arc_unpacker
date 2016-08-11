@@ -1,7 +1,9 @@
 #include "dec/wendy_bell/arc_archive_decoder.h"
 #include <map>
 #include "algo/pack/lzss.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "io/memory_stream.h"
 #include "virtual_file_system.h"
 
@@ -23,6 +25,7 @@ namespace
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::vector<std::unique_ptr<io::File>> data_files;
+        ArcArchivePlugin plugin;
     };
 
     struct CustomArchiveEntry final : dec::CompressedArchiveEntry
@@ -57,6 +60,123 @@ static std::vector<std::string> get_data_file_names(const io::File &input_file)
     return tmp->second;
 }
 
+static std::map<ImageParameter, u32> read_image_parameters(
+    io::BaseByteStream &input_stream, const ArcArchivePlugin &plugin)
+{
+    std::map<ImageParameter, u32> parameters;
+    u8 step[3] = {0};
+    for (const auto param : plugin.img_param_order)
+    {
+        step[0] = input_stream.read<u8>();
+        if (step[0] == plugin.img_delim[2])
+            step[0] = 0;
+        u8 tmp = input_stream.read<u8>();
+        while (tmp != plugin.img_delim[1])
+        {
+            if (tmp == plugin.img_delim[0])
+                step[2]++;
+            else if (tmp == plugin.img_delim[2])
+                step[1] = 0;
+            else
+                step[1] = tmp;
+            tmp = input_stream.read<u8>();
+        }
+        const u32 value
+            = step[2] * plugin.img_delim[0] * plugin.img_delim[0]
+            + step[1] * plugin.img_delim[0]
+            + step[0];
+        step[1] = 0;
+        step[2] = 0;
+        parameters[param] = value;
+    }
+    return parameters;
+}
+
+static void decode_picture(
+    const Logger &logger, const ArcArchivePlugin &plugin, bstr &data)
+{
+    if (!data.size())
+        return;
+
+    if (data[0] == 'a')
+    {
+        io::MemoryStream data_stream(data);
+        data_stream.seek(2);
+
+        const auto parameters = read_image_parameters(data_stream, plugin);
+        const auto width = parameters.at(ImageParameter::Width);
+        const auto height = parameters.at(ImageParameter::Height);
+        const auto bitmap_size = parameters.at(ImageParameter::BitmapSize);
+        const auto channels = bitmap_size / (width * height);
+        const auto stride = ((channels * width) + 3) & ~3;
+        const auto data_offset = data_stream.pos();
+
+        res::PixelFormat format;
+        if (channels == 3)
+            format = res::PixelFormat::BGR888;
+        else if (channels == 1)
+            format = res::PixelFormat::Gray8;
+        else
+            throw err::UnsupportedChannelCountError(channels);
+
+        res::Image image(width, height);
+        for (const auto y : algo::range(height))
+        {
+            data_stream.seek(data_offset + stride * y);
+            res::Image row(width, 1, data_stream, format);
+            for (const auto x : algo::range(width))
+                image.at(x, y) = row.at(x, 0);
+        }
+
+        const auto encoder = enc::png::PngImageEncoder();
+        data = encoder.encode(logger, image, "")->stream.seek(0).read_to_eof();
+        return;
+    }
+
+    if (data[0] == 'c')
+    {
+        // a PNG file
+        data = data.substr(5);
+        return;
+    }
+}
+
+ArcArchiveDecoder::ArcArchiveDecoder()
+{
+    plugin_manager.add(
+        "zoku-etsuraku",
+        "Zoku Etsuraku no Tane",
+        {
+            {
+                ImageParameter::Width,
+                ImageParameter::BitmapSize,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Height,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Type,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+            },
+            {0xE9, 0xEF, 0xFB},
+        });
+
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Specifies plugin for decoding image files."));
+}
+
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(8);
@@ -79,6 +199,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     for (const auto &data_file_name : data_file_names)
         meta->data_files.push_back(
             VirtualFileSystem::get_by_name(data_file_name));
+    meta->plugin = plugin_manager.get();
 
     while (table_stream.left())
     {
@@ -115,6 +236,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     auto data = data_stream->seek(entry->offset).read(entry->size_comp);
     if (entry->size_orig != entry->size_comp)
         data = algo::pack::lzss_decompress(data, entry->size_orig);
+
+    if (entry->type == "b0"_b || entry->type == "n0"_b || entry->type == "o0"_b)
+        decode_picture(logger, meta->plugin, data);
+
     auto ret = std::make_unique<io::File>(entry->path, data);
     ret->guess_extension();
     return ret;
