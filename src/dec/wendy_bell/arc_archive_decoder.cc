@@ -141,6 +141,27 @@ static void decode_picture(
     }
 }
 
+static void decode_tinkerbell_data(bstr &data)
+{
+    const auto key =
+        "DBB3206F-F171-4885-A131-EC7FBA6FF491 Copyright 2004 "
+        "Cyberworks \"TinkerBell\"., all rights reserved.\x00"_b;
+    size_t key_pos = 0;
+    for (const auto i : algo::range(4, data.size()))
+    {
+        if (i >= 0xE1F)
+            break;
+        data[i] ^= key[key_pos];
+        key_pos++;
+        if (key_pos == key.size())
+            key_pos = 1;
+    }
+    data[0] = 'O';
+    data[1] = 'g';
+    data[2] = 'g';
+    data[3] = 'S';
+}
+
 ArcArchiveDecoder::ArcArchiveDecoder()
 {
     plugin_manager.add(
@@ -239,6 +260,9 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
 
     if (entry->type == "b0"_b || entry->type == "n0"_b || entry->type == "o0"_b)
         decode_picture(logger, meta->plugin, data);
+
+    if (entry->type == "j0"_b || entry->type == "k0"_b)
+        decode_tinkerbell_data(data);
 
     auto ret = std::make_unique<io::File>(entry->path, data);
     ret->guess_extension();
