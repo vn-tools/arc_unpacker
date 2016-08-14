@@ -3258,6 +3258,14 @@ var games = [
   fmt: {archives: ['pac2'], gfx: ['teyl'], audio: ['ogg'], video: ['avi']},
   args: ['--dec=almond-collective/pac2']},
 
+{ dev: 'Smee',
+  date: '2013-05-25',
+  title: 'Fureraba ~Friend to Lover~',
+  title_orig: 'フレラバ ～Friend to Lover～',
+  vndb: 11856,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
+  args: ['--dec=bgi/arc']},
+
 { dev: 'WendyBell',
   date: '2015-06-26',
   title: 'Zoku Etsuraku no Tane',
