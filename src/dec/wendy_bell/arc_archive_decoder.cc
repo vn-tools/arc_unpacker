@@ -141,7 +141,7 @@ static void decode_picture(
     }
 }
 
-static void decode_tinkerbell_data(bstr &data)
+static void decode_tinkerbell_data_headerless(bstr &data)
 {
     const auto key =
         "DBB3206F-F171-4885-A131-EC7FBA6FF491 Copyright 2004 "
@@ -160,6 +160,12 @@ static void decode_tinkerbell_data(bstr &data)
     data[1] = 'g';
     data[2] = 'g';
     data[3] = 'S';
+}
+
+static void decode_tinkerbell_data_with_header(bstr &data)
+{
+    data = data.substr(12);
+    decode_tinkerbell_data_headerless(data);
 }
 
 ArcArchiveDecoder::ArcArchiveDecoder()
@@ -262,7 +268,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
         decode_picture(logger, meta->plugin, data);
 
     if (entry->type == "j0"_b || entry->type == "k0"_b)
-        decode_tinkerbell_data(data);
+        decode_tinkerbell_data_headerless(data);
+
+    if (entry->type == "u0"_b)
+        decode_tinkerbell_data_with_header(data);
 
     auto ret = std::make_unique<io::File>(entry->path, data);
     ret->guess_extension();
