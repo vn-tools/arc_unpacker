@@ -3258,4 +3258,12 @@ var games = [
   fmt: {archives: ['pac2'], gfx: ['teyl'], audio: ['ogg'], video: ['avi']},
   args: ['--dec=almond-collective/pac2']},
 
+{ dev: 'Smee',
+  date: '2013-05-25',
+  title: 'Fureraba ~Friend to Lover~',
+  title_orig: 'フレラバ ～Friend to Lover～',
+  vndb: 11856,
+  fmt: {archives: ['arc'], gfx: ['png'], audio: ['ogg']},
+  args: ['--dec=bgi/arc']},
+
 ];
