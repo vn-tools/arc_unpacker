@@ -3258,4 +3258,13 @@ var games = [
   fmt: {archives: ['pac2'], gfx: ['teyl'], audio: ['ogg'], video: ['avi']},
   args: ['--dec=almond-collective/pac2']},
 
+{ dev: 'WendyBell',
+  date: '2015-06-26',
+  title: 'Zoku Etsuraku no Tane',
+  title_orig: '続・悦楽の胤',
+  vndb: 17061,
+  fmt: {archives: ['arc'], gfx: ['png'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=wendy-bell/arc --plugin=zoku-etsuraku']},
+
 ];
