@@ -3280,4 +3280,12 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=wendy-bell/arc --plugin=zoku-etsuraku']},
 
+{ dev: 'Purple Software',
+  date: '2016-07-29',
+  title: 'Amatsutsumi',
+  title_orig: 'アマツツミ',
+  vndb: 18852,
+  fmt: {archives: ['cpz'], gfx: ['pb3'], audio: ['ogg'], misc: ['ps2']},
+  args: ['--dec=purple-software/cpz6']},
+
 ];
