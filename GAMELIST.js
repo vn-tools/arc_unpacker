@@ -16,6 +16,7 @@ var games = [
   title: 'Higurashi No Naku Koro Ni',
   title_orig: 'ひぐらしのなく頃に',
   vndb: 67,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc']},
   args: ['--dec=bgi/arc']},
 
 { dev: '3rd Eye',
@@ -290,6 +291,7 @@ var games = [
   title: 'Daitoshokan no Hitsujikai',
   title_orig: '大図書館の羊飼い',
   vndb: 8158,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
   args: ['--dec=bgi/arc']},
 
 { dev: 'Bandai Namco Entertainment',
@@ -1048,6 +1050,7 @@ var games = [
   title: 'Itsuka, Todoku, Ano Sora ni.',
   title_orig: 'いつか、届く、あの空に。',
   vndb: 23,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc']},
   args: ['--dec=bgi/arc']},
 
 { dev: 'Lump of Sugar',
@@ -1055,6 +1058,7 @@ var games = [
   title: 'Magical Charming!',
   title_orig: 'まじかる ちゃ～みんぐ！',
   vndb: 11857,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc']},
   args: ['--dec=bgi/arc']},
 
 { dev: 'Meteor',
@@ -1130,6 +1134,7 @@ var games = [
   title: 'Go! Go! Nippon! ~My First Trip to Japan~',
   title_orig: 'ゴ－！ゴ－！日本！',
   vndb: 7316,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc']},
   args: ['--dec=bgi/arc']},
 
 { dev: 'Palette',
@@ -1959,7 +1964,7 @@ var games = [
   title: 'Nursery Rhyme',
   title_orig: 'ナーサリィ☆ライム',
   vndb: 310,
-  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi']},
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc']},
   args: ['--dec=bgi/arc']},
 
 { dev: 'SofthouseChara',
