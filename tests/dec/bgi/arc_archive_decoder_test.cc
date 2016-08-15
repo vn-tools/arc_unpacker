@@ -23,5 +23,6 @@ static void do_test(const std::string &input_path)
 
 TEST_CASE("BGI ARC archives", "[dec]")
 {
-    do_test("test.arc");
+    do_test("test_packfile.arc");
+    do_test("test_buriko_arc20.arc");
 }
