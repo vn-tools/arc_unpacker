@@ -1,5 +1,6 @@
 #include "dec/bgi/arc_archive_decoder.h"
 #include <map>
+#include "algo/locale.h"
 #include "algo/range.h"
 
 using namespace au;
@@ -47,7 +48,8 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<PlainArchiveEntry>();
-        entry->path = input_file.stream.read_to_zero(type.path_size).str();
+        entry->path = algo::sjis_to_utf8(
+            input_file.stream.read_to_zero(type.path_size)).str();
         entry->offset = input_file.stream.read_le<u32>() + file_data_start;
         entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(type.skip_size);
