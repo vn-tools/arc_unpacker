@@ -3288,4 +3288,12 @@ var games = [
   fmt: {archives: ['cpz'], gfx: ['pb3'], audio: ['ogg'], misc: ['ps2']},
   args: ['--dec=purple-software/cpz6']},
 
+{ dev: 'Sprite',
+  date: '2014-09-03',
+  title: 'Ao no Kanata no Four Rhythm',
+  title_orig: '蒼の彼方のフォーリズム',
+  vndb: 12849,
+  fmt: {archives: ['arc'], gfx: ['bse', 'cbg'], audio: ['bgi'], video: ['mpg']},
+  args: ['--dec=bgi/arc']},
+
 ];
