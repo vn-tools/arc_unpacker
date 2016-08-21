@@ -4,6 +4,7 @@ projects are listed below in alphabetical order.
 - [ae](https://github.com/dsp2003/ae)
 - [ALD Explorer 2](http://www.hongfire.com/forum/showthread.php/423698)
 - [arc_conv](https://github.com/dsp2003/arc_conv)
+- [arc-reader](https://github.com/minirop/arc-reader)
 - [Brightmoon](http://touhou.wikia.com/wiki/Brightmoon)
 - [chinesize](https://github.com/regomne/chinesize)
 - Crass / CUI
