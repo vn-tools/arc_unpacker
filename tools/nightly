@@ -3,7 +3,7 @@ set -e
 
 ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
 BUILD_DIR="$ROOT_DIR"/build-nightly
-TARGET_DIR=/srv/www/tmp.sakuya.pl/public_html/au/
+TARGET_DIR=/srv/www/tmp.sakuya.pl/au/
 MXE_DIR="$HOME"/src/ext/mxe
 
 echo "fetching changes..."
