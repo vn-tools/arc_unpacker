@@ -1,24 +1,28 @@
 #pragma once
 
 #include <memory>
-#include "err.h"
+#include <string>
 #include "io/base_byte_stream.h"
+#include "io/path.h"
 
 namespace au {
 namespace io {
 
-    class SliceStream final : public BaseByteStream
+    enum class FileMode : u8
+    {
+        Read = 1,
+        Write = 2,
+    };
+
+    class FileByteStream final : public BaseByteStream
     {
     public:
-        SliceStream(io::BaseByteStream &parent_stream, const uoff_t offset);
-        SliceStream(
-            io::BaseByteStream &parent_stream,
-            const uoff_t offset,
-            const uoff_t size);
-        ~SliceStream();
+        FileByteStream(const path &path, const FileMode mode);
+        ~FileByteStream();
 
         uoff_t size() const override;
         uoff_t pos() const override;
+
         std::unique_ptr<BaseByteStream> clone() const override;
 
     protected:
@@ -28,9 +32,8 @@ namespace io {
         void resize_impl(const uoff_t new_size) override;
 
     private:
-        std::unique_ptr<io::BaseByteStream> parent_stream;
-        const uoff_t slice_offset;
-        const uoff_t slice_size;
+        struct Priv;
+        std::unique_ptr<Priv> p;
     };
 
 } }

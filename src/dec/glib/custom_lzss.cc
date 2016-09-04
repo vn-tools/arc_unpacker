@@ -1,6 +1,6 @@
 #include "dec/glib/custom_lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 // Modified LZSS routines (repetition count is negated)
 
@@ -9,7 +9,7 @@ using namespace au::dec;
 
 bstr glib::custom_lzss_decompress(const bstr &input, const size_t output_size)
 {
-    io::MemoryStream output_stream(input);
+    io::MemoryByteStream output_stream(input);
     return glib::custom_lzss_decompress(output_stream, output_size);
 }
 

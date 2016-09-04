@@ -4,7 +4,7 @@
 #include "dec/fc01/common/mrg_decryptor.h"
 #include "dec/fc01/common/util.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::fc01;
@@ -59,7 +59,7 @@ std::unique_ptr<dec::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
         key += table_data.size() - i;
     }
 
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
     CustomArchiveEntry *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))

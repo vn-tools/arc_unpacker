@@ -3,7 +3,7 @@
 #include "algo/str.h"
 #include "dec/majiro/rc8_image_decoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -39,7 +39,7 @@ static bstr decrypt(const bstr &input, const bstr &key)
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     bstr output(width * height * 3);
 

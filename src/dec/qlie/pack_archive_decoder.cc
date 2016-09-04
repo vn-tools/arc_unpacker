@@ -9,7 +9,7 @@
 #include "dec/qlie/mt.h"
 #include "err.h"
 #include "io/file_system.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::qlie;
@@ -155,7 +155,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
     bstr output(output_size);
     auto output_ptr = algo::make_ptr(output);
 
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     if (input_stream.read(compression_magic.size()) != compression_magic)
     {
@@ -346,7 +346,7 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     const auto table_offset = input_file.stream.read_le<u64>();
     const auto table_size = get_magic_start(input_file.stream) - table_offset;
     input_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(input_file.stream, table_size);
+    io::MemoryByteStream table_stream(input_file.stream, table_size);
 
     u32 seed = 0;
     table_stream.seek(0);

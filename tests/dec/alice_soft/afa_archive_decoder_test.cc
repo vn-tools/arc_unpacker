@@ -1,6 +1,6 @@
 #include "dec/alice_soft/afa_archive_decoder.h"
 #include "algo/pack/zlib.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -13,7 +13,7 @@ static std::unique_ptr<io::File> create_file(
     const int version)
 {
     off_t offset = 0;
-    io::MemoryStream table_stream;
+    io::MemoryByteStream table_stream;
     for (const auto &file : expected_files)
     {
         table_stream.write("JUNK"_b);

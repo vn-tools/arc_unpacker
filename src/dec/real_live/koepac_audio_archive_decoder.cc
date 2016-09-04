@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "enc/microsoft/wav_audio_encoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::real_live;
@@ -132,7 +132,7 @@ std::unique_ptr<io::File> KoepacAudioArchiveDecoder::read_file_impl(
     std::vector<u16> output;
     for (const auto size : sizes)
     {
-        io::MemoryStream input_stream(input_file.stream, size);
+        io::MemoryByteStream input_stream(input_file.stream, size);
         if (!size)
         {
             for (const auto i : algo::range(0x400))

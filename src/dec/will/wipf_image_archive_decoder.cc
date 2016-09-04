@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -27,7 +27,7 @@ namespace
 // - non-standard minimal match size
 static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     const size_t dict_size = 0x1000;
     size_t dict_pos = 1;
     u8 dict[dict_size] {};

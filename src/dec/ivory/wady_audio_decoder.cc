@@ -1,7 +1,7 @@
 #include "dec/ivory/wady_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::ivory;
@@ -78,7 +78,7 @@ static bstr decode_v1(
     auto samples_end = samples.end<u16>();
 
     u16 prev_sample[2] = {0, 0};
-    io::MemoryStream tmp_stream(input_stream);
+    io::MemoryByteStream tmp_stream(input_stream);
     while (tmp_stream.left() && samples_ptr < samples_end)
     {
         for (const auto i : algo::range(channels))
@@ -124,7 +124,7 @@ static bstr decode_v2(
             ? input_stream.size() - input_stream.pos()
             : input_stream.read_le<u32>();
 
-        io::MemoryStream tmp_stream(input_stream, size_comp);
+        io::MemoryByteStream tmp_stream(input_stream, size_comp);
         tmp_stream.skip(4);
         auto left = tmp_stream.read_le<u32>();
         s16 prev_sample = tmp_stream.read_le<u16>();

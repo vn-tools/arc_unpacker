@@ -1,7 +1,7 @@
 #include "dec/adv/dat_archive_decoder.h"
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::adv;
@@ -63,7 +63,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     auto key_idx = meta->table_offset;
     for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= meta->arc_key[(key_idx++) % meta->arc_key.size()];
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     for (const auto i : algo::range(meta->file_count))
     {

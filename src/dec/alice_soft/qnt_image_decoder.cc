@@ -2,7 +2,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::alice_soft;
@@ -21,7 +21,7 @@ namespace
 
 static void deinterleave(res::Image &image, const bstr &input)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     size_t x, y;
     for (const auto i : algo::range(3))
@@ -90,7 +90,7 @@ static void apply_alpha(res::Image &image, const bstr &input)
         return;
     }
 
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     image.at(0, 0).a = input_stream.read<u8>();
     for (const auto x : algo::range(1, image.width()))

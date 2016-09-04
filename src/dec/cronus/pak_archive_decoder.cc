@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/cronus/common.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "plugin_manager.h"
 
 using namespace au;
@@ -38,7 +38,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
         delta_decrypt(table_data, key);
         table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     }
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))

@@ -1,7 +1,7 @@
 #include "dec/team_shanghai_alice/pbg3_archive_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;

@@ -2,7 +2,7 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;
@@ -29,7 +29,7 @@ std::unique_ptr<dec::ArchiveMeta> NpaSgArchiveDecoder::read_meta_impl(
     const auto table_size = input_file.stream.read_le<u32>();
     auto table_data = input_file.stream.read(table_size);
     decrypt(table_data);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
     const auto file_count = table_stream.read_le<u32>();

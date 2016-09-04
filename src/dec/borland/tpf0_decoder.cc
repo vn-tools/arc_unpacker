@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/locale.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::borland;
@@ -103,7 +103,7 @@ static std::unique_ptr<Tpf0Structure> read_structure(
 
 std::unique_ptr<Tpf0Structure> Tpf0Decoder::decode(const bstr &input) const
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     if (input_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
     return read_structure(input_stream);

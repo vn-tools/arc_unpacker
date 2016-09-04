@@ -13,7 +13,7 @@ static void do_test(const io::path &path)
 
     REQUIRE(io::exists(path));
     {
-        io::FileStream file_stream(path, io::FileMode::Read);
+        io::FileByteStream file_stream(path, io::FileMode::Read);
         REQUIRE(file_stream.size() == 4);
         REQUIRE(file_stream.read_to_eof() == "test"_b);
     }

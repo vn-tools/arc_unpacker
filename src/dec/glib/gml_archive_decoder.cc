@@ -1,7 +1,7 @@
 #include "dec/glib/gml_archive_decoder.h"
 #include "algo/range.h"
 #include "dec/glib/custom_lzss.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::glib;
@@ -37,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> GmlArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= 0xFF;
     table_data = custom_lzss_decompress(table_data, table_size_orig);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<CustomArchiveMeta>();
     meta->permutation = table_stream.read(0x100);

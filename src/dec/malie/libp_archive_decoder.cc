@@ -1,7 +1,7 @@
 #include "dec/malie/libp_archive_decoder.h"
 #include "algo/range.h"
 #include "dec/malie/common/camellia_stream.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::malie;
@@ -85,7 +85,7 @@ std::unique_ptr<dec::ArchiveMeta> LibpArchiveDecoder::read_meta_impl(
     const auto offset_count = camellia_stream.read_le<u32>();
     camellia_stream.skip(4);
 
-    io::MemoryStream table(camellia_stream.read(0x20 * entry_count));
+    io::MemoryByteStream table(camellia_stream.read(0x20 * entry_count));
     std::vector<uoff_t> offsets;
     for (const auto i : algo::range(offset_count))
         offsets.push_back(camellia_stream.read_le<u32>());

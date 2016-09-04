@@ -1,7 +1,7 @@
 #include "io/file.h"
 #include <string>
-#include "io/file_stream.h"
-#include "io/memory_stream.h"
+#include "io/file_byte_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::io;
@@ -32,16 +32,16 @@ File::File(const io::path &path, std::unique_ptr<BaseByteStream> stream) :
 }
 
 File::File(const io::path &path, const FileMode mode) :
-    File(path, std::make_unique<FileStream>(path, mode))
+    File(path, std::make_unique<FileByteStream>(path, mode))
 {
 }
 
 File::File(const io::path &path, const bstr &data) :
-    File(path, std::make_unique<MemoryStream>(data))
+    File(path, std::make_unique<MemoryByteStream>(data))
 {
 }
 
-File::File() : File("", std::make_unique<MemoryStream>())
+File::File() : File("", std::make_unique<MemoryByteStream>())
 {
 }
 

@@ -1,7 +1,7 @@
 #include "dec/malie/common/camellia_stream.h"
 #include <cstring>
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::malie::common;
@@ -55,7 +55,7 @@ void CamelliaStream::read_impl(void *destination, const size_t size)
     parent_stream->seek(parent_stream_offset
         + ((parent_stream->pos() - parent_stream_offset) - offset_pad));
 
-    io::MemoryStream output_stream;
+    io::MemoryByteStream output_stream;
     output_stream.resize(block_count * 16);
     output_stream.seek(0);
     for (const auto i : algo::range(block_count))

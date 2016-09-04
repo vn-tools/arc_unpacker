@@ -1,4 +1,4 @@
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include <cstdio>
 #include "algo/locale.h"
 #include "err.h"
@@ -13,7 +13,7 @@
 using namespace au;
 using namespace au::io;
 
-struct FileStream::Priv final
+struct FileByteStream::Priv final
 {
     #if _WIN32
         Priv(const path &path, FileMode mode) : path(path), mode(mode)
@@ -105,40 +105,40 @@ struct FileStream::Priv final
     FileMode mode;
 };
 
-FileStream::FileStream(const path &path, const FileMode mode)
+FileByteStream::FileByteStream(const path &path, const FileMode mode)
     : p(new Priv(path, mode))
 {
 }
 
-FileStream::~FileStream()
+FileByteStream::~FileByteStream()
 {
 }
 
-void FileStream::seek_impl(const uoff_t offset)
+void FileByteStream::seek_impl(const uoff_t offset)
 {
     if (offset > size())
         throw err::EofError();
     p->seek(offset, SEEK_SET);
 }
 
-void FileStream::read_impl(void *destination, const size_t size)
+void FileByteStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1
     p->read(destination, size);
 }
 
-void FileStream::write_impl(const void *source, const size_t size)
+void FileByteStream::write_impl(const void *source, const size_t size)
 {
     // source MUST exist and size MUST be at least 1
     p->write(source, size);
 }
 
-uoff_t FileStream::pos() const
+uoff_t FileByteStream::pos() const
 {
     return p->tell();
 }
 
-uoff_t FileStream::size() const
+uoff_t FileByteStream::size() const
 {
     const auto old_pos = p->tell();
     p->seek(0, SEEK_END);
@@ -147,16 +147,16 @@ uoff_t FileStream::size() const
     return size;
 }
 
-void FileStream::resize_impl(const uoff_t new_size)
+void FileByteStream::resize_impl(const uoff_t new_size)
 {
     if (new_size == size())
         return;
     throw err::NotSupportedError("Truncating real files is not implemented");
 }
 
-std::unique_ptr<io::BaseByteStream> FileStream::clone() const
+std::unique_ptr<io::BaseByteStream> FileByteStream::clone() const
 {
-    auto ret = std::make_unique<FileStream>(p->path, p->mode);
+    auto ret = std::make_unique<FileByteStream>(p->path, p->mode);
     ret->seek(pos());
     return std::move(ret);
 }

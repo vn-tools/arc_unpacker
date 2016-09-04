@@ -1,7 +1,7 @@
 #include "dec/fc01/common/mrg_decryptor.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::fc01;
@@ -25,7 +25,7 @@ struct MrgDecryptor::Priv final
     Priv(const bstr &input);
     Priv(const bstr &input, const size_t size_orig);
 
-    io::MemoryStream input_stream;
+    io::MemoryByteStream input_stream;
     size_t size_orig;
 };
 

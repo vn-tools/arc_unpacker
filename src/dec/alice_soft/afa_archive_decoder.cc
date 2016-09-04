@@ -3,7 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::alice_soft;
@@ -36,7 +36,7 @@ std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
     const auto table_size_orig = input_file.stream.read_le<u32>();
     const auto file_count = input_file.stream.read_le<u32>();
 
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         algo::pack::zlib_inflate(
             input_file.stream.read(table_size_comp)));
 

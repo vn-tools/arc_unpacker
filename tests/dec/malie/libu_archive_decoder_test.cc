@@ -3,7 +3,7 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "dec/malie/common/lib_plugins.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -20,7 +20,7 @@ static void encrypt(
     const auto offset_start = output_stream.pos() & ~0xF;
     const auto aligned_size = (input.size() + 0xF) & ~0xF;
     const auto block_count = aligned_size / 0x10;
-    io::MemoryStream input_stream;
+    io::MemoryByteStream input_stream;
     input_stream.write(bstr((-input.size()) & 0xF, 0xFF));
     input_stream.write(input);
     input_stream.seek(0);
@@ -99,14 +99,14 @@ TEST_CASE("Malie Libu archives", "[dec]")
         LibuArchiveDecoder decoder;
         decoder.plugin_manager.set("dies-irae");
 
-        io::MemoryStream header_stream;
+        io::MemoryByteStream header_stream;
         header_stream.write("LIBU"_b);
         header_stream.write_le<u32>(0x10000);
         header_stream.write_le<u32>(expected_files.size());
         header_stream.write("JUNK"_b);
         encrypt(key, header_stream.seek(0).read_to_eof(), input_file.stream);
 
-        io::MemoryStream table_stream;
+        io::MemoryByteStream table_stream;
         auto offset = ((16 + expected_files.size() * 80) + 0xF) & ~0xF;
         for (const auto &file : expected_files)
         {

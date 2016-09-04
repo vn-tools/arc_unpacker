@@ -1,4 +1,4 @@
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "io/file_system.h"
 #include "test_support/catch.h"
 #include "test_support/common.h"
@@ -6,12 +6,12 @@
 
 using namespace au;
 
-TEST_CASE("FileStream", "[io][stream]")
+TEST_CASE("FileByteStream", "[io][stream]")
 {
     SECTION("Reading from existing files")
     {
         static const bstr png_magic = "\x89PNG"_b;
-        io::FileStream stream(
+        io::FileByteStream stream(
             "tests/dec/png/files/reimu_transparent.png", io::FileMode::Read);
         tests::compare_binary(stream.read(png_magic.size()), png_magic);
     }
@@ -21,12 +21,12 @@ TEST_CASE("FileStream", "[io][stream]")
         REQUIRE(!io::exists("tests/trash.out"));
 
         {
-            io::FileStream stream("tests/trash.out", io::FileMode::Write);
+            io::FileByteStream stream("tests/trash.out", io::FileMode::Write);
             REQUIRE_NOTHROW(stream.write_le<u32>(1));
         }
 
         {
-            io::FileStream stream("tests/trash.out", io::FileMode::Read);
+            io::FileByteStream stream("tests/trash.out", io::FileMode::Read);
             REQUIRE(stream.read_le<u32>() == 1);
             REQUIRE(stream.size() == 4);
         }
@@ -39,7 +39,7 @@ TEST_CASE("FileStream", "[io][stream]")
         tests::stream_test(
             []()
             {
-                return std::make_unique<io::FileStream>(
+                return std::make_unique<io::FileByteStream>(
                     "tests/trash.out", io::FileMode::Write);
             },
             []() { io::remove("tests/trash.out"); });

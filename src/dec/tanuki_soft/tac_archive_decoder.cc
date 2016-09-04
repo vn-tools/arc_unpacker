@@ -5,7 +5,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::tanuki_soft;
@@ -74,7 +74,7 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read(table_size);
     table_data = decrypt(table_data, table_size, "TLibArchiveData"_b);
     table_data = algo::pack::zlib_inflate(table_data);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     std::vector<std::unique_ptr<Directory>> dirs;
     for (const auto i : algo::range(dir_count))

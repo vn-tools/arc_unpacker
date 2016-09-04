@@ -2,7 +2,7 @@
 #include "algo/locale.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::silky;
@@ -26,7 +26,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(0);
     const auto table_size = input_file.stream.read_le<u32>();
-    io::MemoryStream table_stream(input_file.stream.read(table_size));
+    io::MemoryByteStream table_stream(input_file.stream.read(table_size));
 
     auto meta = std::make_unique<ArchiveMeta>();
     while (table_stream.left())

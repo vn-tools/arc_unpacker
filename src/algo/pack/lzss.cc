@@ -2,7 +2,7 @@
 #include <array>
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -38,7 +38,7 @@ namespace
             const size_t size) override;
         bstr retrieve() override;
     private:
-        io::MemoryStream byte_stream;
+        io::MemoryByteStream byte_stream;
         io::MsbBitStream bit_stream;
     };
 
@@ -56,7 +56,7 @@ namespace
 
     private:
         void flush();
-        io::MemoryStream byte_stream;
+        io::MemoryByteStream byte_stream;
         size_t count;
         u8 control;
         std::vector<u8> states;
@@ -400,7 +400,7 @@ bstr algo::pack::lzss_compress(
 bstr algo::pack::lzss_compress(
     const bstr &input, const algo::pack::BitwiseLzssSettings &settings)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     return algo::pack::lzss_compress(input_stream, settings);
 }
 
@@ -415,7 +415,7 @@ bstr algo::pack::lzss_compress(
 bstr algo::pack::lzss_compress(
     const bstr &input, const algo::pack::BytewiseLzssSettings &settings)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     return algo::pack::lzss_compress(input_stream, settings);
 }
 

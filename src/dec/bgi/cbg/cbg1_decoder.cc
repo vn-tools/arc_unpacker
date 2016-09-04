@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "dec/bgi/cbg/cbg_common.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -19,7 +19,7 @@ static bstr decompress_huffman(
 
 static bstr decompress_rle(bstr &input, size_t output_size)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     bstr output(output_size);
     auto output_ptr = output.get<u8>();
@@ -120,7 +120,7 @@ std::unique_ptr<res::Image> Cbg1Decoder::decode(
     input_stream.skip(8);
 
     const auto huffman_size = input_stream.read_le<u32>();
-    io::MemoryStream decrypted_stream(read_decrypted_data(input_stream));
+    io::MemoryByteStream decrypted_stream(read_decrypted_data(input_stream));
     const auto raw_data = input_stream.read_to_eof();
 
     const auto freq_table = read_freq_table(decrypted_stream, 256);

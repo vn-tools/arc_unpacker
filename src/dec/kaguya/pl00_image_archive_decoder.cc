@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::kaguya;

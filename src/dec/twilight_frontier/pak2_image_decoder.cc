@@ -3,7 +3,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -22,7 +22,7 @@ res::Image Pak2ImageDecoder::decode_impl(
     const auto height = input_file.stream.read_le<u32>();
     const auto stride = input_file.stream.read_le<u32>();
     const auto palette_number = input_file.stream.read_le<u32>();
-    io::MemoryStream source_stream(input_file.stream);
+    io::MemoryByteStream source_stream(input_file.stream);
 
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)

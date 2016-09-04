@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::gs;
@@ -31,7 +31,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
     table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))

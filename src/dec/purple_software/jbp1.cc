@@ -2,7 +2,7 @@
 #include <array>
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -500,7 +500,7 @@ static BasicInfo read_basic_info(io::BaseByteStream &input_stream)
 
 bstr dec::purple_software::jbp1_decompress(const bstr &input)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     const auto info = read_basic_info(input_stream);
 
     input_stream.seek(info.data_offset);

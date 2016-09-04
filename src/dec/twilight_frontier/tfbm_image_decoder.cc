@@ -3,7 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -27,7 +27,7 @@ res::Image TfbmImageDecoder::decode_impl(
     const auto stride = input_file.stream.read_le<u32>();
     const auto pix_size = input_file.stream.read_le<u32>();
     const auto pix_data = input_file.stream.read(pix_size);
-    io::MemoryStream source_stream(algo::pack::zlib_inflate(pix_data));
+    io::MemoryByteStream source_stream(algo::pack::zlib_inflate(pix_data));
 
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)

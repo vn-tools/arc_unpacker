@@ -1,7 +1,7 @@
 #include "dec/twilight_frontier/pak1_archive_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -16,7 +16,7 @@ static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
     }
 }
 
-static std::unique_ptr<io::MemoryStream> read_raw_table(
+static std::unique_ptr<io::MemoryByteStream> read_raw_table(
     io::BaseByteStream &input_stream, size_t file_count)
 {
     const auto table_size = file_count * 0x6C;
@@ -26,7 +26,7 @@ static std::unique_ptr<io::MemoryStream> read_raw_table(
         throw err::RecognitionError();
     auto buffer = input_stream.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
-    return std::make_unique<io::MemoryStream>(buffer);
+    return std::make_unique<io::MemoryByteStream>(buffer);
 }
 
 bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const

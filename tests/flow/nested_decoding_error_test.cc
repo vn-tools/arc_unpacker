@@ -1,6 +1,6 @@
 #include "dec/base_archive_decoder.h"
 #include "dec/base_file_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/common.h"
 #include "test_support/file_support.h"
@@ -54,7 +54,7 @@ static std::unique_ptr<Registry> create_registry()
 static bstr make_archive(
     std::initializer_list<std::shared_ptr<io::File>> input_files)
 {
-    io::MemoryStream tmp_stream;
+    io::MemoryByteStream tmp_stream;
     for (auto &input_file : input_files)
     {
         const auto content = input_file->stream.seek(0).read_to_eof();

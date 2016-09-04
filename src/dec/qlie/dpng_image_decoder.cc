@@ -1,7 +1,7 @@
 #include "dec/qlie/dpng_image_decoder.h"
 #include "algo/range.h"
 #include "dec/png/png_image_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::qlie;

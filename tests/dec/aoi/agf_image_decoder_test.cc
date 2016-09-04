@@ -1,6 +1,6 @@
 #include "dec/aoi/agf_image_decoder.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/image_support.h"

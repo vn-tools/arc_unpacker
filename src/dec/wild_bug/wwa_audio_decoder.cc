@@ -1,6 +1,6 @@
 #include "dec/wild_bug/wwa_audio_decoder.h"
 #include "dec/wild_bug/wpx/decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::wild_bug;
@@ -16,7 +16,7 @@ res::Audio WwaAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
-    io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
+    io::MemoryByteStream metadata_stream(decoder.read_plain_section(0x20));
 
     const auto pcm_type = metadata_stream.read_le<u16>();
     const auto channel_count = metadata_stream.read_le<u16>();

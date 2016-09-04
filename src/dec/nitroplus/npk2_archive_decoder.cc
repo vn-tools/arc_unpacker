@@ -3,7 +3,7 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;
@@ -55,7 +55,7 @@ std::unique_ptr<dec::ArchiveMeta> Npk2ArchiveDecoder::read_meta_impl(
     const auto table_size = input_file.stream.read_le<u32>();
 
     auto table = decrypt(input_file.stream.read(table_size), *meta);
-    io::MemoryStream table_stream(table);
+    io::MemoryByteStream table_stream(table);
 
     for (const auto i : algo::range(file_count))
     {

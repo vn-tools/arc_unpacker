@@ -2,7 +2,7 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;
@@ -35,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const auto table_size_comp = input_file.stream.read_le<u32>();
     input_file.stream.skip(0x104);
 
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         algo::pack::zlib_inflate(
             input_file.stream.read(table_size_comp)));
 

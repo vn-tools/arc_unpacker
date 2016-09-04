@@ -2,9 +2,9 @@
 #include "algo/crypt/lcg.h"
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "io/file_system.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::eagls;
@@ -27,7 +27,7 @@ bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    io::FileStream index_stream(
+    io::FileByteStream index_stream(
         get_path_to_index(input_file.path), io::FileMode::Read);
 
     auto data = index_stream.read(index_stream.size() - 4);
@@ -36,7 +36,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(data.size()))
         data[i] ^= key[lcg.next() % key.size()];
 
-    io::MemoryStream data_stream(data);
+    io::MemoryByteStream data_stream(data);
     uoff_t min_offset = std::numeric_limits<uoff_t>::max();
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)

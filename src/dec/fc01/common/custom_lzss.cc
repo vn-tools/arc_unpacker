@@ -1,7 +1,7 @@
 #include "dec/fc01/common/custom_lzss.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 // Modified LZSS routine
 // - repetition count and look behind pos differs
@@ -12,7 +12,7 @@ using namespace au::dec::fc01;
 
 bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;
     u8 dict[dict_size] {};

@@ -2,7 +2,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;

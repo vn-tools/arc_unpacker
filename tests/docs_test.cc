@@ -1,7 +1,7 @@
 #include <regex>
 #include "algo/str.h"
 #include "dec/registry.h"
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "test_support/catch.h"
 
 using namespace au;
@@ -35,7 +35,7 @@ namespace
 
 static std::string read_gamelist_file()
 {
-    io::FileStream gamelist_file("GAMELIST.htm", io::FileMode::Read);
+    io::FileByteStream gamelist_file("GAMELIST.htm", io::FileMode::Read);
     return gamelist_file.read_to_eof().str();
 }
 

@@ -2,7 +2,7 @@
 #include <mutex>
 #include <set>
 #include "algo/format.h"
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "io/file_system.h"
 
 using namespace au;
@@ -57,7 +57,7 @@ io::path FileSaverHdd::save(std::shared_ptr<io::File> file) const
     std::unique_lock<std::mutex> lock(mutex);
     const auto full_path = p->make_path_unique(p->output_dir / file->path);
     io::create_directories(full_path.parent());
-    io::FileStream output_stream(full_path, io::FileMode::Write);
+    io::FileByteStream output_stream(full_path, io::FileMode::Write);
     file->stream.seek(0);
     output_stream.write(file->stream);
     ++p->saved_file_count;

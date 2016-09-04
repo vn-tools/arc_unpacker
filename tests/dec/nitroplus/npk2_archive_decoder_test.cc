@@ -4,7 +4,7 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -83,7 +83,7 @@ static std::unique_ptr<io::File> create_file(
     output_file->stream.write_le<u32>(expected_files.size());
     output_file->stream.write_le<u32>(table_size);
 
-    io::MemoryStream table_stream;
+    io::MemoryByteStream table_stream;
     for (const auto &file : expected_files)
     {
         const auto name = algo::utf8_to_sjis(file->path.str());

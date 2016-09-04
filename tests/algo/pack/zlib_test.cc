@@ -1,5 +1,5 @@
 #include "algo/pack/zlib.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/common.h"
 
@@ -21,7 +21,7 @@ TEST_CASE("ZLIB compression", "[algo][pack]")
 
     SECTION("Inflating ZLIB from stream")
     {
-        io::MemoryStream input_stream(input);
+        io::MemoryByteStream input_stream(input);
         tests::compare_binary(zlib_inflate(input_stream), output);
         REQUIRE(input_stream.left() == 0);
     }

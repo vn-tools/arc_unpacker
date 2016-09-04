@@ -6,7 +6,7 @@
 #include "dec/twilight_frontier/pak2_image_decoder.h"
 #include "err.h"
 #include "io/file_system.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -53,7 +53,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
         throw err::RecognitionError();
     auto table_data = input_file.stream.read(table_size);
     decrypt(table_data, table_size + 6, 0xC5, 0x83, 0x53);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))

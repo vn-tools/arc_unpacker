@@ -1,7 +1,7 @@
 #include "dec/kaguya/link2_archive_decoder.h"
 #include "algo/binary.h"
 #include "algo/pack/lzss.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -93,7 +93,7 @@ static bstr compress(const bstr &input)
     settings.size_bits = 4;
     settings.initial_dictionary_pos = 0xEF;
     CustomLzssWriter writer(input.size());
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     return algo::pack::lzss_compress(input_stream, settings, writer);
 }
 

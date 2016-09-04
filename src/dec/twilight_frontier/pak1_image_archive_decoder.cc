@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -89,7 +89,7 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     bstr output(entry->width * entry->height * chunk_size);
     auto output_ptr = algo::make_ptr(output);
     input_file.stream.seek(entry->offset);
-    io::MemoryStream input_stream(input_file.stream, entry->size);
+    io::MemoryByteStream input_stream(input_file.stream, entry->size);
 
     while (output_ptr.left() && input_stream.left())
     {

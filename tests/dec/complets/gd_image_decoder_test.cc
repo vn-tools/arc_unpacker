@@ -2,7 +2,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
@@ -21,7 +21,7 @@ static bstr compress_custom(const res::Image &input_image)
     std::vector<bool> known(pixels.size(), false);
     auto pixels_ptr = algo::make_ptr(pixels.data(), pixels.size());
 
-    io::MemoryStream output_stream;
+    io::MemoryByteStream output_stream;
     {
         io::MsbBitStream bit_stream(output_stream);
         while (pixels_ptr.left())
@@ -175,7 +175,7 @@ static void do_test(const bstr &magic, const size_t width, const size_t height)
     {
         input_file.stream.write<u8>(0x6C);
         input_file.stream.write("?");
-        io::MemoryStream tmp_stream;
+        io::MemoryByteStream tmp_stream;
         for (const auto y : algo::range(input_image.height()))
         for (const auto x : algo::range(input_image.width()))
         {

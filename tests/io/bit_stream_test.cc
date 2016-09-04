@@ -1,6 +1,6 @@
 #include "algo/range.h"
 #include "io/lsb_bit_stream.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 #include "test_support/catch.h"
 
@@ -130,7 +130,7 @@ template<class T> static void test_writing(const TestType type)
     {
         SECTION("Aligned")
         {
-            io::MemoryStream output_stream;
+            io::MemoryByteStream output_stream;
             {
                 T writer(output_stream);
                 writer.write(1, 0b1);
@@ -142,7 +142,7 @@ template<class T> static void test_writing(const TestType type)
 
         SECTION("Unaligned")
         {
-            io::MemoryStream output_stream;
+            io::MemoryByteStream output_stream;
             {
                 T writer(output_stream);
                 writer.write(1, 0b1);
@@ -154,7 +154,7 @@ template<class T> static void test_writing(const TestType type)
 
         SECTION("Max value")
         {
-            io::MemoryStream output_stream;
+            io::MemoryByteStream output_stream;
             {
                 T writer(output_stream);
                 writer.write(32, 0xFFFFFFFF);
@@ -165,7 +165,7 @@ template<class T> static void test_writing(const TestType type)
 
         SECTION("Values exceeding masks")
         {
-            io::MemoryStream output_stream;
+            io::MemoryByteStream output_stream;
             {
                 T writer(output_stream);
                 writer.write(1, 8);
@@ -177,7 +177,7 @@ template<class T> static void test_writing(const TestType type)
 
         // SECTION("Interleaving")
         // {
-        //     io::MemoryStream output_stream("\xFF\xFF"_b);
+        //     io::MemoryByteStream output_stream("\xFF\xFF"_b);
         //     output_stream.seek(0);
         //     {
         //         T writer(output_stream);
@@ -325,7 +325,7 @@ template<class T> static void test_stream_interop()
     {
         SECTION("Aligned")
         {
-            io::MemoryStream stream("\xFF\x01"_b);
+            io::MemoryByteStream stream("\xFF\x01"_b);
             T reader(stream);
             REQUIRE((reader.read(8) == 0xFF));
             REQUIRE((stream.read<u8>() == 1));
@@ -333,7 +333,7 @@ template<class T> static void test_stream_interop()
 
         SECTION("Unaligned")
         {
-            io::MemoryStream stream("\xFF\x80\x02"_b);
+            io::MemoryByteStream stream("\xFF\x80\x02"_b);
             T reader(stream);
             REQUIRE((reader.read(8) == 0xFF));
             REQUIRE((reader.read(1) == 0x01));
@@ -342,7 +342,7 @@ template<class T> static void test_stream_interop()
 
         SECTION("Interleaving")
         {
-            io::MemoryStream stream("\xFF\xC0\x02\x01\xFF"_b);
+            io::MemoryByteStream stream("\xFF\xC0\x02\x01\xFF"_b);
             T reader(stream);
             REQUIRE((reader.read(8) == 0xFF));
             REQUIRE((reader.read(1) == 0x01));
@@ -354,7 +354,7 @@ template<class T> static void test_stream_interop()
 
         SECTION("Interleaving with seeking")
         {
-            io::MemoryStream stream("\xFF\xC0\x02\x01\xFF"_b);
+            io::MemoryByteStream stream("\xFF\xC0\x02\x01\xFF"_b);
             T reader(stream);
             REQUIRE((reader.read(8) == 0xFF));
             REQUIRE((reader.read(1) == 0x01));

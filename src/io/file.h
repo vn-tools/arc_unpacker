@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 
 namespace au {
 namespace io {

@@ -1,7 +1,7 @@
 #include "dec/gpk2/gfb_image_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/image_support.h"
@@ -32,7 +32,7 @@ TEST_CASE("GPK2 GFB images", "[dec]")
         while (input_file.stream.pos() < 0x40)
             input_file.stream.write("?"_b);
 
-        io::MemoryStream pixel_stream;
+        io::MemoryByteStream pixel_stream;
         for (const auto y : algo::range(input_image.height() - 1, -1, -1))
         for (const auto x : algo::range(input_image.width()))
         {

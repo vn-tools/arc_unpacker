@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::amuse_craft;
@@ -15,7 +15,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     auto output_ptr = output.get<u8>();
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     u16 control = 0;
     while (output_ptr < output_end)
@@ -182,7 +182,7 @@ res::Image PgdGeImageDecoder::decode_impl(
 
     if (filter_type == 3)
     {
-        io::MemoryStream filter_stream(data);
+        io::MemoryByteStream filter_stream(data);
         filter_stream.skip(2);
         const auto depth = filter_stream.read_le<u16>();
         const auto channels = depth >> 3;

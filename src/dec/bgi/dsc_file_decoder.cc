@@ -3,7 +3,7 @@
 #include "dec/bgi/common.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -26,7 +26,7 @@ static const bstr magic = "DSC FORMAT 1.00\x00"_b;
 
 static int is_image(const bstr &input)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     const auto width = input_stream.read_le<u16>();
     const auto height = input_stream.read_le<u16>();
     const auto bpp = input_stream.read<u8>();
@@ -158,7 +158,7 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
 
     if (is_image(data))
     {
-        io::MemoryStream data_stream(data);
+        io::MemoryByteStream data_stream(data);
         const auto width = data_stream.read_le<u16>();
         const auto height = data_stream.read_le<u16>();
         const auto bpp = data_stream.read<u8>();

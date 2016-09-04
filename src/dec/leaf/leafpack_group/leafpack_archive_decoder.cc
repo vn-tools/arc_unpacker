@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -54,7 +54,7 @@ std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read(table_size);
     decrypt(table_data, key);
 
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {

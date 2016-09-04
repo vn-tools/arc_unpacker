@@ -1,5 +1,5 @@
 #include "dec/lilim/dwv_audio_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::lilim;
@@ -24,7 +24,7 @@ res::Audio DwvAudioDecoder::decode_impl(
     res::Audio audio;
     audio.samples = samples;
 
-    io::MemoryStream header_stream(header);
+    io::MemoryByteStream header_stream(header);
     audio.codec = header_stream.read_le<u16>();
     audio.channel_count = header_stream.read_le<u16>();
     audio.sample_rate = header_stream.read_le<u32>();

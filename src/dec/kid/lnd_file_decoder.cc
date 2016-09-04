@@ -1,6 +1,6 @@
 #include "dec/kid/lnd_file_decoder.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::kid;

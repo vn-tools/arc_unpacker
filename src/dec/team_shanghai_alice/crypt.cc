@@ -1,6 +1,6 @@
 #include "dec/team_shanghai_alice/crypt.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::team_shanghai_alice;
@@ -61,8 +61,8 @@ static void decrypt(
 bstr au::dec::team_shanghai_alice::decrypt(
     const bstr &input, const DecryptorContext &context)
 {
-    io::MemoryStream input_stream(input);
-    io::MemoryStream output_stream;
+    io::MemoryByteStream input_stream(input);
+    io::MemoryByteStream output_stream;
     ::decrypt(input_stream, output_stream, context);
     return output_stream.read_to_eof();
 }

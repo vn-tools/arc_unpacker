@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "dec/active_soft/custom_bit_stream.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::active_soft;
@@ -35,7 +35,7 @@ res::Image EdtImageDecoder::decode_impl(
     std::string base_file_name;
     if (meta_size)
     {
-        io::MemoryStream meta_stream(input_file.stream.read(meta_size));
+        io::MemoryByteStream meta_stream(input_file.stream.read(meta_size));
         if (meta_stream.read(diff_magic.size()) == diff_magic)
         {
             transparent_color
@@ -65,7 +65,7 @@ res::Image EdtImageDecoder::decode_impl(
     output.reserve(target_size);
 
     CustomBitStream bit_stream(input_file.stream.read(data_size));
-    io::MemoryStream raw_stream(input_file.stream.read(raw_size));
+    io::MemoryByteStream raw_stream(input_file.stream.read(raw_size));
     output += raw_stream.read(channels);
     while (output.size() < target_size)
     {

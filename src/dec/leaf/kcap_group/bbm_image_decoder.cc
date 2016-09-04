@@ -1,6 +1,6 @@
 #include "dec/leaf/kcap_group/bbm_image_decoder.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -27,7 +27,7 @@ res::Image BbmImageDecoder::decode_impl(
     for (const auto chunk_y : algo::range(chunk_count_y))
     for (const auto chunk_x : algo::range(chunk_count_x))
     {
-        io::MemoryStream chunk_stream(input_file.stream.read(chunk_size));
+        io::MemoryByteStream chunk_stream(input_file.stream.read(chunk_size));
         chunk_stream.skip(5);
         const auto color_count = chunk_stream.read_le<u16>();
         chunk_stream.skip(11);

@@ -1,6 +1,6 @@
 #include "dec/kid/cps_file_decoder.h"
 #include "dec/kid/lnd_file_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::kid;
@@ -12,8 +12,8 @@ static bstr decrypt(
     const size_t size_comp,
     const uoff_t offset)
 {
-    io::MemoryStream input_stream(input);
-    io::MemoryStream output_stream;
+    io::MemoryByteStream input_stream(input);
+    io::MemoryByteStream output_stream;
     output_stream.reserve(input_stream.size());
 
     const auto real_offset = offset - 16;

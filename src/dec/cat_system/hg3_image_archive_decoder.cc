@@ -7,7 +7,7 @@
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/lsb_bit_stream.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::cat_system;
@@ -90,7 +90,7 @@ static std::unique_ptr<res::Image> decode_img0000(
     const size_t height,
     const size_t depth)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     input_stream.seek(8);
     const auto data_size_comp = input_stream.read_le<u32>();
     const auto data_size_orig = input_stream.read_le<u32>();
@@ -173,7 +173,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    io::MemoryStream data_stream(data);
+    io::MemoryByteStream data_stream(data);
 
     std::map<bstr, bstr> chunks;
     while (data_stream.left() > 8)
@@ -185,7 +185,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
         chunks[chunk_name] = chunk_data;
     }
 
-    io::MemoryStream header_stream(chunks.at("stdinfo\x00"_b));
+    io::MemoryByteStream header_stream(chunks.at("stdinfo\x00"_b));
     const auto width = header_stream.read_le<u32>();
     const auto height = header_stream.read_le<u32>();
     const auto depth = header_stream.read_le<u32>();

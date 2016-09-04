@@ -1,5 +1,5 @@
 #include "dec/gpk2/gpk2_archive_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -13,7 +13,7 @@ static void do_test(
     io::File input_file;
     input_file.stream.write("GPK2"_b);
     input_file.stream.write_le<u32>(0);
-    io::MemoryStream table_stream;
+    io::MemoryByteStream table_stream;
     table_stream.write_le<u32>(expected_files.size());
     for (const auto &file : expected_files)
     {

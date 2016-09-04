@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "dec/microsoft/bmp_image_decoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::nekopack;

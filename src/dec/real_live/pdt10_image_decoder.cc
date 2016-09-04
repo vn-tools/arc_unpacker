@@ -3,7 +3,7 @@
 #include "dec/real_live/pdt10_image_decoder.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::real_live;
@@ -86,7 +86,7 @@ res::Image Pdt10ImageDecoder::decode_impl(
     input_file.stream.skip(8);
     const auto mask_offset = input_file.stream.read_le<u32>();
 
-    io::MemoryStream color_stream(
+    io::MemoryByteStream color_stream(
         input_file.stream,
         mask_offset ? mask_offset - 32 : input_file.stream.left());
     const auto color_data = decompress_rgb(color_stream, width, height);
@@ -96,7 +96,7 @@ res::Image Pdt10ImageDecoder::decode_impl(
 
     if (mask_offset)
     {
-        io::MemoryStream mask_stream(
+        io::MemoryByteStream mask_stream(
             input_file.stream
                 .seek(mask_offset)
                 .read_to_eof());

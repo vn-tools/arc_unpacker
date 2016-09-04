@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/wild_bug/wpx/decoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::wild_bug;
@@ -74,7 +74,7 @@ res::Image WbmImageDecoder::decode_impl(
 {
     wpx::Decoder decoder(input_file.stream);
 
-    io::MemoryStream metadata_stream(decoder.read_plain_section(0x10));
+    io::MemoryByteStream metadata_stream(decoder.read_plain_section(0x10));
     metadata_stream.skip(4);
     const auto width = metadata_stream.read_le<u16>();
     const auto height = metadata_stream.read_le<u16>();

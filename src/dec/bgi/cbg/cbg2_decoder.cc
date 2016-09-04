@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/bgi/cbg/cbg_common.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -56,7 +56,7 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
     };
 
     FloatTablePair ac_mul_pair;
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     for (const auto i : algo::range(ac_mul_pair.size()))
         for (const auto j : algo::range(dc_table.size()))
             ac_mul_pair[i][j] = input_stream.read<u8>() * dc_table[j];
@@ -377,7 +377,7 @@ std::unique_ptr<res::Image> Cbg2Decoder::decode(
 
     const auto decrypted_data = read_decrypted_data(input_stream);
     const auto ac_mul_pair = read_ac_mul_pair(decrypted_data);
-    io::MemoryStream raw_stream(input_stream);
+    io::MemoryByteStream raw_stream(input_stream);
 
     const auto pad_width
         = width + ((block_dim - (width % block_dim)) % block_dim);

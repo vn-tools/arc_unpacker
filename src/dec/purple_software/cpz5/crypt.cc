@@ -2,7 +2,7 @@
 #include "algo/binary.h"
 #include "algo/crypt/md5.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -26,7 +26,7 @@ static std::array<u8, 256> get_table_for_crypt_2_and_3(
 std::array<u32, 4> cpz5::get_hash(
     const Plugin &plugin, const std::array<u32, 4> &input_dwords)
 {
-    io::MemoryStream tmp_stream;
+    io::MemoryByteStream tmp_stream;
     for (const auto &dword : input_dwords)
         tmp_stream.write_le<u32>(dword);
 

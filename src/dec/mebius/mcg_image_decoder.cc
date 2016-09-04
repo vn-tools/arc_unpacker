@@ -1,7 +1,7 @@
 #include "dec/mebius/mcg_image_decoder.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::mebius;
@@ -95,7 +95,7 @@ res::Image McgImageDecoder::decode_impl(
     const auto height = input_file.stream.read_be<u16>();
 
     // copy content to memory for speed
-    io::MemoryStream input_stream(input_file.stream.read_to_eof());
+    io::MemoryByteStream input_stream(input_file.stream.read_to_eof());
 
     if (type == 6 || type == 7)
     {

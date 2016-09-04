@@ -4,7 +4,7 @@
 #include "dec/shiina_rio/warc/decompress.h"
 #include "dec/shiina_rio/warc/decrypt.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio;
@@ -55,7 +55,7 @@ std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read_to_eof();
 
     warc::decrypt_table_data(*plugin, warc_version, table_offset, table_data);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     std::set<io::path> known_names;
     auto meta = std::make_unique<CustomArchiveMeta>(*plugin, warc_version);

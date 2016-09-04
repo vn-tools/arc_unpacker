@@ -1,6 +1,6 @@
 #include "dec/lilim/abm_image_decoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::lilim;
@@ -11,7 +11,7 @@ static bstr decompress_opaque(const bstr &input, const size_t size_hint)
 {
     bstr output;
     output.reserve(size_hint);
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     while (input_stream.left())
     {
@@ -42,7 +42,7 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 {
     bstr output;
     output.reserve(size_hint);
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     size_t current_channel = 0;
     while (input_stream.left())

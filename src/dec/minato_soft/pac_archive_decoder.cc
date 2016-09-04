@@ -2,7 +2,7 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -69,7 +69,7 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(compressed.size()))
         compressed.get<u8>()[i] ^= 0xFF;
 
-    io::MemoryStream table_stream(decompress_table(compressed, size_orig));
+    io::MemoryByteStream table_stream(decompress_table(compressed, size_orig));
     table_stream.seek(0);
 
     auto meta = std::make_unique<ArchiveMeta>();

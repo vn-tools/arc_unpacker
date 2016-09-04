@@ -3,7 +3,7 @@
 #include <stack>
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 
 using namespace au;
@@ -469,7 +469,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = bstr(240000, 0xFF);
         const auto game_title = "毎日がＭ！"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
 
         output_stream.write("[SCR-PARAMS]v01"_b);
         write_body_v1(output_stream, key, game_title);
@@ -483,7 +483,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = bstr(240000, 0xFF);
         const auto game_title = "幼なじみと甘～くエッチに過ごす方法"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
 
         output_stream.write("[SCR-PARAMS]v02"_b);
         output_stream.write_le<u32>('?');
@@ -540,7 +540,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "毎日がＭ！"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
 
         output_stream.write("[SCR-PARAMS]v02"_b);
         write_body_v2(output_stream, key, game_title);
@@ -554,7 +554,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v03"_b);
         write_body_v3(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
@@ -566,7 +566,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v04"_b);
         write_body_v3(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
@@ -578,7 +578,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v05"_b);
         write_body_v5(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
@@ -590,7 +590,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v05.1"_b);
         write_body_v5(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
@@ -602,7 +602,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v05.2"_b);
         write_body_v5_2(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
@@ -614,7 +614,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
     {
         const auto key = "abc"_b;
         const auto game_title = "some generic title"_b;
-        io::MemoryStream output_stream;
+        io::MemoryByteStream output_stream;
         output_stream.write("[SCR-PARAMS]v05.3"_b);
         write_body_v5_3(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);

@@ -6,7 +6,7 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "algo/str.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -111,7 +111,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read(table_size);
     decrypt_table(table_data, key2, meta->plugin.rotate_pattern);
 
-    io::MemoryStream input_stream(table_data);
+    io::MemoryByteStream input_stream(table_data);
     const auto file_count = input_stream.read_le<u32>();
     const auto prefix_size = input_stream.read<u8>();
     meta->prefix = input_stream.read(prefix_size);

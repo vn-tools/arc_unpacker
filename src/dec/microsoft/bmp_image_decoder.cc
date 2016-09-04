@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -48,7 +48,7 @@ static Header read_header(io::BaseByteStream &input_stream)
     h.data_offset = input_stream.read_le<u32>();
 
     auto header_size = input_stream.read_le<u32>();
-    io::MemoryStream header_stream(input_stream.read(header_size - 4));
+    io::MemoryByteStream header_stream(input_stream.read(header_size - 4));
 
     s32 height;
     if (header_stream.size() == 8)

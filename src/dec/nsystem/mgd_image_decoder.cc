@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "dec/png/png_image_decoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::nsystem;
@@ -30,7 +30,7 @@ static const bstr magic = "MGD "_b;
 static void decompress_sgd_alpha(
     const bstr &input, io::BaseByteStream &output_stream)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     while (input_stream.left())
     {
         auto flag = input_stream.read_le<u16>();
@@ -122,7 +122,7 @@ static void decompress_sgd_bgr(
     const bstr &input, io::BaseByteStream &output_stream)
 {
     std::function<void(io::BaseByteStream &, io::BaseByteStream &, u8)> func;
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     while (input_stream.left())
     {
         auto flag = input_stream.read<u8>();
@@ -141,9 +141,9 @@ static void decompress_sgd_bgr(
 static bstr decompress_sgd(const bstr &input, size_t output_size)
 {
     bstr output(output_size);
-    io::MemoryStream output_stream(output);
+    io::MemoryByteStream output_stream(output);
 
-    io::MemoryStream tmp_stream(input);
+    io::MemoryByteStream tmp_stream(input);
 
     const auto alpha_size = tmp_stream.read_le<u32>();
     const auto alpha_data = tmp_stream.read(alpha_size);

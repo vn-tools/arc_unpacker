@@ -3,7 +3,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "dec/microsoft/bmp_image_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::eagls;
@@ -13,7 +13,7 @@ static const u32 xor_value = 0x75BD924;
 
 static size_t guess_output_size(const bstr &data)
 {
-    io::MemoryStream bmp_stream(algo::pack::lzss_decompress(data, 30));
+    io::MemoryByteStream bmp_stream(algo::pack::lzss_decompress(data, 30));
     bmp_stream.skip(10);
     const auto pixels_start = bmp_stream.read_le<u32>();
     bmp_stream.skip(4);

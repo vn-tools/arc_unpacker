@@ -1,7 +1,7 @@
 ﻿#include "dec/kaguya/an21_image_archive_decoder.h"
 #include "algo/range.h"
 #include "dec/kaguya/common/rle_test.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/image_support.h"
@@ -80,7 +80,7 @@ TEST_CASE("Atelier Kaguya AN21 image archives", "[dec]")
         flipped_image.flip_vertically();
         tests::write_32_bit_image(input_file.stream, flipped_image);
 
-        io::MemoryStream tmp_stream;
+        io::MemoryByteStream tmp_stream;
         tests::write_32_bit_image(tmp_stream, flipped_image);
         last_data = tmp_stream.seek(0).read_to_eof();
     }
@@ -90,7 +90,7 @@ TEST_CASE("Atelier Kaguya AN21 image archives", "[dec]")
         res::Image flipped_image(expected_images[i]);
         flipped_image.flip_vertically();
 
-        io::MemoryStream tmp_stream;
+        io::MemoryByteStream tmp_stream;
         tests::write_32_bit_image(tmp_stream, flipped_image);
         auto data = tmp_stream.seek(0).read_to_eof();
 

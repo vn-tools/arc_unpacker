@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "dec/team_shanghai_alice/crypt.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::team_shanghai_alice;
@@ -61,7 +61,7 @@ static std::unique_ptr<io::File> read_file(
     const auto entry = static_cast<const dec::CompressedArchiveEntry*>(&e);
 
     input_file.stream.seek(entry->offset);
-    io::MemoryStream uncompressed_stream(
+    io::MemoryByteStream uncompressed_stream(
         decompress(
             input_file.stream.read(entry->size_comp),
             entry->size_orig));
@@ -104,14 +104,14 @@ std::unique_ptr<dec::ArchiveMeta> PbgzArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
 
-    io::MemoryStream header_stream(
+    io::MemoryByteStream header_stream(
         decrypt(input_file.stream.read(12), {0x1B, 0x37, 0x0C, 0x400}));
     const auto file_count = header_stream.read_le<u32>() - 123456;
     const auto table_offset = header_stream.read_le<u32>() - 345678;
     const auto table_size_orig = header_stream.read_le<u32>() - 567891;
 
     input_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         decompress(
             decrypt(input_file.stream.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
             table_size_orig));

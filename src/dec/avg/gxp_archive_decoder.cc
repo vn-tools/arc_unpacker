@@ -1,7 +1,7 @@
 #include "dec/avg/gxp_archive_decoder.h"
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::avg;
@@ -34,15 +34,15 @@ std::unique_ptr<dec::ArchiveMeta> GxpArchiveDecoder::read_meta_impl(
     const auto table_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
     const auto data_offset = input_file.stream.read_le<u64>();
-    io::MemoryStream table_stream(input_file.stream.read(table_size));
+    io::MemoryByteStream table_stream(input_file.stream.read(table_size));
 
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
-        auto entry_stream = std::make_unique<io::MemoryStream>(
+        auto entry_stream = std::make_unique<io::MemoryByteStream>(
             decrypt(table_stream.read(4)));
         const auto entry_size = entry_stream->read_le<u32>();
-        entry_stream = std::make_unique<io::MemoryStream>(
+        entry_stream = std::make_unique<io::MemoryByteStream>(
             decrypt(table_stream.skip(-4).read(entry_size)));
         entry_stream->skip(4);
 

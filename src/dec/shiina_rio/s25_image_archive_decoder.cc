@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio;
@@ -27,7 +27,7 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
 
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     auto left = entry.width;
     while (output_ptr < output_end)
     {

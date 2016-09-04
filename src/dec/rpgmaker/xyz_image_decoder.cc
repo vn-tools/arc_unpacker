@@ -1,7 +1,7 @@
 #include "dec/rpgmaker/xyz_image_decoder.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::rpgmaker;
@@ -20,7 +20,7 @@ res::Image XyzImageDecoder::decode_impl(
     const auto width = input_file.stream.read_le<u16>();
     const auto height = input_file.stream.read_le<u16>();
     const auto data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
-    io::MemoryStream data_stream(data);
+    io::MemoryByteStream data_stream(data);
     const auto pal_data = data_stream.read(256 * 3);
     const auto pix_data = data_stream.read_to_eof();
     res::Palette palette(256, pal_data, res::PixelFormat::RGB888);

@@ -1,5 +1,5 @@
 #include "dec/jpeg/jpeg_image_decoder.h"
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"

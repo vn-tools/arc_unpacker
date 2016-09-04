@@ -2,7 +2,7 @@
 #include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::almond_collective;
@@ -388,7 +388,7 @@ std::unique_ptr<dec::ArchiveMeta> Pac3ArchiveDecoder::read_meta_impl(
     const auto unk2 = read_and_decrypt_le<u32>(input_file.stream, key);
     const auto table_size = read_and_decrypt_le<u32>(input_file.stream, key);
 
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         read_and_decrypt(input_file.stream, table_size, key));
     auto current_offset = input_file.stream.pos();
     auto meta = std::make_unique<ArchiveMeta>();

@@ -3,7 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::kirikiri;
@@ -148,7 +148,7 @@ static std::unique_ptr<CustomArchiveEntry> read_file_entry(
     {
         const auto chunk_magic = input_stream.read(4);
         const auto chunk_size = input_stream.read_le<u64>();
-        io::MemoryStream chunk_stream(input_stream.read(chunk_size));
+        io::MemoryByteStream chunk_stream(input_stream.read(chunk_size));
 
         if (chunk_magic == info_chunk_magic)
             entry->info_chunk = read_info_chunk(chunk_stream);
@@ -208,7 +208,7 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read(table_size_comp);
     if (table_is_compressed)
         table_data = algo::pack::zlib_inflate(table_data);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     auto meta = std::make_unique<CustomArchiveMeta>();
     meta->decrypt_func = plugin_manager.get()
@@ -219,7 +219,7 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     {
         const auto entry_magic = table_stream.read(4);
         const auto entry_size = table_stream.read_le<u64>();
-        io::MemoryStream entry_stream(table_stream.read(entry_size));
+        io::MemoryByteStream entry_stream(table_stream.read(entry_size));
 
         if (entry_magic == file_entry_magic)
             meta->entries.push_back(

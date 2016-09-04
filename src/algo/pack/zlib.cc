@@ -4,7 +4,7 @@
 #include <zlib.h>
 #include "algo/format.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::algo::pack;
@@ -99,7 +99,7 @@ bstr algo::pack::zlib_inflate(
 
 bstr algo::pack::zlib_inflate(const bstr &input, const ZlibKind kind)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     return ::zlib_inflate(input_stream, kind);
 }
 
@@ -108,7 +108,7 @@ bstr algo::pack::zlib_deflate(
     const ZlibKind kind,
     const CompressionLevel compression_level)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     return process_stream(
         input_stream,
         kind,

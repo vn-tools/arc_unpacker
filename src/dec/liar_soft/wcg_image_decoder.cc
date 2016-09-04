@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/liar_soft/cg_decompress.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::liar_soft;

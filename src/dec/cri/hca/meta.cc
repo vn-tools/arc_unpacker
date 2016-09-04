@@ -1,7 +1,7 @@
 #include "dec/cri/hca/meta.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::cri::hca;
@@ -24,7 +24,7 @@ static void extend_meta(Meta &meta)
 Meta dec::cri::hca::read_meta(const bstr &input)
 {
     Meta out;
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     while (input_stream.left())
     {
         const bstr magic = input_stream.read(4);

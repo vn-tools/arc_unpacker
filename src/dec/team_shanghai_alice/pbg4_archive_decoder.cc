@@ -1,7 +1,7 @@
 #include "dec/team_shanghai_alice/pbg4_archive_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::team_shanghai_alice;
@@ -32,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> Pbg4ArchiveDecoder::read_meta_impl(
     const auto table_size_orig = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         decompress(input_file.stream.read_to_eof(), table_size_orig));
 
     CompressedArchiveEntry *last_entry = nullptr;

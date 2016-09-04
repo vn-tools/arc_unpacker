@@ -1,6 +1,6 @@
 #include "io/base_bit_stream.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::io;
@@ -11,7 +11,7 @@ BaseBitStream::BaseBitStream(const bstr &input) :
     buffer(0),
     bits_available(0),
     position(0),
-    own_stream_holder(new MemoryStream(input)),
+    own_stream_holder(new MemoryByteStream(input)),
     input_stream(own_stream_holder.get())
 {
 }

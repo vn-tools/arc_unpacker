@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -84,7 +84,7 @@ static bstr read_utf_packet(io::BaseByteStream &input_stream)
 
 static bstr decompress_layla(const bstr &input)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     input_stream.seek(layla_magic.size());
     const auto size_orig = input_stream.read_le<u32>();
     const auto size_comp = input_stream.read_le<u32>();
@@ -128,7 +128,7 @@ static bstr decompress_layla(const bstr &input)
 
 static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
 {
-    io::MemoryStream utf_stream(utf_packet);
+    io::MemoryByteStream utf_stream(utf_packet);
     if (utf_stream.read(4) != "@UTF"_b)
         throw err::CorruptDataError("Expected UTF packet");
     const auto table_size = utf_stream.read_be<u32>();

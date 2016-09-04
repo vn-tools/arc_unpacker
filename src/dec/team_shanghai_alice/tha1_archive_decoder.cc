@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/team_shanghai_alice/crypt.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::team_shanghai_alice;
@@ -110,7 +110,7 @@ bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     input_file.stream.seek(0);
     auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
-    io::MemoryStream header_stream(header_data);
+    io::MemoryByteStream header_stream(header_data);
     return header_stream.read(magic.size()) == magic;
 }
 
@@ -119,7 +119,7 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
 {
     auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
-    io::MemoryStream header_stream(header_data);
+    io::MemoryByteStream header_stream(header_data);
     if (header_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
     const auto table_size_orig = header_stream.read_le<u32>() - 123456789;
@@ -131,7 +131,7 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
     auto table_data = input_file.stream.read(table_size_comp);
     table_data = decrypt(table_data, {0x3E, 0x9B, 0x80, table_size_comp});
     table_data = decompress(table_data, table_size_orig);
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
 
     CustomArchiveEntry *last_entry = nullptr;
     auto meta = std::make_unique<CustomArchiveMeta>();

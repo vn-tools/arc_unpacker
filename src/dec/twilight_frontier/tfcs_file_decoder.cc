@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -29,7 +29,7 @@ std::unique_ptr<io::File> TfcsFileDecoder::decode_impl(
     input_file.stream.skip(magic.size());
     const auto size_comp = input_file.stream.read_le<u32>();
     const auto size_orig = input_file.stream.read_le<u32>();
-    io::MemoryStream uncompressed_stream(
+    io::MemoryByteStream uncompressed_stream(
         algo::pack::zlib_inflate(input_file.stream.read_to_eof()));
 
     auto output_file = std::make_unique<io::File>();

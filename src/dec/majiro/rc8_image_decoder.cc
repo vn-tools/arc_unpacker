@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::majiro;
@@ -11,7 +11,7 @@ static const bstr magic = "\x98\x5A\x92\x9A\x38"_b; // sjis "六丁8"
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     bstr output(width * height);
     auto output_ptr = output.get<u8>();

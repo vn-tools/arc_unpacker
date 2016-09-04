@@ -3,7 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::renpy;
@@ -253,7 +253,7 @@ std::unique_ptr<dec::ArchiveMeta> RpaArchiveDecoder::read_meta_impl(
     }
 
     input_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(read_raw_table(input_file.stream));
+    io::MemoryByteStream table_stream(read_raw_table(input_file.stream));
 
     UnpickleContext context;
     unpickle(table_stream, &context);

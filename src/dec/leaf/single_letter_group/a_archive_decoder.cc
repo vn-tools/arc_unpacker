@@ -3,7 +3,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -35,7 +35,7 @@ static bstr decrypt_3(const bstr &input, const u8 key)
 
     bstr output(input);
 
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     input_stream.seek(0);
     const auto width = input_stream.read_le<u32>();
     const auto height = input_stream.read_le<u32>();

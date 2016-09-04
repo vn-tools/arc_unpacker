@@ -5,7 +5,7 @@
 #include "algo/crypt/md5.h"
 #include "algo/crypt/sha1.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/common.h"
 
@@ -78,7 +78,7 @@ TEST_CASE("NScripter NSA encryption", "[dec]")
     }
 
     const size_t chunk_size = 555;
-    io::MemoryStream base_stream(encrypted_input);
+    io::MemoryByteStream base_stream(encrypted_input);
     dec::nscripter::NsaEncryptedStream encrypted_stream(base_stream, key);
 
     bstr output;

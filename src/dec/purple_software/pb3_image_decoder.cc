@@ -8,7 +8,7 @@
 #include "dec/png/png_image_decoder.h"
 #include "dec/purple_software/jbp1.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -37,8 +37,8 @@ static bstr custom_lzss_decompress(
     auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0x7DE;
     bstr output(output_size);
     auto output_ptr = algo::make_ptr(output);
-    io::MemoryStream control_block_stream(control_block);
-    io::MemoryStream data_block_stream(data_block);
+    io::MemoryByteStream control_block_stream(control_block);
+    io::MemoryByteStream data_block_stream(data_block);
     int control = 0, bit_mask = 0;
     while (output_ptr.left())
     {
@@ -128,9 +128,9 @@ static res::Image unpack_v1(
         if (header.width % block_size) x_block_count++;
         if (header.height % block_size) y_block_count++;
 
-        io::MemoryStream control_block1_stream(control_block1);
-        io::MemoryStream data_block1_stream(data_block1);
-        io::MemoryStream plane_stream(plane);
+        io::MemoryByteStream control_block1_stream(control_block1);
+        io::MemoryByteStream data_block1_stream(data_block1);
+        io::MemoryByteStream plane_stream(plane);
         int bit_mask = 0, control = 0;
         for (const auto block_y : algo::range(y_block_count))
         for (const auto block_x : algo::range(x_block_count))
@@ -190,7 +190,7 @@ static res::Image unpack_v2(
 
     bstr final_mask_data;
     final_mask_data.reserve(header.width * header.height);
-    io::MemoryStream mask_stream(mask_data);
+    io::MemoryByteStream mask_stream(mask_data);
     while (mask_stream.left())
     {
         const auto control = mask_stream.read<u8>();
@@ -321,14 +321,14 @@ static res::Image unpack_v6(
     const auto proxy_block = custom_lzss_decompress(
         control_block1, data_block1, size_orig);
 
-    io::MemoryStream proxy_block_stream(proxy_block);
+    io::MemoryByteStream proxy_block_stream(proxy_block);
     const auto control_block2_size = proxy_block_stream.read_le<u32>();
     const auto data_block2_size = proxy_block_stream.read_le<u32>();
     const auto control_block2 = proxy_block_stream.read(control_block2_size);
     const auto data_block2 = proxy_block_stream.read(data_block2_size);
 
-    io::MemoryStream control_block2_stream(control_block2);
-    io::MemoryStream data_block2_stream(data_block2);
+    io::MemoryByteStream control_block2_stream(control_block2);
+    io::MemoryByteStream data_block2_stream(data_block2);
 
     const auto block_size = 8;
     auto x_block_count = header.width / block_size;
@@ -365,7 +365,7 @@ static res::Image unpack_v6(
 
 static std::unique_ptr<io::BaseByteStream> decrypt(const bstr &input)
 {
-    auto output_stream = std::make_unique<io::MemoryStream>(input);
+    auto output_stream = std::make_unique<io::MemoryByteStream>(input);
     output_stream->seek(output_stream->size() - 0x2F);
     const auto tail_key = output_stream->read(0x2C);
     const auto pair_key = output_stream->read(2);

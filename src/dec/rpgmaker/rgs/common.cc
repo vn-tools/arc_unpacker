@@ -1,6 +1,6 @@
 #include "dec/rpgmaker/rgs/common.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::rpgmaker;
@@ -17,7 +17,7 @@ std::unique_ptr<io::File> rgs::read_file_impl(
     output_file->path = entry.path;
     arc_file.stream.seek(entry.offset);
 
-    io::MemoryStream tmp_stream;
+    io::MemoryByteStream tmp_stream;
     tmp_stream.write(arc_file.stream.read(entry.size));
     tmp_stream.write("\x00\x00\x00\x00"_b);
     tmp_stream.seek(0);

@@ -4,7 +4,7 @@
 #include "dec/wild_bug/wpx/retrieval.h"
 #include "dec/wild_bug/wpx/transcription.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
@@ -112,7 +112,7 @@ bstr Decoder::read_compressed_section(
         return read_plain_section(section_id);
 
     p->input_stream.seek(section.offset);
-    io::MemoryStream section_stream(p->input_stream);
+    io::MemoryByteStream section_stream(p->input_stream);
 
     bstr output(section.size_orig);
     auto output_start = output.get<u8>();

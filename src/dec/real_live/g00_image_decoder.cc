@@ -1,7 +1,7 @@
 #include "dec/real_live/g00_image_decoder.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::real_live;
@@ -69,7 +69,7 @@ static res::Image decode_v1(
 {
     const auto size_comp = input_file.stream.read_le<u32>() - 8;
     const auto size_orig = input_file.stream.read_le<u32>();
-    io::MemoryStream tmp_stream(
+    io::MemoryByteStream tmp_stream(
         decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
     const size_t colors = tmp_stream.read_le<u16>();
     const auto pal_data = tmp_stream.read(4 * colors);
@@ -98,7 +98,7 @@ static res::Image decode_v2(
     const auto size_comp = input_file.stream.read_le<u32>() - 8;
     const auto size_orig = input_file.stream.read_le<u32>();
 
-    io::MemoryStream input_stream(
+    io::MemoryByteStream input_stream(
         decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
     input_stream.seek(0);
     if (input_stream.read_le<u32>() != regions.size())

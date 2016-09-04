@@ -7,7 +7,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/file_system.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -45,11 +45,12 @@ namespace
     public:
         RsaReader(io::BaseByteStream &input_stream);
         ~RsaReader();
-        std::unique_ptr<io::MemoryStream> read_block();
+        std::unique_ptr<io::MemoryByteStream> read_block();
         size_t pos() const;
 
     private:
-        std::unique_ptr<io::MemoryStream> decrypt(std::basic_string<u8> input);
+        std::unique_ptr<io::MemoryByteStream>
+            decrypt(std::basic_string<u8> input);
 
         io::BaseByteStream &input_stream;
         std::unique_ptr<algo::crypt::Rsa> rsa;
@@ -143,12 +144,12 @@ size_t RsaReader::pos() const
     return input_stream.pos();
 }
 
-std::unique_ptr<io::MemoryStream> RsaReader::read_block()
+std::unique_ptr<io::MemoryByteStream> RsaReader::read_block()
 {
     const auto block = rsa
         ? rsa->decrypt(input_stream.read(0x40)).substr(0, 0x20)
         : input_stream.read(0x40).substr(0, 0x20);
-    return std::make_unique<io::MemoryStream>(block);
+    return std::make_unique<io::MemoryByteStream>(block);
 }
 
 static bstr read_file_content(
@@ -279,12 +280,12 @@ static HashLookupMap read_fn_map(
     const auto table_size_orig = tmp_stream->read_le<u32>();
     const auto block_count = tmp_stream->read_le<u32>();
 
-    tmp_stream = std::make_unique<io::MemoryStream>();
+    tmp_stream = std::make_unique<io::MemoryByteStream>();
     for (const auto i : algo::range(block_count))
         tmp_stream->write(reader.read_block()->read_to_eof());
 
     tmp_stream->seek(0);
-    tmp_stream = std::make_unique<io::MemoryStream>(
+    tmp_stream = std::make_unique<io::MemoryByteStream>(
         algo::pack::zlib_inflate(tmp_stream->read(table_size_comp)));
 
     for (const auto &dir_entry : dir_entries)
@@ -329,7 +330,7 @@ TfpkArchiveDecoder::TfpkArchiveDecoder()
             const auto path = arg_parser.get_switch("file-names");
             if (path != "")
             {
-                io::FileStream stream(path, io::FileMode::Read);
+                io::FileByteStream stream(path, io::FileMode::Read);
                 std::string line;
                 while ((line = stream.read_line().str()) != "")
                     fn_set.insert(line);
@@ -403,7 +404,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
                 : it->second;
 
             b3->seek(0);
-            io::MemoryStream key_stream;
+            io::MemoryByteStream key_stream;
             for (const auto j : algo::range(4))
                 key_stream.write_le<u32>(neg32(b3->read_le<u32>()));
 

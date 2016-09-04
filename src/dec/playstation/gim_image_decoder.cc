@@ -2,7 +2,7 @@
 #include <map>
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::playstation;
@@ -115,7 +115,7 @@ static std::unique_ptr<res::Image> read_image(
             image = std::make_unique<res::Image>(width, height, data, *palette);
         else if (palette_bits == 4)
         {
-            io::MemoryStream data_stream(data);
+            io::MemoryByteStream data_stream(data);
             image = std::make_unique<res::Image>(width, height);
             if (palette_bits == 4)
             {

@@ -1,7 +1,7 @@
 #include "dec/kirikiri/cxdec.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/file_stream.h"
+#include "io/file_byte_stream.h"
 #include "io/file_system.h"
 
 using namespace au;
@@ -451,7 +451,7 @@ static bstr find_control_block(const io::path &path)
         if (fn.find(".tpm") != fn.size() - 4)
             continue;
 
-        io::FileStream tmp_stream(path, io::FileMode::Read);
+        io::FileByteStream tmp_stream(path, io::FileMode::Read);
         const auto content = tmp_stream.read_to_eof();
         const auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)

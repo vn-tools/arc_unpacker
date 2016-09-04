@@ -1,6 +1,6 @@
 #include "dec/almond_collective/pac2_archive_decoder.h"
 #include "algo/pack/zlib.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"

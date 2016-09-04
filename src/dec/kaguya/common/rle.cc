@@ -2,7 +2,7 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
@@ -11,7 +11,7 @@ bstr common::decompress_rle(
     const bstr &input, const size_t size_orig, const size_t bands)
 {
     bstr output(size_orig);
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
 
     for (const auto i : algo::range(bands))
     {

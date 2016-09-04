@@ -6,7 +6,7 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::tactics;
@@ -113,7 +113,7 @@ static std::unique_ptr<CustomArchiveMeta> read_meta_v0(io::File &input_file)
     input_file.stream.skip(4);
     const auto table_data
         = algo::unxor(input_file.stream.read(size_comp), 0xFF);
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         algo::pack::lzss_decompress(table_data, size_orig));
 
     const auto data_start = input_file.stream.pos();

@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "dec/glib/custom_lzss.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 // This is a bit different from plain PGX - namely, it involves two LZSS passes.
 
@@ -15,7 +15,7 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
 {
     bstr output;
     output.reserve(jpeg_data.size());
-    io::MemoryStream jpeg_stream(jpeg_data);
+    io::MemoryByteStream jpeg_stream(jpeg_data);
     jpeg_stream.skip(2); // soi
     jpeg_stream.skip(2); // header chunk
     jpeg_stream.skip(jpeg_stream.read_be<u16>() - 2);
@@ -48,7 +48,7 @@ res::Image JpegPgxImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     const auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
-    io::MemoryStream pgx_stream(pgx_data);
+    io::MemoryByteStream pgx_stream(pgx_data);
 
     pgx_stream.skip(magic.size());
     pgx_stream.skip(4);

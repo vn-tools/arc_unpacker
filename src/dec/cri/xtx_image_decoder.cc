@@ -2,7 +2,7 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/microsoft/dxt/dxt_decoders.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::cri;
@@ -117,7 +117,7 @@ static bstr read_tex_2(const Header &header, io::BaseByteStream &input_stream)
         }
     }
 
-    io::MemoryStream tmp_stream(output);
+    io::MemoryByteStream tmp_stream(output);
     const auto image = dec::microsoft::dxt::decode_dxt5(
         tmp_stream, header.aligned_width, header.aligned_height);
     bstr new_output(header.width * header.height * 4);

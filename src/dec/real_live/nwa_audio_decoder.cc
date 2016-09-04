@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/lsb_bit_stream.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::real_live;
@@ -40,7 +40,7 @@ static bstr decode_block(
         ? offsets.at(current_block + 1) - offsets.at(current_block)
         : input_stream.size() - offsets.at(current_block);
 
-    io::MemoryStream output_stream(output_size);
+    io::MemoryByteStream output_stream(output_size);
 
     input_stream.seek(offsets.at(current_block));
     s16 d[2];
@@ -191,7 +191,7 @@ res::Audio NwaAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     // buffer the file in memory for performance
-    io::MemoryStream input_stream(input_file.stream.seek(0).read_to_eof());
+    io::MemoryByteStream input_stream(input_file.stream.seek(0).read_to_eof());
 
     NwaHeader header;
     header.channel_count = input_stream.read_le<u16>();

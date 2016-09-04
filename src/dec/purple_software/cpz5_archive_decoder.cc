@@ -6,7 +6,7 @@
 #include "algo/range.h"
 #include "dec/purple_software/cpz5/crypt.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -72,7 +72,7 @@ static std::unique_ptr<CustomArchiveMeta> read_meta(
 
     DirectoryInfo *prev_dir = nullptr;
     std::vector<std::unique_ptr<DirectoryInfo>> dirs;
-    io::MemoryStream dir_table_stream(table_data_copy);
+    io::MemoryByteStream dir_table_stream(table_data_copy);
     for (const auto i : algo::range(header.dir_count))
     {
         auto dir = std::make_unique<DirectoryInfo>();
@@ -113,7 +113,7 @@ static std::unique_ptr<CustomArchiveMeta> read_meta(
         cpz5::decrypt_1c(
             dir_file_table_ptr, plugin, dir->file_table_main_key, hash);
 
-        io::MemoryStream file_table_stream(
+        io::MemoryByteStream file_table_stream(
             bstr(&dir_file_table_ptr[0], dir_file_table_ptr.size()));
 
         for (const auto i : algo::range(dir->file_count))

@@ -1,7 +1,7 @@
 #include "dec/kaguya/common/rle.h"
 #include "algo/range.h"
 #include "dec/kaguya/common/rle_test.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 
 using namespace au;
@@ -9,10 +9,10 @@ using namespace au;
 bstr tests::dec::kaguya::common::compress_rle(
     const bstr &input, const size_t band)
 {
-    io::MemoryStream output_stream;
+    io::MemoryByteStream output_stream;
     for (const auto i : algo::range(band))
     {
-        io::MemoryStream input_stream((input.size() + (band - 1)) / band);
+        io::MemoryByteStream input_stream((input.size() + (band - 1)) / band);
         for (const auto j : algo::range(input.size() / band))
             input_stream.write<u8>(input.at(i + j * band));
         input_stream.seek(0);

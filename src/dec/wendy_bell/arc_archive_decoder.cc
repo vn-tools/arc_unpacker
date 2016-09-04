@@ -4,7 +4,7 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -100,7 +100,7 @@ static void decode_picture(
 
     if (data[0] == 'a')
     {
-        io::MemoryStream data_stream(data);
+        io::MemoryByteStream data_stream(data);
         data_stream.seek(2);
 
         const auto parameters = read_image_parameters(data_stream, plugin);
@@ -219,7 +219,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const auto size_comp = read_obfuscated_number(input_file.stream);
     const auto table_comp = input_file.stream.read(size_comp);
     const auto table_orig = algo::pack::lzss_decompress(table_comp, size_orig);
-    io::MemoryStream table_stream(table_orig);
+    io::MemoryByteStream table_stream(table_orig);
 
     auto meta = std::make_unique<CustomArchiveMeta>();
     const auto data_file_names = get_data_file_names(input_file);

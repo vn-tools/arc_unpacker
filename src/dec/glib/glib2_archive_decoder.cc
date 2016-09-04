@@ -3,7 +3,7 @@
 #include "dec/glib/glib2/mei.h"
 #include "dec/glib/glib2/musume.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::glib;
@@ -62,7 +62,7 @@ static Header read_header(
     input_stream.seek(0);
     auto decoder = plugin.create_header_decoder();
     auto buffer = decode(input_stream.read(header_size), *decoder);
-    io::MemoryStream header_stream(buffer);
+    io::MemoryByteStream header_stream(buffer);
 
     Header header;
     header.magic = header_stream.read(magic_21.size());
@@ -164,7 +164,7 @@ std::unique_ptr<dec::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
     for (const auto &key : header.table_keys)
         table_data = decode(table_data, *plugin->create_decoder(key));
 
-    io::MemoryStream table_stream(table_data);
+    io::MemoryByteStream table_stream(table_data);
     if (table_stream.read(table_magic.size()) != table_magic)
         throw err::CorruptDataError("Corrupt table data");
 

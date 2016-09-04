@@ -1,6 +1,6 @@
 #include "dec/will/arc_pulltop_archive_decoder.h"
 #include "algo/locale.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -12,7 +12,7 @@ static std::unique_ptr<io::File> get_arc_file(
     const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     size_t current_offset = 0;
-    io::MemoryStream table_stream;
+    io::MemoryByteStream table_stream;
     for (const auto &file : expected_files)
     {
         table_stream.write_le<u32>(file->stream.size());

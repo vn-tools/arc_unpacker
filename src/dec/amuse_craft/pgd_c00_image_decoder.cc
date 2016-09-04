@@ -3,7 +3,7 @@
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/truevision/tga_image_decoder.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::amuse_craft;
@@ -14,7 +14,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
 {
     bstr output;
     output.reserve(size_orig);
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     std::array<u8, 0xBB8> dict = {0};
     auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size());
     auto written = -static_cast<int>(dict.size());

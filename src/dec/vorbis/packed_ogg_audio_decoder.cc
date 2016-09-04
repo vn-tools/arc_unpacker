@@ -1,7 +1,7 @@
 #include "dec/vorbis/packed_ogg_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::vorbis;
@@ -129,7 +129,7 @@ std::unique_ptr<io::File> PackedOggAudioDecoder::decode_impl(
     if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
     const auto data_size = input_file.stream.read_le<u32>();
-    io::MemoryStream input(input_file.stream, data_size);
+    io::MemoryByteStream input(input_file.stream, data_size);
 
     auto output_file = std::make_unique<io::File>();
     rewrite_ogg_stream(logger, input, output_file->stream);

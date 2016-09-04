@@ -5,7 +5,7 @@
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -32,7 +32,7 @@ static bstr decompress(
     bstr output;
     output.reserve(stride * height);
 
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream input_stream(input);
     for (const auto y : algo::range(height))
     {
         const auto control = input_stream.read<u8>();

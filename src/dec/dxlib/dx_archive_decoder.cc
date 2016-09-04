@@ -1,7 +1,7 @@
 #include "dec/dxlib/dx_archive_decoder.h"
 #include "algo/locale.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::dxlib;
@@ -69,7 +69,7 @@ static bstr detect_key(io::BaseByteStream &input_stream)
 static Header read_header(io::BaseByteStream &input_stream, const bstr &key)
 {
     input_stream.seek(0);
-    io::MemoryStream header_stream(decrypt(input_stream, 24, key));
+    io::MemoryByteStream header_stream(decrypt(input_stream, 24, key));
     header_stream.skip(magic.size());
     Header header;
     header.version = header_stream.read_le<u16>();
@@ -160,7 +160,7 @@ std::unique_ptr<dec::ArchiveMeta> DxArchiveDecoder::read_meta_impl(
     meta->key = key;
 
     input_file.stream.seek(header.table_offset);
-    io::MemoryStream table_stream(
+    io::MemoryByteStream table_stream(
         decrypt(input_file.stream, header.table_size, key));
     read_file_table(table_stream, header, 0, "", *meta);
 

@@ -1,6 +1,6 @@
 #include "dec/bishop/bsg_image_decoder.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/image_support.h"
@@ -10,8 +10,8 @@ using namespace au::dec::bishop;
 
 static bstr compress_rle(const bstr &input)
 {
-    io::MemoryStream output_stream;
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream output_stream;
+    io::MemoryByteStream input_stream(input);
     input_stream.seek(0);
     while (input_stream.left())
     {
@@ -176,7 +176,7 @@ TEST_CASE("Bishop BSG images", "[dec]")
         tmp_image.flip_vertically();
         for (const auto i : algo::range(3))
         {
-            io::MemoryStream chunk_stream;
+            io::MemoryByteStream chunk_stream;
             for (const auto &p : tmp_image)
                 chunk_stream.write<u8>(p[i]);
             const auto compressed

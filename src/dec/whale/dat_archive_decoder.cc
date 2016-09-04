@@ -5,7 +5,7 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::whale;
@@ -149,7 +149,7 @@ static void dump(const CustomArchiveMeta &meta, const std::string &dump_path)
 {
     // make it static, so that ./au *.dat --dump=x doesn't write info only
     // about the last archive
-    static io::FileStream stream(dump_path, io::FileMode::Write);
+    static io::FileByteStream stream(dump_path, io::FileMode::Write);
 
     stream.write(meta.game_title.str() + "\n");
     for (const auto &e : meta.entries)
@@ -185,7 +185,7 @@ DatArchiveDecoder::DatArchiveDecoder()
 
             if (arg_parser.has_switch("file-names"))
             {
-                io::FileStream stream(
+                io::FileByteStream stream(
                     arg_parser.get_switch("file-names"), io::FileMode::Read);
                 set_game_title(stream.read_line().str());
                 bstr line;

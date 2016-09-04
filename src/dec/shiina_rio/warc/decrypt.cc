@@ -4,7 +4,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio;
@@ -355,7 +355,7 @@ static std::array<u32, 5> get_initial_crypt_key_addends(
 std::array<u32, 10> get_initial_crypt_keys(
     const Plugin &plugin, const bstr &data)
 {
-    io::MemoryStream data_stream(data);
+    io::MemoryByteStream data_stream(data);
     std::array<u32, 0x50> buf;
     data_stream.seek(44);
     for (const auto i : algo::range(0x10))
@@ -612,7 +612,7 @@ warc::FlagCryptFunc warc::get_flag_crypt3()
         {
             if (data.get<u32>()[0] == 0x718E958D)
             {
-                io::MemoryStream data_stream(data);
+                io::MemoryByteStream data_stream(data);
                 data_stream.skip(8);
 
                 const auto size = data_stream.read_le<u32>();

@@ -1,7 +1,7 @@
 #include "dec/kaguya/aps3_image_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/image_support.h"
@@ -21,7 +21,7 @@ static bstr compress(const bstr &input)
 
 static bstr encode_to_ap(const res::Image &input_image)
 {
-    io::MemoryStream output_stream;
+    io::MemoryByteStream output_stream;
     output_stream.write("AP");
     output_stream.write_le<u32>(input_image.width());
     output_stream.write_le<u32>(input_image.height());

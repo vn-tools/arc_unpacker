@@ -3,7 +3,7 @@
 #include "algo/crypt/camellia.h"
 #include "algo/range.h"
 #include "dec/malie/common/lib_plugins.h"
-#include "io/memory_stream.h"
+#include "io/memory_byte_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -41,8 +41,8 @@ namespace
 static bstr encrypt(const std::vector<u32> &key, const bstr &input)
 {
     algo::crypt::Camellia camellia(key);
-    io::MemoryStream output_stream;
-    io::MemoryStream input_stream(input);
+    io::MemoryByteStream output_stream;
+    io::MemoryByteStream input_stream(input);
     input_stream.resize((input.size() + 0xF) & ~0xF);
     for (const auto i : algo::range(input.size() / 0x10))
     {
@@ -60,8 +60,8 @@ static bstr encrypt(const std::vector<u32> &key, const bstr &input)
 static std::unique_ptr<io::File> pack(
     const std::shared_ptr<DirEntry> root_entry)
 {
-    io::MemoryStream table_stream;
-    io::MemoryStream content_stream;
+    io::MemoryByteStream table_stream;
+    io::MemoryByteStream content_stream;
     std::vector<size_t> offsets;
 
     auto entry_count = 0u;
