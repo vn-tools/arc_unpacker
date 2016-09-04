@@ -3296,4 +3296,12 @@ var games = [
   fmt: {archives: ['arc'], gfx: ['bse', 'cbg'], audio: ['bgi'], video: ['mpg']},
   args: ['--dec=bgi/arc']},
 
+{ dev: 'Campus',
+  date: '2015-12-25',
+  title: 'Tenmon Dokei no Aria',
+  title_orig: '天文時計のアリア',
+  vndb: 18376,
+  fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg'], audio: ['ogg'], video: ['webm']},
+  args: ['--dec=malie/libp --plugin=tenmon-dokei']},
+
 ];
