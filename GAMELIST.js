@@ -3312,4 +3312,12 @@ var games = [
   fmt: {archives: ['bin'], gfx: ['a', 'png'], audio: ['ogg', 'wav']},
   args: ['--dec=dogenzaka/a', '--dec=dogenzaka/bin']},
 
+{ dev: 'Makura',
+  date: '2015-10-23',
+  title: 'Sakura no Uta -Sakura no Mori no Ue o Mau-',
+  title_orig: 'サクラノ詩－櫻の森の上を舞う－',
+  vndb: 562,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
+  args: ['--dec=bgi/arc']},
+
 ];
