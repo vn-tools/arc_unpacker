@@ -3304,4 +3304,12 @@ var games = [
   fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg'], audio: ['ogg'], video: ['webm']},
   args: ['--dec=malie/libp --plugin=tenmon-dokei']},
 
+{ dev: 'Dogenzaka Lab & HuneX & Smart Kareshi',
+  date: '2016-04-12',
+  title: 'Dandy Shot',
+  title_orig: 'ダンディーショット',
+  vndb: 15250,
+  fmt: {archives: ['bin'], gfx: ['a', 'png'], audio: ['ogg', 'wav']},
+  args: ['--dec=dogenzaka/a', '--dec=dogenzaka/bin']},
+
 ];
