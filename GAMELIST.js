@@ -3320,4 +3320,13 @@ var games = [
   fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
   args: ['--dec=bgi/arc']},
 
+{ dev: 'Nitroplus & 5pb. Games',
+  date: '2016-09-09',
+  title: 'Steins;Gate',
+  title_orig: 'シュタインズ・ゲート',
+  vndb: 2002,
+  info: 'Steam version',
+  fmt: {gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
+  args: ['--dec=mages/mpk']},
+
 ];
