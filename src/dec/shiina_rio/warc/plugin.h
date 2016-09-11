@@ -10,7 +10,6 @@ namespace dec {
 namespace shiina_rio {
 namespace warc {
 
-    using CrcCryptFunc = std::function<void(bstr &data)>;
     using FlagCryptFunc = std::function<void(bstr &data, const u32 flags)>;
 
     struct Plugin final
@@ -23,7 +22,7 @@ namespace warc {
         bstr logo_data;
         std::shared_ptr<res::Image> region_image;
 
-        CrcCryptFunc crc_crypt;
+        bstr crc_crypt_source;
         FlagCryptFunc flag_pre_crypt;
         FlagCryptFunc flag_post_crypt;
     };

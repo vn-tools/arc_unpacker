@@ -10,7 +10,7 @@ namespace warc {
     void decrypt_essential(
         const Plugin &plugin, const int warc_version, bstr &data);
 
-    CrcCryptFunc get_crc_crypt(const bstr &table);
+    void crc_crypt(bstr &data, const bstr &table);
     FlagCryptFunc get_flag_crypt1(const bstr &table, const u32 key);
     FlagCryptFunc get_flag_crypt2();
     FlagCryptFunc get_flag_crypt3();

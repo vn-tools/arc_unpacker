@@ -667,26 +667,23 @@ warc::FlagCryptFunc warc::get_flag_crypt3()
     };
 }
 
-warc::CrcCryptFunc warc::get_crc_crypt(const bstr &table)
+void warc::crc_crypt(bstr &data, const bstr &table)
 {
-    return [=](bstr &data)
-    {
-        if (data.size() < 0x400 || !table.size())
-            return;
+    if (data.size() < 0x400 || !table.size())
+        return;
 
-        u32 crc = 0xFFFFFFFF;
-        for (const auto i : algo::range(0x100))
-        {
-            crc ^= data[i] << 24;
-            for (const auto j : algo::range(8))
-                crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04C11DB7 : 0);
-        }
-        for (const auto i : algo::range(0x40))
-        {
-            const auto idx = data.get<u32>()[0x40 + i] % table.size();
-            const u32 src = table.get<u32>()[idx / 4];
-            const u32 key = src ^ crc;
-            data.get<u32>()[0x80 + i] ^= key;
-        }
-    };
+    u32 crc = 0xFFFFFFFF;
+    for (const auto i : algo::range(0x100))
+    {
+        crc ^= data[i] << 24;
+        for (const auto j : algo::range(8))
+            crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04C11DB7 : 0);
+    }
+    for (const auto i : algo::range(0x40))
+    {
+        const auto idx = data.get<u32>()[0x40 + i] % table.size();
+        const u32 src = table.get<u32>()[idx / 4];
+        const u32 key = src ^ crc;
+        data.get<u32>()[0x80 + i] ^= key;
+    }
 }
