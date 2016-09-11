@@ -46,4 +46,9 @@ TEST_CASE("Shiina Rio S25 images", "[dec]")
             "DISPDATE-zlib.S25",
             {"DISPDATE_000-out.png", "DISPDATE_001-out.png"});
     }
+
+    SECTION("Incremental pixel data")
+    {
+        do_test("ERRORF-zlib.S25", {"ERRORF-out.png"});
+    }
 }

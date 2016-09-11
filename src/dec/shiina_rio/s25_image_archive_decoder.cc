@@ -1,4 +1,5 @@
 #include "dec/shiina_rio/s25_image_archive_decoder.h"
+#include <map>
 #include "algo/format.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
@@ -20,11 +21,26 @@ namespace
     };
 }
 
-static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
+static bstr read_row(
+    io::BaseByteStream &input_stream, const uoff_t row_offset)
+{
+    input_stream.seek(row_offset);
+    auto row_size = input_stream.read_le<u16>();
+    if (row_offset & 1)
+    {
+        input_stream.skip(1);
+        row_size--;
+    }
+    return input_stream.read(row_size);
+}
+
+static bstr decode_row(
+    const bstr &input,
+    const CustomArchiveEntry &entry,
+    const size_t repeat)
 {
     bstr output(entry.width * 4);
     auto output_ptr = output.get<u8>();
-    const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
 
     io::MemoryByteStream input_stream(input);
@@ -50,14 +66,17 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
         {
             if (input_stream.left() < count * 3)
                 count = input_stream.left() / 3;
-            const auto chunk = input_stream.read(3 * count);
+            auto chunk = input_stream.read(3 * count);
             auto chunk_ptr = chunk.get<const u8>();
+            for (const auto j : algo::range(repeat))
+            for (const auto i : algo::range(3, count * 3))
+                chunk[i] += chunk[i - 3];
             for (const auto i : algo::range(count))
             {
                 *output_ptr++ = *chunk_ptr++;
                 *output_ptr++ = *chunk_ptr++;
                 *output_ptr++ = *chunk_ptr++;
-                *output_ptr++ += 0xFF;
+                *output_ptr++ = 0xFF;
             }
         }
 
@@ -66,10 +85,10 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
             const auto chunk = input_stream.read(3);
             for (const auto i : algo::range(count))
             {
-                *output_ptr++ += chunk[0];
-                *output_ptr++ += chunk[1];
-                *output_ptr++ += chunk[2];
-                *output_ptr++ += 0xFF;
+                *output_ptr++ = chunk[0];
+                *output_ptr++ = chunk[1];
+                *output_ptr++ = chunk[2];
+                *output_ptr++ = 0xFF;
             }
         }
 
@@ -77,8 +96,11 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
         {
             if (input_stream.left() < count * 4)
                 count = input_stream.left() / 4;
-            const auto chunk = input_stream.read(4 * count);
+            auto chunk = input_stream.read(4 * count);
             auto chunk_ptr = chunk.get<const u8>();
+            for (const auto j : algo::range(repeat))
+            for (const auto i : algo::range(4, count * 4))
+                chunk[i] += chunk[i - 4];
             for (const auto i : algo::range(count))
             {
                 *output_ptr++ = chunk_ptr[1];
@@ -94,10 +116,10 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
             const auto chunk = input_stream.read(4);
             for (const auto i : algo::range(count))
             {
-                *output_ptr++ += chunk[1];
-                *output_ptr++ += chunk[2];
-                *output_ptr++ += chunk[3];
-                *output_ptr++ += chunk[0];
+                *output_ptr++ = chunk[1];
+                *output_ptr++ = chunk[2];
+                *output_ptr++ = chunk[3];
+                *output_ptr++ = chunk[0];
             }
         }
 
@@ -108,33 +130,59 @@ static bstr decode_row(const bstr &input, const CustomArchiveEntry &entry)
     return output;
 }
 
-static res::Image read_plain(
-    io::File &input_file, const CustomArchiveEntry &entry)
+static bstr read_plain(
+    io::BaseByteStream &input_stream, const CustomArchiveEntry &entry)
 {
     bstr data;
     data.reserve(entry.width * entry.height * 4);
-
-    input_file.stream.seek(entry.offset);
-    std::vector<u32> row_offsets(entry.height);
+    std::vector<uoff_t> row_offsets(entry.height);
     for (auto &offset : row_offsets)
-        offset = input_file.stream.read_le<u32>();
+        offset = input_stream.read_le<u32>();
     for (const auto y : algo::range(entry.height))
     {
         const auto row_offset = row_offsets[y];
-        input_file.stream.seek(row_offset);
-        auto row_size = input_file.stream.read_le<u16>();
-        if (row_offset & 1)
-        {
-            input_file.stream.skip(1);
-            row_size--;
-        }
-        const auto input_row = input_file.stream.read(row_size);
-        const auto output_row = decode_row(input_row, entry);
+        const auto input_row = read_row(input_stream, row_offset);
+        const auto output_row = decode_row(input_row, entry, 0);
         data += output_row;
     }
+    return data;
+}
 
-    return res::Image(
-        entry.width, entry.height, data, res::PixelFormat::BGRA8888);
+static bstr read_incremental(
+    io::BaseByteStream &input_stream,
+    const CustomArchiveEntry &entry,
+    const dec::ArchiveMeta &meta)
+{
+    std::vector<uoff_t> row_offsets(entry.height);
+    for (auto &row_offset : row_offsets)
+        row_offset = input_stream.read_le<u32>();
+
+    std::map<uoff_t, int> rows_count;
+    for (const auto &e : meta.entries)
+    {
+        const auto other_entry
+            = static_cast<const CustomArchiveEntry*>(e.get());
+        input_stream.peek(other_entry->offset, [&]()
+        {
+            for (const auto y : algo::range(other_entry->height))
+            {
+                const auto row_offset = input_stream.read_le<u32>();
+                rows_count[row_offset]++;
+            }
+        });
+    }
+
+    bstr data;
+    data.reserve(entry.width * entry.height * 4);
+    for (const auto y : algo::range(entry.height))
+    {
+        const auto row_offset = row_offsets[y];
+        const auto input_row = read_row(input_stream, row_offset);
+        const auto output_row = decode_row(
+            input_row, entry, rows_count[row_offset]);
+        data += output_row;
+    }
+    return data;
 }
 
 bool S25ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -179,14 +227,19 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
-    if (entry->flags & 0x80000000)
-    {
-        throw err::NotSupportedError(
-            "Incremental S25 images are not supported");
-    }
-    const auto image = read_plain(input_file, *entry);
+    input_file.stream.seek(entry->offset);
+    const auto pixel_data = entry->flags & 0x80000000
+        ? read_incremental(input_file.stream, *entry, m)
+        : read_plain(input_file.stream, *entry);
     const auto encoder = enc::png::PngImageEncoder();
-    return encoder.encode(logger, image, entry->path);
+    return encoder.encode(
+        logger,
+        res::Image(
+            entry->width,
+            entry->height,
+            pixel_data,
+            res::PixelFormat::BGRA8888),
+        entry->path);
 }
 
 algo::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
