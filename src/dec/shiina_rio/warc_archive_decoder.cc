@@ -95,9 +95,9 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     input_file.stream.seek(entry->offset);
 
-    const bstr head = input_file.stream.read(4);
+    const auto head = input_file.stream.read(4);
     const auto size_orig = input_file.stream.read_le<u32>();
-    const bool compress_crypt = head[3] > 0;
+    const auto compress_crypt = head[3] > 0;
     const u32 tmp = *head.get<u32>() ^ 0x82AD82 ^ size_orig;
     bstr file_magic(3);
     file_magic[0] = tmp & 0xFF;

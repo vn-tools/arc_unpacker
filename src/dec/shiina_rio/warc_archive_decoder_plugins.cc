@@ -131,6 +131,41 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             return p;
         });
 
+    plugin_manager.add(
+        "maki-fes",
+        "Maki Fes",
+        []()
+        {
+            auto p = std::make_shared<warc::Plugin>();
+            p->version = 2500;
+            p->entry_name_size = 0x20;
+            p->region_image = read_etc_image("region.png");
+            p->logo_data = read_etc_file("logo8.jpg");
+            p->initial_crypt_base_keys = {0xF6DF81DF, 0x1BDE29DE, 0x5DE, 0, 0};
+            p->flag_pre_crypt =
+            p->flag_post_crypt =
+                [](bstr &data, const u32 flags)
+                {
+                    if (data.size() < 0x400)
+                        return;
+                    u32 key = 0x12BDB19B;
+                    if ((flags & 0x202) == 0x202)
+                    {
+                        const auto decode_table
+                            = read_etc_file("extra_makifes.png");
+                        for (const auto i : algo::range(0x100))
+                        {
+                            key = 0x343FD * key + 0x269EC3;
+                            data[i] ^= decode_table.at(
+                                ((key >> 16) % 0x8000) % decode_table.size());
+                        }
+                    }
+                    if ((flags & 0x204) == 0x204)
+                        data.get<u32>()[0x80] ^= key;
+                };
+            return p;
+        });
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects WARC decryption routine."));
