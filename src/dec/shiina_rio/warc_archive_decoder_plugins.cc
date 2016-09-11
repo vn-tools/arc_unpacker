@@ -35,7 +35,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2370;
             p->entry_name_size = 0x10;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo1.png");
+            p->logo_data = read_etc_file("logo_237.png");
             p->initial_crypt_base_keys
                 = {0xF182C682, 0xE882AA82, 0x718E5896, 0x8183CC82, 0xDAC98283};
             p->crc_crypt_source = read_etc_file("table1.bin");
@@ -51,11 +51,12 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2490;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo3.jpg");
+            p->logo_data = read_etc_file("logo_shojo_mama.jpg");
             p->initial_crypt_base_keys = {0x4B535453, 0xA15FA15F, 0, 0, 0};
             p->flag_pre_crypt
                 = p->flag_post_crypt
-                = warc::get_flag_crypt1(read_etc_file("flag.png"), 0xECB2F5B2);
+                = warc::get_flag_crypt1(
+                    read_etc_file("extra_table.png"), 0xECB2F5B2);
             p->crc_crypt_source = read_etc_file("table4.bin");
             return p;
         });
@@ -70,7 +71,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2490;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo4.jpg");
+            p->logo_data = read_etc_file("logo_majime1.jpg");
             p->initial_crypt_base_keys
                 = {0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0};
             p->flag_pre_crypt = warc::get_flag_crypt2();
@@ -87,7 +88,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2500;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo5.jpg");
+            p->logo_data = read_etc_file("logo_sorcery_jokers.jpg");
             p->initial_crypt_base_keys = {0x6C877787, 0x00007787, 0, 0, 0};
             p->flag_post_crypt = warc::get_flag_crypt3();
             p->crc_crypt_source = read_etc_file("table4.bin");
@@ -103,7 +104,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2500;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo6.jpg");
+            p->logo_data = read_etc_file("logo_gohoushi_nurse.jpg");
             p->initial_crypt_base_keys
                 = {0xEFED26E8, 0x8CF5A1EE, 0x13E9D4EC, 0, 0};
             p->flag_pre_crypt
@@ -123,7 +124,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2490;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo7.jpg");
+            p->logo_data = read_etc_file("logo_gensou_no_idea.jpg");
             p->initial_crypt_base_keys
                 = {0x45BA9DA7, 0x68A8E7A9, 0x6AA84DA8, 0, 0};
             p->flag_pre_crypt = warc::get_flag_crypt2();
@@ -140,7 +141,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2500;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo8.jpg");
+            p->logo_data = read_etc_file("logo_maki_fes.jpg");
             p->initial_crypt_base_keys = {0xF6DF81DF, 0x1BDE29DE, 0x5DE, 0, 0};
             p->flag_pre_crypt =
             p->flag_post_crypt =
