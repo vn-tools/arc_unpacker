@@ -3337,4 +3337,12 @@ var games = [
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
   args: ['--dec=shiina-rio/warc --plugin=gensou']},
 
+{ dev: 'Grand Cross',
+  date: '2014-12-30',
+  title: 'Maki Fes!',
+  title_orig: 'マキフェス！',
+  vndb: 16484,
+  fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg', 'wmv']},
+  args: ['--dec=shiina-rio/warc --plugin=maki-fes']},
+
 ];
