@@ -3329,4 +3329,12 @@ var games = [
   fmt: {gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
   args: ['--dec=mages/mpk']},
 
+{ dev: '3rdEye',
+  date: '2013-06-28',
+  title: 'Gensou no Idea ~Oratorio Phantasm Historia~',
+  title_orig: '幻創のイデア～Oratorio Phantasm Historia～',
+  vndb: 11881,
+  fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
+  args: ['--dec=shiina-rio/warc --plugin=gensou']},
+
 ];
