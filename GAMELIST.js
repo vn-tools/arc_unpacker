@@ -3159,7 +3159,7 @@ var games = [
   title_orig: 'ChäoS;Child',
   vndb: 14018,
   info: 'PC version',
-  fmt: {gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
+  fmt: {archives: ['mpk'], gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
   args: ['--dec=mages/mpk']},
 
 { dev: '5pb.',
@@ -3326,7 +3326,7 @@ var games = [
   title_orig: 'シュタインズ・ゲート',
   vndb: 2002,
   info: 'Steam version',
-  fmt: {gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
+  fmt: {archives: ['mpk'], gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
   args: ['--dec=mages/mpk']},
 
 { dev: '3rdEye',
