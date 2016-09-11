@@ -180,7 +180,10 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
     if (entry->flags & 0x80000000)
-        throw err::NotSupportedError("Flagged S25 images are supported");
+    {
+        throw err::NotSupportedError(
+            "Incremental S25 images are not supported");
+    }
     const auto image = read_plain(input_file, *entry);
     const auto encoder = enc::png::PngImageEncoder();
     return encoder.encode(logger, image, entry->path);
