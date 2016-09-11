@@ -110,8 +110,8 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size_comp - 8);
     if (entry->flags & 0x80000000)
         warc::decrypt_essential(*meta->plugin, meta->warc_version, data);
-    if (meta->plugin->flag_pre_crypt)
-        meta->plugin->flag_pre_crypt(data, 0x202);
+    if (meta->plugin->extra_crypt)
+        meta->plugin->extra_crypt->decrypt(data, 0x202);
     if (entry->flags & 0x20000000)
     {
         if (!meta->plugin->crc_crypt_source.size())
@@ -136,8 +136,8 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
                 throw err::NotSupportedError("CRC crypt is not implemented");
             warc::crc_crypt(data, meta->plugin->crc_crypt_source);
         }
-        if (meta->plugin->flag_post_crypt)
-            meta->plugin->flag_post_crypt(data, 0x204);
+        if (meta->plugin->extra_crypt)
+            meta->plugin->extra_crypt->decrypt(data, 0x204);
     }
 
     if (entry->suspicious)

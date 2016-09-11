@@ -11,9 +11,6 @@ namespace warc {
         const Plugin &plugin, const int warc_version, bstr &data);
 
     void crc_crypt(bstr &data, const bstr &table);
-    FlagCryptFunc get_flag_crypt1(const bstr &table, const u32 key);
-    FlagCryptFunc get_flag_crypt2();
-    FlagCryptFunc get_flag_crypt3();
 
     void decrypt_table_data(
         const Plugin &plugin,

@@ -10,7 +10,15 @@ namespace dec {
 namespace shiina_rio {
 namespace warc {
 
-    using FlagCryptFunc = std::function<void(bstr &data, const u32 flags)>;
+    struct BaseExtraCrypt
+    {
+        void decrypt(bstr &data, const u32 flags) const;
+
+    protected:
+        virtual size_t min_size() const = 0;
+        virtual void pre_decrypt(bstr &data) const = 0;
+        virtual void post_decrypt(bstr &data) const = 0;
+    };
 
     struct Plugin final
     {
@@ -23,8 +31,7 @@ namespace warc {
         std::shared_ptr<res::Image> region_image;
 
         bstr crc_crypt_source;
-        FlagCryptFunc flag_pre_crypt;
-        FlagCryptFunc flag_post_crypt;
+        std::unique_ptr<BaseExtraCrypt> extra_crypt;
     };
 
     using PluginBuilder = std::function<std::shared_ptr<Plugin>()>;
