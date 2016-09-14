@@ -3345,4 +3345,12 @@ var games = [
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg', 'wmv']},
   args: ['--dec=shiina-rio/warc --plugin=maki-fes']},
 
+{ dev: '5pb. Games',
+  date: '2016-08-26',
+  title: 'Steins;Gate 0',
+  title_orig: 'シュタインズ・ゲート・ゼロ',
+  vndb: 17102,
+  info: 'PC version',
+  args: ['--dec=mages/mpk']},
+
 ];
