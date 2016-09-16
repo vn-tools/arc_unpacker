@@ -1,4 +1,4 @@
-#include "dec/wendy_bell/arc_archive_decoder.h"
+#include "dec/cyberworks/arc_archive_decoder.h"
 #include <map>
 #include "algo/pack/lzss.h"
 #include "algo/ptr.h"
@@ -8,7 +8,7 @@
 #include "virtual_file_system.h"
 
 using namespace au;
-using namespace au::dec::wendy_bell;
+using namespace au::dec::cyberworks;
 
 static const std::map<std::string, std::vector<std::string>>
     toc_to_data_file_name_map =
@@ -278,4 +278,4 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     return ret;
 }
 
-static auto _ = dec::register_decoder<ArcArchiveDecoder>("wendy-bell/arc");
+static auto _ = dec::register_decoder<ArcArchiveDecoder>("cyberworks/arc");

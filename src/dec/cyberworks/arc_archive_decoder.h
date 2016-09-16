@@ -6,7 +6,7 @@
 
 namespace au {
 namespace dec {
-namespace wendy_bell {
+namespace cyberworks {
 
     enum class ImageParameter : int
     {
