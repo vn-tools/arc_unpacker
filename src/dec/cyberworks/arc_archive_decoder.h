@@ -9,24 +9,15 @@ namespace au {
 namespace dec {
 namespace cyberworks {
 
-    enum class ImageParameter : int
-    {
-        Width,
-        Height,
-        BitmapSize,
-        AlphaOffset,
-        Type,
-        Unknown,
-    };
-
     struct ArcArchivePlugin final
     {
         std::map<std::string, std::vector<std::string>>
             toc_to_data_file_name_map;
 
         // parameters are in different order for each game
-        std::vector<ImageParameter> img_param_order;
         u8 img_delim[3];
+        std::vector<int> img_header_order;
+        bool flip_img_vertically;
     };
 
     class ArcArchiveDecoder final : public BaseArchiveDecoder

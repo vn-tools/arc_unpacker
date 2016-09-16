@@ -11,6 +11,16 @@ using namespace au::dec::cyberworks;
 
 namespace
 {
+    enum ImageParameter
+    {
+        Flags        = 0,
+        Height       = 3,
+        Width        = 4,
+        OriginalSize = 5,
+        AlphaSize    = 6,
+        MapSize      = 7,
+    };
+
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::vector<std::unique_ptr<io::File>> data_files;
@@ -50,12 +60,12 @@ static std::vector<std::string> get_data_file_names(
     return tmp->second;
 }
 
-static std::map<ImageParameter, u32> read_image_parameters(
+static std::map<int, u32> read_image_parameters(
     io::BaseByteStream &input_stream, const ArcArchivePlugin &plugin)
 {
-    std::map<ImageParameter, u32> parameters;
+    std::map<int, u32> parameters;
     u8 step[3] = {0};
-    for (const auto param : plugin.img_param_order)
+    for (const auto idx : plugin.img_header_order)
     {
         step[0] = input_stream.read<u8>();
         if (step[0] == plugin.img_delim[2])
@@ -77,9 +87,150 @@ static std::map<ImageParameter, u32> read_image_parameters(
             + step[0];
         step[1] = 0;
         step[2] = 0;
-        parameters[param] = value;
+        parameters[idx] = value;
     }
     return parameters;
+}
+
+static std::unique_ptr<res::Image> decode_picture_type_1(
+    io::BaseByteStream &data_stream,
+    const std::map<int, u32> &parameters)
+{
+    const auto width = parameters.at(ImageParameter::Width);
+    const auto height = parameters.at(ImageParameter::Height);
+    const auto bitmap_size = parameters.at(ImageParameter::OriginalSize);
+    const auto stride = (width * 3 + 3) & ~3;
+
+    res::PixelFormat format;
+    if (bitmap_size == width * height * 3)
+    {
+        return std::make_unique<res::Image>(
+            width, height, data_stream, res::PixelFormat::BGR888);
+    }
+
+    if (bitmap_size == width * height)
+    {
+        return std::make_unique<res::Image>(
+            width, height, data_stream, res::PixelFormat::Gray8);
+    }
+
+    if (bitmap_size == stride * height)
+    {
+        auto image = std::make_unique<res::Image>(width, height);
+        for (const auto y : algo::range(height))
+        {
+            const auto row = res::Image(
+                width, 1, data_stream.read(stride), res::PixelFormat::BGR888);
+            for (const auto x : algo::range(width))
+                image->at(x, y) = row.at(x, 0);
+        }
+        return image;
+    }
+
+    throw err::BadDataSizeError();
+}
+
+static std::unique_ptr<res::Image> decode_picture_type_3(
+    io::BaseByteStream &data_stream,
+    const std::map<int, u32> &parameters)
+{
+    const auto width = parameters.at(ImageParameter::Width);
+    const auto height = parameters.at(ImageParameter::Height);
+    const auto stride = (width * 3 + 3) & ~3;
+
+    auto output = bstr(width * height * 4);
+
+    {
+        auto output_ptr = output.get<u8>();
+        for (const auto y : algo::range(height))
+        {
+            int src = 0;
+            const auto line = data_stream.read(stride);
+            auto line_ptr = line.get<const u8>();
+            for (const auto x : algo::range(width))
+            {
+                output_ptr[3] = line_ptr[0];
+                output_ptr += 4;
+                line_ptr += 3;
+            }
+        }
+    }
+
+    {
+        auto output_ptr = output.get<u8>();
+        for (const auto y : algo::range(height))
+        {
+            const auto line = data_stream.read(stride);
+            auto line_ptr = line.get<const u8>();
+            for (const auto x : algo::range(width))
+            {
+                output_ptr[0] = line_ptr[0];
+                output_ptr[1] = line_ptr[1];
+                output_ptr[2] = line_ptr[2];
+                output_ptr += 4;
+                line_ptr += 3;
+            }
+        }
+    }
+
+    return std::make_unique<res::Image>(
+        width, height, output, res::PixelFormat::BGRA8888);
+}
+
+static std::unique_ptr<res::Image> decode_picture_type_4(
+    io::BaseByteStream &data_stream,
+    const std::map<int, u32> &parameters)
+{
+    const auto bits_size = parameters.at(ImageParameter::MapSize);
+    const auto alpha_size = parameters.at(ImageParameter::AlphaSize);
+    const auto width = parameters.at(ImageParameter::Width);
+    const auto height = parameters.at(ImageParameter::Height);
+
+    const auto rgb_map = data_stream.read(bits_size);
+    const auto alpha_map = data_stream.read(bits_size);
+    const auto alpha = data_stream.read(alpha_size);
+
+    auto output = bstr(width * height * 4);
+    auto output_ptr = output.get<u8>();
+
+    auto bit = 1;
+    auto bit_idx = 0;
+    auto alpha_idx = 0;
+
+    for (const auto i : algo::range(width * height))
+    {
+        const auto has_rgb = (bit & rgb_map.at(bit_idx)) != 0;
+        const auto has_alpha = (bit & alpha_map.at(bit_idx)) != 0;
+        if (has_alpha || has_rgb)
+        {
+            output_ptr[0] = data_stream.read<u8>();
+            output_ptr[1] = data_stream.read<u8>();
+            output_ptr[2] = data_stream.read<u8>();
+            if (has_alpha)
+            {
+                output_ptr[3] = alpha.at(alpha_idx);
+                alpha_idx += 3;
+            }
+            else
+            {
+                output_ptr[3] = 0xFF;
+            }
+        }
+        output_ptr += 4;
+
+        if (bit == 0x80)
+        {
+            bit_idx++;
+            bit = 1;
+        }
+        else
+        {
+            bit <<= 1;
+        }
+    }
+
+    return std::make_unique<res::Image>(
+        width, height, output, res::PixelFormat::BGRA8888);
 }
 
 static void decode_picture(
@@ -94,32 +245,34 @@ static void decode_picture(
         data_stream.seek(2);
 
         const auto parameters = read_image_parameters(data_stream, plugin);
-        const auto width = parameters.at(ImageParameter::Width);
-        const auto height = parameters.at(ImageParameter::Height);
-        const auto bitmap_size = parameters.at(ImageParameter::BitmapSize);
-        const auto channels = bitmap_size / (width * height);
-        const auto stride = ((channels * width) + 3) & ~3;
-        const auto data_offset = data_stream.pos();
+        const auto flags = parameters.at(ImageParameter::Flags);
 
-        res::PixelFormat format;
-        if (channels == 3)
-            format = res::PixelFormat::BGR888;
-        else if (channels == 1)
-            format = res::PixelFormat::Gray8;
-        else
-            throw err::UnsupportedChannelCountError(channels);
-
-        res::Image image(width, height);
-        for (const auto y : algo::range(height))
+        std::unique_ptr<res::Image> image;
+        if (flags == 0)
         {
-            data_stream.seek(data_offset + stride * y);
-            res::Image row(width, 1, data_stream, format);
-            for (const auto x : algo::range(width))
-                image.at(x, y) = row.at(x, 0);
+            image = decode_picture_type_1(data_stream, parameters);
+        }
+        else if ((flags & 6) == 2)
+        {
+            throw err::NotSupportedError("Type 2 images is not supported");
+        }
+        else if ((flags & 6) == 6)
+        {
+            if (parameters.at(ImageParameter::MapSize) == 0)
+                image = decode_picture_type_3(data_stream, parameters);
+            else
+                image = decode_picture_type_4(data_stream, parameters);
         }
 
-        const auto encoder = enc::png::PngImageEncoder();
-        data = encoder.encode(logger, image, "")->stream.seek(0).read_to_eof();
+        if (image)
+        {
+            if (plugin.flip_img_vertically)
+                image->flip_vertically();
+            const auto encoder = enc::png::PngImageEncoder();
+            data = encoder.encode(logger, *image, "")
+                ->stream.seek(0)
+                .read_to_eof();
+        }
         return;
     }
 
@@ -170,16 +323,9 @@ ArcArchiveDecoder::ArcArchiveDecoder()
                 {"dSch.dat", {"dSc.dat"}},
                 {"dSo.dat", {"dSoh.dat"}},
             },
-            {
-                ImageParameter::BitmapSize,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Width,
-                ImageParameter::Height,
-                ImageParameter::Unknown,
-            },
             {0xE9, 0xEF, 0xFB},
+            {5, 7, 0, 6, 4, 3, 1},
+            true,
         });
 
     plugin_manager.add(
@@ -193,29 +339,9 @@ ArcArchiveDecoder::ArcArchiveDecoder()
                 {"Arc07.dat", {"Arc08.dat"}},
                 {"Arc09.dat", {"Arc10.dat"}},
             },
-            {
-                ImageParameter::Width,
-                ImageParameter::BitmapSize,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Height,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Type,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-                ImageParameter::Unknown,
-            },
             {0xE9, 0xEF, 0xFB},
+            {4, 5, 2, 1, 1, 1, 6, 1, 1, 3, 1, 1, 1, 0, 1, 1, 1, 7, 18, 1},
+            false,
         });
 
     add_arg_parser_decorator(
