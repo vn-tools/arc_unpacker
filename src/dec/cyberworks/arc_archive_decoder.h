@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <map>
 #include "dec/base_archive_decoder.h"
 #include "plugin_manager.h"
 
@@ -20,6 +21,9 @@ namespace cyberworks {
 
     struct ArcArchivePlugin final
     {
+        std::map<std::string, std::vector<std::string>>
+            toc_to_data_file_name_map;
+
         // parameters are in different order for each game
         std::vector<ImageParameter> img_param_order;
         u8 img_delim[3];

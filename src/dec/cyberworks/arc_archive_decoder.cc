@@ -1,5 +1,4 @@
 #include "dec/cyberworks/arc_archive_decoder.h"
-#include <map>
 #include "algo/pack/lzss.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
@@ -9,16 +8,6 @@
 
 using namespace au;
 using namespace au::dec::cyberworks;
-
-static const std::map<std::string, std::vector<std::string>>
-    toc_to_data_file_name_map =
-{
-    {"Arc01.dat", {"Arc04.dat"}},
-    {"Arc02.dat", {"Arc05.dat", "Arc05a.dat", "Arc05b.dat"}},
-    {"Arc03.dat", {"Arc06.dat"}},
-    {"Arc07.dat", {"Arc08.dat"}},
-    {"Arc09.dat", {"Arc10.dat"}},
-};
 
 namespace
 {
@@ -48,11 +37,12 @@ static u32 read_obfuscated_number(io::BaseByteStream &input_stream)
     return ret;
 }
 
-static std::vector<std::string> get_data_file_names(const io::File &input_file)
+static std::vector<std::string> get_data_file_names(
+    const io::File &input_file, const ArcArchivePlugin &plugin)
 {
     const auto toc_file_name = input_file.path.name();
-    const auto tmp = toc_to_data_file_name_map.find(toc_file_name);
-    if (tmp == toc_to_data_file_name_map.end())
+    const auto tmp = plugin.toc_to_data_file_name_map.find(toc_file_name);
+    if (tmp == plugin.toc_to_data_file_name_map.end())
     {
         throw err::RecognitionError(
             "Unrecognized TOC file name, cannot proceed.");
@@ -171,9 +161,38 @@ static void decode_tinkerbell_data_with_header(bstr &data)
 ArcArchiveDecoder::ArcArchiveDecoder()
 {
     plugin_manager.add(
+        "aniyome-kyouka",
+        "Aniyome Kyouka-san to Sono Haha Chikako-san "
+            "~Bijin Tsuma to Bijukubo to Issho~",
+        {
+            {
+                {"dPih.dat", {"dPi.dat"}},
+                {"dSch.dat", {"dSc.dat"}},
+                {"dSo.dat", {"dSoh.dat"}},
+            },
+            {
+                ImageParameter::BitmapSize,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Unknown,
+                ImageParameter::Width,
+                ImageParameter::Height,
+                ImageParameter::Unknown,
+            },
+            {0xE9, 0xEF, 0xFB},
+        });
+
+    plugin_manager.add(
         "zoku-etsuraku",
         "Zoku Etsuraku no Tane",
         {
+            {
+                {"Arc01.dat", {"Arc04.dat"}},
+                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat", "Arc05b.dat"}},
+                {"Arc03.dat", {"Arc06.dat"}},
+                {"Arc07.dat", {"Arc08.dat"}},
+                {"Arc09.dat", {"Arc10.dat"}},
+            },
             {
                 ImageParameter::Width,
                 ImageParameter::BitmapSize,
@@ -222,11 +241,11 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     io::MemoryByteStream table_stream(table_orig);
 
     auto meta = std::make_unique<CustomArchiveMeta>();
-    const auto data_file_names = get_data_file_names(input_file);
+    meta->plugin = plugin_manager.get();
+    const auto data_file_names = get_data_file_names(input_file, meta->plugin);
     for (const auto &data_file_name : data_file_names)
         meta->data_files.push_back(
             VirtualFileSystem::get_by_name(data_file_name));
-    meta->plugin = plugin_manager.get();
 
     while (table_stream.left())
     {
