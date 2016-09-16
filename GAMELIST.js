@@ -3353,4 +3353,13 @@ var games = [
   info: 'PC version',
   args: ['--dec=mages/mpk']},
 
+{ dev: 'Heiantei',
+  date: '2016-03-24',
+  title: 'Aniyome Kyouka-san to Sono Haha Chikako-san ~Bijin Tsuma to Bijukubo to Issho~',
+  title_orig: '兄嫁京香さんとその母千佳子さん～美人妻と美熟母といっしょ～',
+  vndb: 18803,
+  fmt: {archives: ['arc'], gfx: ['png'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on dPih.dat, dSch.dat and dSo.dat. Other DAT contain only raw data, which is extracted using the mentioned files.',
+  args: ['--dec=cyberworks/arc --plugin=aniyome-kyouka']},
+
 ];
