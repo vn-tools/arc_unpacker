@@ -35,7 +35,7 @@ namespace
 
 static std::string read_gamelist_file()
 {
-    io::FileByteStream gamelist_file("GAMELIST.htm", io::FileMode::Read);
+    io::FileByteStream gamelist_file("GAMELIST.js", io::FileMode::Read);
     return gamelist_file.read_to_eof().str();
 }
 
