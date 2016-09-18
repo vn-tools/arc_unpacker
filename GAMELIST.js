@@ -3371,4 +3371,13 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki']},
 
+{ dev: 'TinkerBell',
+  date: '2015-09-18',
+  title: 'Shukubo no Uzuki 2 ~Nareta Hitozuma kara Tadayou "Onna" no Iroka~',
+  title_orig: '淑母の疼き2 ～熟れた人妻から漂う“女”の色香～',
+  vndb: 17264,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki2']},
+
 ];
