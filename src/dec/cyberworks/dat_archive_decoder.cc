@@ -80,6 +80,8 @@ static void decode_tinkerbell_data_with_header(bstr &data)
 
 DatArchiveDecoder::DatArchiveDecoder()
 {
+    const auto _ = -1;
+
     plugin_manager.add(
         "aniyome-kyouka",
         "Aniyome Kyouka-san to Sono Haha Chikako-san "
@@ -91,7 +93,7 @@ DatArchiveDecoder::DatArchiveDecoder()
                 {"dSo.dat", {"dSoh.dat"}},
             },
             {0xE9, 0xEF, 0xFB},
-            {5, 7, 0, 6, 4, 3, 1},
+            {5, 7, 0, 6, 4, 3, _},
             true,
         });
 
@@ -107,7 +109,21 @@ DatArchiveDecoder::DatArchiveDecoder()
                 {"Arc09.dat", {"Arc10.dat"}},
             },
             {0xE9, 0xEF, 0xFB},
-            {4, 5, 2, 1, 1, 1, 6, 1, 1, 3, 1, 1, 1, 0, 1, 1, 1, 7, 18, 1},
+            {4, 5, _, _, _, _, 6, _, _, 3, _, _, _, 0, _, _, _, 7, _, _},
+            false,
+        });
+
+    plugin_manager.add(
+        "shukubo-no-uzuki",
+        "Shukubo no Uzuki ~Hitozuma Miboujin no Nareta Karada to Amai Toiki~",
+        {
+            {
+                {"Arc01.dat", {"Arc04.dat"}},
+                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat"}},
+                {"Arc03.dat", {"Arc06.dat"}},
+            },
+            {0xE9, 0xEF, 0xFB},
+            {4, _, _, 3, _, _, _, _, _, _, _, 5, _, 0, _, _, _, 7, _, _},
             false,
         });
 
