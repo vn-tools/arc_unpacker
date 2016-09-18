@@ -127,6 +127,20 @@ DatArchiveDecoder::DatArchiveDecoder()
             false,
         });
 
+    plugin_manager.add(
+        "shukubo-no-uzuki2",
+        "Shukubo no Uzuki 2 ~Nareta Hitozuma kara Tadayou \"Onna\" no Iroka~",
+        {
+            {
+                {"Arc01.dat", {"Arc04.dat"}},
+                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat"}},
+                {"Arc03.dat", {"Arc06.dat"}},
+            },
+            {0xE9, 0xEF, 0xFB},
+            {4, 5, _, _, _, _, _, _, 3, _, _, _, _, 0, _, _, _, 7, _, _},
+            false,
+        });
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Specifies plugin for decoding image files."));
