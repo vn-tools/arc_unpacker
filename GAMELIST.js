@@ -3362,4 +3362,13 @@ var games = [
   info: 'arc_unpacker should be used on dPih.dat, dSch.dat and dSo.dat. Other DAT contain only raw data, which is extracted using the mentioned files.',
   args: ['--dec=cyberworks/dat --plugin=aniyome-kyouka']},
 
+{ dev: 'TinkerBell',
+  date: '2014-05-23',
+  title: 'Shukubo no Uzuki ~Hitozuma Miboujin no Nareta Karada to Amai Toiki~',
+  title_orig: '淑母の疼き ～人妻、未亡人の熟れた身体と甘い吐息～',
+  vndb: 14593,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki']},
+
 ];
