@@ -1,24 +1,12 @@
 #pragma once
 
-#include <array>
-#include <map>
 #include "dec/base_archive_decoder.h"
+#include "dec/cyberworks/dat_plugin.h"
 #include "plugin_manager.h"
 
 namespace au {
 namespace dec {
 namespace cyberworks {
-
-    struct ArcArchivePlugin final
-    {
-        std::map<std::string, std::vector<std::string>>
-            toc_to_data_file_name_map;
-
-        // parameters are in different order for each game
-        u8 img_delim[3];
-        std::vector<int> img_header_order;
-        bool flip_img_vertically;
-    };
 
     class ArcArchiveDecoder final : public BaseArchiveDecoder
     {
@@ -39,7 +27,7 @@ namespace cyberworks {
             const ArchiveEntry &e) const override;
 
     public:
-        PluginManager<ArcArchivePlugin> plugin_manager;
+        PluginManager<DatPlugin> plugin_manager;
     };
 
 } } }

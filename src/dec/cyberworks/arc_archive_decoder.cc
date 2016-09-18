@@ -2,6 +2,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
+#include "dec/cyberworks/dat_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
@@ -11,20 +12,10 @@ using namespace au::dec::cyberworks;
 
 namespace
 {
-    enum ImageParameter
-    {
-        Flags        = 0,
-        Height       = 3,
-        Width        = 4,
-        OriginalSize = 5,
-        AlphaSize    = 6,
-        MapSize      = 7,
-    };
-
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
         std::vector<std::unique_ptr<io::File>> data_files;
-        ArcArchivePlugin plugin;
+        DatPlugin plugin;
     };
 
     struct CustomArchiveEntry final : dec::CompressedArchiveEntry
@@ -48,7 +39,7 @@ static u32 read_obfuscated_number(io::BaseByteStream &input_stream)
 }
 
 static std::vector<std::string> get_data_file_names(
-    const io::File &input_file, const ArcArchivePlugin &plugin)
+    const io::File &input_file, const DatPlugin &plugin)
 {
     const auto toc_file_name = input_file.path.name();
     const auto tmp = plugin.toc_to_data_file_name_map.find(toc_file_name);
@@ -58,230 +49,6 @@ static std::vector<std::string> get_data_file_names(
             "Unrecognized TOC file name, cannot proceed.");
     }
     return tmp->second;
-}
-
-static std::map<int, u32> read_image_parameters(
-    io::BaseByteStream &input_stream, const ArcArchivePlugin &plugin)
-{
-    std::map<int, u32> parameters;
-    u8 step[3] = {0};
-    for (const auto idx : plugin.img_header_order)
-    {
-        step[0] = input_stream.read<u8>();
-        if (step[0] == plugin.img_delim[2])
-            step[0] = 0;
-        u8 tmp = input_stream.read<u8>();
-        while (tmp != plugin.img_delim[1])
-        {
-            if (tmp == plugin.img_delim[0])
-                step[2]++;
-            else if (tmp == plugin.img_delim[2])
-                step[1] = 0;
-            else
-                step[1] = tmp;
-            tmp = input_stream.read<u8>();
-        }
-        const u32 value
-            = step[2] * plugin.img_delim[0] * plugin.img_delim[0]
-            + step[1] * plugin.img_delim[0]
-            + step[0];
-        step[1] = 0;
-        step[2] = 0;
-        parameters[idx] = value;
-    }
-    return parameters;
-}
-
-static std::unique_ptr<res::Image> decode_picture_type_1(
-    io::BaseByteStream &data_stream,
-    const std::map<int, u32> &parameters)
-{
-    const auto width = parameters.at(ImageParameter::Width);
-    const auto height = parameters.at(ImageParameter::Height);
-    const auto bitmap_size = parameters.at(ImageParameter::OriginalSize);
-    const auto stride = (width * 3 + 3) & ~3;
-
-    res::PixelFormat format;
-    if (bitmap_size == width * height * 3)
-    {
-        return std::make_unique<res::Image>(
-            width, height, data_stream, res::PixelFormat::BGR888);
-    }
-
-    if (bitmap_size == width * height)
-    {
-        return std::make_unique<res::Image>(
-            width, height, data_stream, res::PixelFormat::Gray8);
-    }
-
-    if (bitmap_size == stride * height)
-    {
-        auto image = std::make_unique<res::Image>(width, height);
-        for (const auto y : algo::range(height))
-        {
-            const auto row = res::Image(
-                width, 1, data_stream.read(stride), res::PixelFormat::BGR888);
-            for (const auto x : algo::range(width))
-                image->at(x, y) = row.at(x, 0);
-        }
-        return image;
-    }
-
-    throw err::BadDataSizeError();
-}
-
-static std::unique_ptr<res::Image> decode_picture_type_3(
-    io::BaseByteStream &data_stream,
-    const std::map<int, u32> &parameters)
-{
-    const auto width = parameters.at(ImageParameter::Width);
-    const auto height = parameters.at(ImageParameter::Height);
-    const auto stride = (width * 3 + 3) & ~3;
-
-    auto output = bstr(width * height * 4);
-
-    {
-        auto output_ptr = output.get<u8>();
-        for (const auto y : algo::range(height))
-        {
-            int src = 0;
-            const auto line = data_stream.read(stride);
-            auto line_ptr = line.get<const u8>();
-            for (const auto x : algo::range(width))
-            {
-                output_ptr[3] = line_ptr[0];
-                output_ptr += 4;
-                line_ptr += 3;
-            }
-        }
-    }
-
-    {
-        auto output_ptr = output.get<u8>();
-        for (const auto y : algo::range(height))
-        {
-            const auto line = data_stream.read(stride);
-            auto line_ptr = line.get<const u8>();
-            for (const auto x : algo::range(width))
-            {
-                output_ptr[0] = line_ptr[0];
-                output_ptr[1] = line_ptr[1];
-                output_ptr[2] = line_ptr[2];
-                output_ptr += 4;
-                line_ptr += 3;
-            }
-        }
-    }
-
-    return std::make_unique<res::Image>(
-        width, height, output, res::PixelFormat::BGRA8888);
-}
-
-static std::unique_ptr<res::Image> decode_picture_type_4(
-    io::BaseByteStream &data_stream,
-    const std::map<int, u32> &parameters)
-{
-    const auto bits_size = parameters.at(ImageParameter::MapSize);
-    const auto alpha_size = parameters.at(ImageParameter::AlphaSize);
-    const auto width = parameters.at(ImageParameter::Width);
-    const auto height = parameters.at(ImageParameter::Height);
-
-    const auto rgb_map = data_stream.read(bits_size);
-    const auto alpha_map = data_stream.read(bits_size);
-    const auto alpha = data_stream.read(alpha_size);
-
-    auto output = bstr(width * height * 4);
-    auto output_ptr = output.get<u8>();
-
-    auto bit = 1;
-    auto bit_idx = 0;
-    auto alpha_idx = 0;
-
-    for (const auto i : algo::range(width * height))
-    {
-        const auto has_rgb = (bit & rgb_map.at(bit_idx)) != 0;
-        const auto has_alpha = (bit & alpha_map.at(bit_idx)) != 0;
-        if (has_alpha || has_rgb)
-        {
-            output_ptr[0] = data_stream.read<u8>();
-            output_ptr[1] = data_stream.read<u8>();
-            output_ptr[2] = data_stream.read<u8>();
-            if (has_alpha)
-            {
-                output_ptr[3] = alpha.at(alpha_idx);
-                alpha_idx += 3;
-            }
-            else
-            {
-                output_ptr[3] = 0xFF;
-            }
-        }
-        output_ptr += 4;
-
-        if (bit == 0x80)
-        {
-            bit_idx++;
-            bit = 1;
-        }
-        else
-        {
-            bit <<= 1;
-        }
-    }
-
-    return std::make_unique<res::Image>(
-        width, height, output, res::PixelFormat::BGRA8888);
-}
-
-static void decode_picture(
-    const Logger &logger, const ArcArchivePlugin &plugin, bstr &data)
-{
-    if (!data.size())
-        return;
-
-    if (data[0] == 'a')
-    {
-        io::MemoryByteStream data_stream(data);
-        data_stream.seek(2);
-
-        const auto parameters = read_image_parameters(data_stream, plugin);
-        const auto flags = parameters.at(ImageParameter::Flags);
-
-        std::unique_ptr<res::Image> image;
-        if (flags == 0)
-        {
-            image = decode_picture_type_1(data_stream, parameters);
-        }
-        else if ((flags & 6) == 2)
-        {
-            throw err::NotSupportedError("Type 2 images is not supported");
-        }
-        else if ((flags & 6) == 6)
-        {
-            if (parameters.at(ImageParameter::MapSize) == 0)
-                image = decode_picture_type_3(data_stream, parameters);
-            else
-                image = decode_picture_type_4(data_stream, parameters);
-        }
-
-        if (image)
-        {
-            if (plugin.flip_img_vertically)
-                image->flip_vertically();
-            const auto encoder = enc::png::PngImageEncoder();
-            data = encoder.encode(logger, *image, "")
-                ->stream.seek(0)
-                .read_to_eof();
-        }
-        return;
-    }
-
-    if (data[0] == 'c')
-    {
-        // a PNG file
-        data = data.substr(5);
-        return;
-    }
 }
 
 static void decode_tinkerbell_data_headerless(bstr &data)
@@ -410,7 +177,15 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
         data = algo::pack::lzss_decompress(data, entry->size_orig);
 
     if (entry->type == "b0"_b || entry->type == "n0"_b || entry->type == "o0"_b)
-        decode_picture(logger, meta->plugin, data);
+    {
+        io::File pseudo_file("dummy.dat", data);
+        const auto image = DatImageDecoder(meta->plugin).decode(
+            logger, pseudo_file);
+        data = enc::png::PngImageEncoder()
+            .encode(logger, image, "")
+                ->stream.seek(0).read_to_eof();
+
+    }
 
     if (entry->type == "j0"_b || entry->type == "k0"_b)
         decode_tinkerbell_data_headerless(data);
