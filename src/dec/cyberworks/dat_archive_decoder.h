@@ -8,10 +8,10 @@ namespace au {
 namespace dec {
 namespace cyberworks {
 
-    class ArcArchiveDecoder final : public BaseArchiveDecoder
+    class DatArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
-        ArcArchiveDecoder();
+        DatArchiveDecoder();
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

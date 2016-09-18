@@ -3276,9 +3276,9 @@ var games = [
   title: 'Zoku Etsuraku no Tane',
   title_orig: '続・悦楽の胤',
   vndb: 17061,
-  fmt: {archives: ['arc'], gfx: ['png'], audio: ['ogg']},
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
-  args: ['--dec=cyberworks/arc --plugin=zoku-etsuraku']},
+  args: ['--dec=cyberworks/dat --plugin=zoku-etsuraku']},
 
 { dev: 'Purple Software',
   date: '2016-07-29',
@@ -3358,8 +3358,8 @@ var games = [
   title: 'Aniyome Kyouka-san to Sono Haha Chikako-san ~Bijin Tsuma to Bijukubo to Issho~',
   title_orig: '兄嫁京香さんとその母千佳子さん～美人妻と美熟母といっしょ～',
   vndb: 18803,
-  fmt: {archives: ['arc'], gfx: ['png'], audio: ['ogg']},
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
   info: 'arc_unpacker should be used on dPih.dat, dSch.dat and dSo.dat. Other DAT contain only raw data, which is extracted using the mentioned files.',
-  args: ['--dec=cyberworks/arc --plugin=aniyome-kyouka']},
+  args: ['--dec=cyberworks/dat --plugin=aniyome-kyouka']},
 
 ];

@@ -1,4 +1,4 @@
-#include "dec/cyberworks/arc_archive_decoder.h"
+#include "dec/cyberworks/dat_archive_decoder.h"
 #include "algo/pack/lzss.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
@@ -78,7 +78,7 @@ static void decode_tinkerbell_data_with_header(bstr &data)
     decode_tinkerbell_data_headerless(data);
 }
 
-ArcArchiveDecoder::ArcArchiveDecoder()
+DatArchiveDecoder::DatArchiveDecoder()
 {
     plugin_manager.add(
         "aniyome-kyouka",
@@ -116,14 +116,14 @@ ArcArchiveDecoder::ArcArchiveDecoder()
             "Specifies plugin for decoding image files."));
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
+bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(8);
     const auto size_comp = read_obfuscated_number(input_file.stream);
     return size_comp == input_file.stream.left();
 }
 
-std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
+std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
@@ -163,7 +163,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     return std::move(meta);
 }
 
-std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const Logger &logger,
     io::File &input_file,
     const dec::ArchiveMeta &m,
@@ -198,4 +198,4 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     return ret;
 }
 
-static auto _ = dec::register_decoder<ArcArchiveDecoder>("cyberworks/arc");
+static auto _ = dec::register_decoder<DatArchiveDecoder>("cyberworks/dat");
