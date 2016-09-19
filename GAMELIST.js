@@ -3378,6 +3378,6 @@ var games = [
   vndb: 17264,
   fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
-  args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki2']},
+  args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki2', '--dec=cyberworks/appendix --plugin=shukubo-no-uzuki2']},
 
 ];
