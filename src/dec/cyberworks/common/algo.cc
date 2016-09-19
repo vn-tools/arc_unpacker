@@ -66,4 +66,7 @@ void common::decode_data(
 
     if (type == "u0"_b)
         decode_tinkerbell_data_with_header(data);
+
+    if (type == "w0"_b)
+        data = data.substr(5);
 }
