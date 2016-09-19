@@ -64,7 +64,7 @@ std::unique_ptr<dec::ArchiveMeta> AppendixArchiveDecoder::read_meta_impl(
         const auto unk2 = table_stream.read_le<u16>(); // 0000?
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<io::File> AppendixArchiveDecoder::read_file_impl(
