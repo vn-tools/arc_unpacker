@@ -1,9 +1,7 @@
 #include "dec/cyberworks/dat_archive_decoder.h"
 #include "algo/pack/lzss.h"
-#include "algo/ptr.h"
-#include "algo/range.h"
-#include "dec/cyberworks/dat_image_decoder.h"
-#include "enc/png/png_image_encoder.h"
+#include "dec/cyberworks/common/algo.h"
+#include "dec/cyberworks/common/plugins.h"
 #include "io/memory_byte_stream.h"
 #include "virtual_file_system.h"
 
@@ -25,19 +23,6 @@ namespace
     };
 }
 
-static u32 read_obfuscated_number(io::BaseByteStream &input_stream)
-{
-    u32 ret = 0;
-    for (const auto i : algo::range(8))
-    {
-        ret *= 10;
-        const auto byte = input_stream.read<u8>();
-        if (byte != 0xFF)
-            ret += byte ^ 0x7F;
-    }
-    return ret;
-}
-
 static std::vector<std::string> get_data_file_names(
     const io::File &input_file, const DatPlugin &plugin)
 {
@@ -51,96 +36,9 @@ static std::vector<std::string> get_data_file_names(
     return tmp->second;
 }
 
-static void decode_tinkerbell_data_headerless(bstr &data)
-{
-    const auto key =
-        "DBB3206F-F171-4885-A131-EC7FBA6FF491 Copyright 2004 "
-        "Cyberworks \"TinkerBell\"., all rights reserved.\x00"_b;
-    size_t key_pos = 0;
-    for (const auto i : algo::range(4, data.size()))
-    {
-        if (i >= 0xE1F)
-            break;
-        data[i] ^= key[key_pos];
-        key_pos++;
-        if (key_pos == key.size())
-            key_pos = 1;
-    }
-    data[0] = 'O';
-    data[1] = 'g';
-    data[2] = 'g';
-    data[3] = 'S';
-}
-
-static void decode_tinkerbell_data_with_header(bstr &data)
-{
-    data = data.substr(12);
-    decode_tinkerbell_data_headerless(data);
-}
-
 DatArchiveDecoder::DatArchiveDecoder()
 {
-    const auto _ = -1;
-
-    plugin_manager.add(
-        "aniyome-kyouka",
-        "Aniyome Kyouka-san to Sono Haha Chikako-san "
-            "~Bijin Tsuma to Bijukubo to Issho~",
-        {
-            {
-                {"dPih.dat", {"dPi.dat"}},
-                {"dSch.dat", {"dSc.dat"}},
-                {"dSo.dat", {"dSoh.dat"}},
-            },
-            {0xE9, 0xEF, 0xFB},
-            {5, 7, 0, 6, 4, 3, _},
-            true,
-        });
-
-    plugin_manager.add(
-        "zoku-etsuraku",
-        "Zoku Etsuraku no Tane",
-        {
-            {
-                {"Arc01.dat", {"Arc04.dat"}},
-                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat", "Arc05b.dat"}},
-                {"Arc03.dat", {"Arc06.dat"}},
-                {"Arc07.dat", {"Arc08.dat"}},
-                {"Arc09.dat", {"Arc10.dat"}},
-            },
-            {0xE9, 0xEF, 0xFB},
-            {4, 5, _, _, _, _, 6, _, _, 3, _, _, _, 0, _, _, _, 7, _, _},
-            false,
-        });
-
-    plugin_manager.add(
-        "shukubo-no-uzuki",
-        "Shukubo no Uzuki ~Hitozuma Miboujin no Nareta Karada to Amai Toiki~",
-        {
-            {
-                {"Arc01.dat", {"Arc04.dat"}},
-                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat"}},
-                {"Arc03.dat", {"Arc06.dat"}},
-            },
-            {0xE9, 0xEF, 0xFB},
-            {4, _, _, 3, _, _, _, _, _, _, _, 5, _, 0, _, _, _, 7, _, _},
-            false,
-        });
-
-    plugin_manager.add(
-        "shukubo-no-uzuki2",
-        "Shukubo no Uzuki 2 ~Nareta Hitozuma kara Tadayou \"Onna\" no Iroka~",
-        {
-            {
-                {"Arc01.dat", {"Arc04.dat"}},
-                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat"}},
-                {"Arc03.dat", {"Arc06.dat"}},
-            },
-            {0xE9, 0xEF, 0xFB},
-            {4, 5, _, _, _, _, _, _, 3, _, _, _, _, 0, _, _, _, 7, _, _},
-            false,
-        });
-
+    common::register_plugins(plugin_manager);
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Specifies plugin for decoding image files."));
@@ -149,7 +47,7 @@ DatArchiveDecoder::DatArchiveDecoder()
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(8);
-    const auto size_comp = read_obfuscated_number(input_file.stream);
+    const auto size_comp = common::read_obfuscated_number(input_file.stream);
     return size_comp == input_file.stream.left();
 }
 
@@ -157,8 +55,8 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto size_orig = read_obfuscated_number(input_file.stream);
-    const auto size_comp = read_obfuscated_number(input_file.stream);
+    const auto size_orig = common::read_obfuscated_number(input_file.stream);
+    const auto size_comp = common::read_obfuscated_number(input_file.stream);
     const auto table_comp = input_file.stream.read(size_comp);
     const auto table_orig = algo::pack::lzss_decompress(table_comp, size_orig);
     io::MemoryByteStream table_stream(table_orig);
@@ -206,22 +104,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     if (entry->size_orig != entry->size_comp)
         data = algo::pack::lzss_decompress(data, entry->size_orig);
 
-    if (entry->type == "b0"_b || entry->type == "n0"_b || entry->type == "o0"_b)
-    {
-        io::File pseudo_file("dummy.dat", data);
-        const auto image = DatImageDecoder(meta->plugin).decode(
-            logger, pseudo_file);
-        data = enc::png::PngImageEncoder()
-            .encode(logger, image, "")
-                ->stream.seek(0).read_to_eof();
-
-    }
-
-    if (entry->type == "j0"_b || entry->type == "k0"_b)
-        decode_tinkerbell_data_headerless(data);
-
-    if (entry->type == "u0"_b)
-        decode_tinkerbell_data_with_header(data);
+    common::decode_data(logger, entry->type, data, meta->plugin);
 
     auto ret = std::make_unique<io::File>(entry->path, data);
     ret->guess_extension();
