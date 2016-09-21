@@ -6,6 +6,7 @@
 #include "dec/fc01/common/mrg_decryptor.h"
 #include "dec/fc01/common/util.h"
 #include "err.h"
+#include <cmath>
 
 using namespace au;
 using namespace au::dec::fc01;
@@ -35,9 +36,9 @@ static bstr transform_v200(
         int p00 = planes[i][pos];
         int p10 = planes[i][pos + width] - p00;
         int p01 = planes[i][pos + 1] - p00;
-        p00 = std::abs(p01 + p10);
-        p01 = std::abs(p01);
-        p10 = std::abs(p10);
+        p00 = std::fabs(p01 + p10);
+        p01 = std::fabs(p01);
+        p10 = std::fabs(p10);
         s8 p11a;
         if (p00 >= p01 && p10 >= p01)
             p11a = planes[i][pos + width];

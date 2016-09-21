@@ -3,6 +3,7 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "io/memory_byte_stream.h"
+#include <array>
 
 using namespace au;
 using namespace au::dec::almond_collective;
