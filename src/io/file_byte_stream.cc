@@ -64,7 +64,7 @@ struct FileByteStream::Priv final
         {
             fd = std::fopen(
                 path.c_str(),
-                mode == FileMode::Write ? "w+b" : "r+b");
+                mode == FileMode::Write ? "w+b" : "rb");
             if (!fd)
                 throw err::FileNotFoundError("Could not open " + path.str());
         }
