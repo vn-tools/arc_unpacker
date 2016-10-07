@@ -3380,4 +3380,12 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=shukubo-no-uzuki2', '--dec=cyberworks/appendix --plugin=shukubo-no-uzuki2']},
 
+{ dev: 'onomatope*Raspberry',
+  date: '2016-04-28',
+  title: 'Bitch Nee-chan ga Seijun na Hazu ga Nai!',
+  title_orig: 'ビッチ姉ちゃんが清純なはずがないっ！',
+  vndb: 18781,
+  fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
+  args: ['--dec=shiina-rio/warc --plugin=bitch-neesan']},
+
 ];
