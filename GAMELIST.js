@@ -3386,6 +3386,6 @@ var games = [
   title_orig: 'ビッチ姉ちゃんが清純なはずがないっ！',
   vndb: 18781,
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
-  args: ['--dec=shiina-rio/warc --plugin=bitch-neesan']},
+  args: ['--dec=shiina-rio/warc --plugin=bitch-neechan']},
 
 ];

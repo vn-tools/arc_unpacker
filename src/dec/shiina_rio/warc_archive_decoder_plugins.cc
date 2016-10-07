@@ -52,7 +52,7 @@ namespace
         }
     };
 
-    struct BitchNeesanExtraCrypt final : public warc::BaseExtraCrypt
+    struct BitchNeechanExtraCrypt final : public warc::BaseExtraCrypt
     {
         size_t min_size() const override
         {
@@ -341,7 +341,7 @@ WarcArchiveDecoder::WarcArchiveDecoder()
         });
 
     plugin_manager.add(
-        "bitch-neesan",
+        "bitch-neechan",
         "Bitch Nee-chan ga Seijun na Hazu ga Nai!",
         []()
         {
@@ -349,10 +349,10 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->version = 2500;
             p->entry_name_size = 0x20;
             p->region_image = read_etc_image("region.png");
-            p->logo_data = read_etc_file("logo_bitch_neesan.jpg");
+            p->logo_data = read_etc_file("logo_bitch_neechan.jpg");
             p->initial_crypt_base_keys
                 = {0x0FEE1FEE, 0x02E30DEE, 0x8CEFD2EF, 0xC7EF9CEF, 0xEEE2D9FD};
-            p->extra_crypt = std::make_unique<BitchNeesanExtraCrypt>();
+            p->extra_crypt = std::make_unique<BitchNeechanExtraCrypt>();
             p->crc_crypt_source = read_etc_file("table4.bin");
             return p;
         });
