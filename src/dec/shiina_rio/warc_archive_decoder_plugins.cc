@@ -52,6 +52,37 @@ namespace
         }
     };
 
+    struct BitchNeesanExtraCrypt final : public warc::BaseExtraCrypt
+    {
+        size_t min_size() const override
+        {
+            return 0x400;
+        }
+
+        void pre_decrypt(bstr &data) const override
+        {
+            data.get<u32>()[0x80] ^= calc_key(data.get<u8>(), 255);
+        }
+
+        void post_decrypt(bstr &data) const override
+        {
+        }
+
+        unsigned int calc_key(u8 *data, unsigned int size) const
+        {
+            unsigned int sum1 = 1;
+            unsigned int sum2 = 0;
+            for (const auto i : algo::range(size))
+            {
+                sum1 += data[i];
+                sum2 += sum1;
+            }
+            sum1 %= 0xFFF1u;
+            sum2 %= 0xFFF1u;
+            return sum1 | (sum2 << 16);
+        }
+    };
+
     struct TableExtraCrypt final : public warc::BaseExtraCrypt
     {
         TableExtraCrypt(const bstr &table, const u32 seed)
@@ -306,6 +337,23 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->logo_data = read_etc_file("logo_maki_fes.jpg");
             p->initial_crypt_base_keys = {0xF6DF81DF, 0x1BDE29DE, 0x5DE, 0, 0};
             p->extra_crypt = std::make_unique<MakiFesExtraCrypt>();
+            return p;
+        });
+
+    plugin_manager.add(
+        "bitch-neesan",
+        "Bitch Nee-chan ga Seijun na Hazu ga Nai!",
+        []()
+        {
+            auto p = std::make_shared<warc::Plugin>();
+            p->version = 2500;
+            p->entry_name_size = 0x20;
+            p->region_image = read_etc_image("region.png");
+            p->logo_data = read_etc_file("logo_bitch_neesan.jpg");
+            p->initial_crypt_base_keys
+                = {0x0FEE1FEE, 0x02E30DEE, 0x8CEFD2EF, 0xC7EF9CEF, 0xEEE2D9FD};
+            p->extra_crypt = std::make_unique<BitchNeesanExtraCrypt>();
+            p->crc_crypt_source = read_etc_file("table4.bin");
             return p;
         });
 
