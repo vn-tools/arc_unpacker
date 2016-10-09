@@ -21,8 +21,8 @@ namespace
 // this is pathetic but their games actually hardcode this
 static const std::vector<std::tuple<size_t, size_t>> known_image_sizes =
 {
-    {800, 600},
-    {640, 480},
+    std::make_tuple(800, 600),
+    std::make_tuple(640, 480),
 };
 
 static size_t hex_to_int(const bstr &input)
