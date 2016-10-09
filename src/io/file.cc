@@ -8,13 +8,15 @@ using namespace au::io;
 
 static const std::vector<std::pair<bstr, std::string>> magic_definitions
 {
-    {"abmp"_b,         "b"},      // QLiE
-    {"IMOAVI"_b,       "imoavi"}, // QLiE
-    {"\x89PNG"_b,      "png"},
-    {"BM"_b,           "bmp"},
-    {"RIFF"_b,         "wav"},
-    {"OggS"_b,         "ogg"},
-    {"\xFF\xD8\xFF"_b, "jpeg"},
+    {"abmp"_b,                       "b"},      // QLiE
+    {"IMOAVI"_b,                     "imoavi"}, // QLiE
+    {"\x89PNG"_b,                    "png"},
+    {"BM"_b,                         "bmp"},
+    {"RIFF"_b,                       "wav"},
+    {"OggS"_b,                       "ogg"},
+    {"\xFF\xD8\xFF"_b,               "jpeg"},
+    {"\x00\x00\x00\x1C""ftypmp42"_b, "mp4"},
+    {"\x00\x00\x00\x14""ftypisom"_b, "mp4"},
 };
 
 File::File(File &other_file) :
