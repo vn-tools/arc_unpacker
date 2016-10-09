@@ -3404,4 +3404,11 @@ var games = [
   fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=valkyria/odn']},
 
+{ dev: 'blue arrow garden',
+  date: '2016-09-21',
+  title: 'Succubus Shelly 2',
+  title_orig: '小悪魔シェリー2 ～新婚生活編～',
+  fmt: {archives: ['bin'], gfx: ['images'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=bluearrowgarden/bin']},
+
 ];
