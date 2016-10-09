@@ -87,4 +87,9 @@ std::unique_ptr<io::File> BinArchiveDecoder::read_file_impl(
     return ret;
 }
 
+std::vector<std::string> BinArchiveDecoder::get_linked_formats() const
+{
+    return {"bluearrowgarden/images"};
+}
+
 static auto _ = dec::register_decoder<BinArchiveDecoder>("bluearrowgarden/bin");
