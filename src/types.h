@@ -105,6 +105,11 @@ namespace au {
         std::vector<u8> v;
     };
 
+    constexpr size_t operator "" _z(unsigned long long int value)
+    {
+        return value;
+    }
+
     constexpr u8 operator "" _u8(char value)
     {
         return static_cast<u8>(value);
