@@ -3388,4 +3388,12 @@ var games = [
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
   args: ['--dec=shiina-rio/warc --plugin=bitch-neechan']},
 
+{ dev: 'Valkyria',
+  date: '2014-09-26',
+  title: 'Gachinko! Bitch Club',
+  title_orig: 'ガチンコ！ビッチクラブ',
+  vndb: 15662,
+  fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=valkyria/odn']},
+
 ];
