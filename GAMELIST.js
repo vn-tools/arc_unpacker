@@ -3396,4 +3396,12 @@ var games = [
   fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=valkyria/odn']},
 
+{ dev: 'Valkyria',
+  date: '2014-07-25',
+  title: 'Éclair Milk Cream ~Onani x Onani~',
+  title_orig: '永久恋愛 みるくクリーム ～オナニー×オナニー～',
+  vndb: 15388,
+  fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=valkyria/odn']},
+
 ];
