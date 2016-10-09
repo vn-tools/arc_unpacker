@@ -9,7 +9,7 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
             - kalakris-cmake
-            - llvm-toolchain-precise-3.7
+            - llvm-toolchain-precise-3.8
             - boost-latest
         packages:
             - cmake
@@ -19,7 +19,7 @@ addons:
             - libssl-dev
             - libpng-dev
             - libjpeg-dev
-            - clang-3.7
+            - clang-3.8
             - g++-5
             - gcc-5
 env: CMAKE_BUILD_TYPE=RELEASE
@@ -27,6 +27,6 @@ before_install:
     - sudo apt-get update -qq
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
+    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 script:
     - mkdir build && cd build && cmake .. && cmake --build . && cd .. && ./build/run_tests
