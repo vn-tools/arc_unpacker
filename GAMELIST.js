@@ -3419,4 +3419,12 @@ var games = [
   fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=valkyria/odn']},
 
+{ dev: 'Front Wing',
+  date: '2016-04-28',
+  title: 'Island',
+  title_orig: 'Island',
+  vndb: 18498,
+  fmt: {archives: ['int'], gfx: ['hg3'], audio: ['ogg'], video: ['webm']},
+  args: ['--dec=cat-system/int']},
+
 ];
