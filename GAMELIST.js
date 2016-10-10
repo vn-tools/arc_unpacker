@@ -3411,4 +3411,12 @@ var games = [
   fmt: {archives: ['bin'], gfx: ['images'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=bluearrowgarden/bin']},
 
+{ dev: 'Valkyria',
+  date: '2015-10-23',
+  title: 'Holy Knight Celsia ~Akuratsutaru Himegimi~',
+  title_orig: '聖騎士セルシア ～悪辣たる姫君～',
+  vndb: 17949,
+  fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=valkyria/odn']},
+
 ];
