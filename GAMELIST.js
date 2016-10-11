@@ -3436,4 +3436,12 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=cosplay-ecchi']},
 
+{ dev: 'Tsumiki Soft',
+  date: '2016-02-26',
+  title: 'Happening Love!!',
+  title_orig: 'ハプニングLOVE!!',
+  vndb: 18173,
+  fmt: {archives: ['lpk'], gfx: ['elg'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=lucifen/lpk --plugin=happening-love']},
+
 ];
