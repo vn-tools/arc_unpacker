@@ -93,7 +93,21 @@ void common::register_plugins(PluginManager<DatPlugin> &plugin_manager)
                 {"Arc03.dat", {"Arc06.dat"}},
             },
             {0xE9, 0xEF, 0xFB},
-            {4, _, _, 2, 3, _, _, _, _, 6, 5, 0, _, _, _, _, _, 7, _, _},
+            {4, _, _, _, 3, _, _, _, _, 6, 5, 0, _, _, _, _, _, 7, _, _},
+            false,
+        });
+
+    plugin_manager.add(
+        "ouma-no-shoku",
+        "Ouma no Shoku ~Sei ni Tsukaeshi Yami no Guuzou~",
+        {
+            {
+                {"Arc01.dat", {"Arc04.dat"}},
+                {"Arc02.dat", {"Arc05.dat", "Arc05a.dat"}},
+                {"Arc03.dat", {"Arc06.dat"}},
+            },
+            {0xE9, 0xEF, 0xFB},
+            {4, _, _, _, _, 5, _, _, _, _, 3, _, _, 0, _, _, _, 7, _, _},
             false,
         });
 }
