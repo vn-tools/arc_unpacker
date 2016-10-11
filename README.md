@@ -150,13 +150,6 @@ question](#user-content-how-do-i-pass-additional-options--parameters).
   encoders is often much more difficult than writing decoders, so it's not very
   practical.
 
-- ##### What's the license?
-
-  All the code is licensed under
-  [`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
-  unless otherwise noted. For acknowledgments, see
-  [`THANKS.md`](https://github.com/vn-tools/arc_unpacker/blob/master/THANKS.md).
-
 ## Contact
 
 - Bug reporting: [GitHub issue
