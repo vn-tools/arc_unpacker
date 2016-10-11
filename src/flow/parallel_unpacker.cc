@@ -307,7 +307,7 @@ bool DecodeInputFileTask::work() const
     }
     catch (const std::exception &e)
     {
-        logger.err("recognition finished with errors (%s)\n", e.what());
+        logger.err("recognition finished with errors:\n%s\n", e.what());
         if (source_type == TaskSourceType::NestedDecoding)
             save(*this, input_file);
         return false;
