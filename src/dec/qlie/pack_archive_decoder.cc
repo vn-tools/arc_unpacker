@@ -401,11 +401,16 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
 
     for (const auto &entry : meta->entries)
     {
-        if (entry->path.name().find("pack_keyfile") != std::string::npos)
+        if (entry->path.name().find("pack_keyfile") == std::string::npos)
+            continue;
+        try
         {
             auto file = read_file(logger, input_file, *meta, *entry);
-            file->stream.seek(0);
-            meta->key1 = file->stream.read_to_eof();
+            meta->key1 = file->stream.seek(0).read_to_eof();
+        }
+        catch (const std::exception &e)
+        {
+            logger.err("Error updating key: " + std::string(e.what()) + "\n");
         }
     }
 
