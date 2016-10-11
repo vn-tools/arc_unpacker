@@ -43,6 +43,7 @@ namespace qlie {
             const ArchiveEntry &e) const override;
 
     private:
+        bool use_external_keys;
         std::string fkey_path;
         std::string game_exe_path;
     };

@@ -292,6 +292,9 @@ PackArchiveDecoder::PackArchiveDecoder()
     add_arg_parser_decorator(
         [](ArgParser &arg_parser)
         {
+            arg_parser.register_flag({"--no-external-keys"})
+                ->set_description("Disables external archive keys");
+
             arg_parser.register_switch({"--fkey"})
                 ->set_value_name("PATH")
                 ->set_description("Selects path to fkey file");
@@ -302,6 +305,8 @@ PackArchiveDecoder::PackArchiveDecoder()
         },
         [&](const ArgParser &arg_parser)
         {
+            use_external_keys = !arg_parser.has_flag("no-external-keys");
+
             if (arg_parser.has_switch("fkey"))
                 fkey_path = arg_parser.get_switch("fkey");
 
@@ -321,42 +326,44 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
 {
     auto meta = std::make_unique<CustomArchiveMeta>();
 
-    if (!fkey_path.empty())
-        meta->key1 = get_fkey(fkey_path);
-    if (!game_exe_path.empty())
-        meta->key2 = get_exe_key(logger, game_exe_path);
-
-    if (meta->key1.empty() || meta->key2.empty())
+    if (use_external_keys)
     {
-        const auto dir = input_file.path.parent().parent();
-        logger.info("Searching for archive keys in %s...\n", dir.c_str());
-        for (const auto &path : io::recursive_directory_range(dir))
+        if (!fkey_path.empty())
+            meta->key1 = get_fkey(fkey_path);
+        if (!game_exe_path.empty())
+            meta->key2 = get_exe_key(logger, game_exe_path);
+
+        if (meta->key1.empty() || meta->key2.empty())
         {
-            if (!io::is_regular_file(path))
-                continue;
-            if (path.has_extension("fkey") && meta->key1.empty())
+            const auto dir = input_file.path.parent().parent();
+            logger.info("Searching for archive keys in %s...\n", dir.c_str());
+            for (const auto &path : io::recursive_directory_range(dir))
             {
-                meta->key1 = get_fkey(path);
-                logger.info("Found fkey in %s\n", path.c_str());
-            }
-            if (path.has_extension("exe") && meta->key2.empty())
-            {
-                try
+                if (!io::is_regular_file(path))
+                    continue;
+                if (path.has_extension("fkey") && meta->key1.empty())
                 {
-                    meta->key2 = get_exe_key(logger, path);
-                    logger.info("Found .exe key in %s\n", path.c_str());
+                    meta->key1 = get_fkey(path);
+                    logger.info("Found fkey in %s\n", path.c_str());
                 }
-                catch (...)
+                if (path.has_extension("exe") && meta->key2.empty())
                 {
+                    try
+                    {
+                        meta->key2 = get_exe_key(logger, path);
+                        logger.info("Found .exe key in %s\n", path.c_str());
+                    }
+                    catch (...)
+                    {
+                    }
                 }
             }
         }
+        if (meta->key1.empty())
+            logger.info("fkey not found\n");
+        if (meta->key2.empty())
+            logger.info(".exe key not found\n");
     }
-
-    if (meta->key1.empty())
-        logger.info("fkey not found\n");
-    if (meta->key2.empty())
-        logger.info(".exe key not found\n");
 
     input_file.stream.seek(get_magic_start(input_file.stream) + magic.size());
     const auto file_count = input_file.stream.read_le<u32>();
@@ -399,18 +406,22 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
         meta->entries.push_back(std::move(entry));
     }
 
-    for (const auto &entry : meta->entries)
+    if (use_external_keys)
     {
-        if (entry->path.name().find("pack_keyfile") == std::string::npos)
-            continue;
-        try
+        for (const auto &entry : meta->entries)
         {
-            auto file = read_file(logger, input_file, *meta, *entry);
-            meta->key1 = file->stream.seek(0).read_to_eof();
-        }
-        catch (const std::exception &e)
-        {
-            logger.err("Error updating key: " + std::string(e.what()) + "\n");
+            if (entry->path.name().find("pack_keyfile") == std::string::npos)
+                continue;
+            try
+            {
+                auto file = read_file(logger, input_file, *meta, *entry);
+                meta->key1 = file->stream.seek(0).read_to_eof();
+            }
+            catch (const std::exception &e)
+            {
+                logger.err(
+                    "Error updating key: " + std::string(e.what()) + "\n");
+            }
         }
     }
 
