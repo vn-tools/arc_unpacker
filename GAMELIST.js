@@ -3452,4 +3452,13 @@ var games = [
   fmt: {archives: ['pack', 'abmp10', 'abmp7'], gfx: ['png', 'bmp', 'jpeg'], audio: ['ogg', 'wav'], video: ['imoavi']},
   args: ['--dec=qlie/pack --no-external-keys']},
 
+{ dev: 'TinkerBell',
+  date: '2014-12-19',
+  title: 'Ouma no Shoku ~Sei ni Tsukaeshi Yami no Guuzou~',
+  title_orig: '逢魔ノ喰 ～聖に仕えし闇の偶像～',
+  vndb: 15845,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=ouma-no-shoku']},
+
 ];
