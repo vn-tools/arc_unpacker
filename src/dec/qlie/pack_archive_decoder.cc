@@ -178,7 +178,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
     {
         throw err::CorruptDataError(
             "Unexpected magic in compressed file. "
-            "Try with --fkey or --gameexe?");
+            "Try with --fkey or --game-exe?");
     }
 
     const bool use_short_size = input_stream.read_le<u32>() > 0;
