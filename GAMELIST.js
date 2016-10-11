@@ -3444,4 +3444,12 @@ var games = [
   fmt: {archives: ['lpk'], gfx: ['elg'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=lucifen/lpk --plugin=happening-love']},
 
+{ dev: 'Alcot Honey Comb',
+  date: '2009-04-17',
+  title: 'Shinigami no Kiss wa Wakare no Aji',
+  title_orig: '死神の接吻は別離の味',
+  vndb: 1660,
+  fmt: {archives: ['pack', 'abmp10', 'abmp7'], gfx: ['png', 'bmp', 'jpeg'], audio: ['ogg', 'wav'], video: ['imoavi']},
+  args: ['--dec=qlie/pack --no-external-keys']},
+
 ];
