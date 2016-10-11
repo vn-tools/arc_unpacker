@@ -244,6 +244,17 @@ class CommentWhitespaceCheck(Check):
             if self.regex.search(line):
                 yield Problem(file, 'Use spaces after //', i, line)
 
+class GplPreambleCheck(Check):
+    def scan(self, file):
+        if 'tests/' in file.name:
+            return
+        found = False
+        for line in file.lines:
+            if 'Copyright' in line:
+                found = True
+        if not found:
+            yield Problem(file, 'Missing copyright preamble')
+
 def main():
     checks = [cls() for cls in Check.__subclasses__()]
 
