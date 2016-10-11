@@ -3427,4 +3427,13 @@ var games = [
   fmt: {archives: ['int'], gfx: ['hg3'], audio: ['ogg'], video: ['webm']},
   args: ['--dec=cat-system/int']},
 
+{ dev: 'WendyBell',
+  date: '2014-05-30',
+  title: 'Cosplay Ecchi ~Layer Kana no Yuuutsu~',
+  title_orig: 'こすぷれえっち ～レイヤー香奈の憂欝～',
+  vndb: 14627,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=cosplay-ecchi']},
+
 ];
