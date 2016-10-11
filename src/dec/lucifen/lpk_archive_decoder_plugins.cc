@@ -41,6 +41,25 @@ LpkArchiveDecoder::LpkArchiveDecoder()
             }
         });
 
+    plugin_manager.add(
+        "happening-love",
+        "Happening LOVE!!",
+        {
+            {0xA5B9AC6B, 0x9A639DE5},
+            0x5D,
+            0x31746285,
+            {
+                {"script",  {0x00000000, 0x00000000}},
+                {"sys",     {0x69DBB6AD, 0x53D86E94}},
+                {"chr",     {0x246739E6, 0x7C57A959}},
+                {"pic",     {0xA4CB21A3, 0xC9B3A83D}},
+                {"bgm",     {0x9C24DD6A, 0xDEE82BC6}},
+                {"se",      {0x465DCEC5, 0xD349BE97}},
+                {"voice",   {0x57C9E2E7, 0x365AC94B}},
+                {"data",    {0x645DB9E6, 0xDB9B7536}},
+            }
+        });
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects LPK decryption routine."));
