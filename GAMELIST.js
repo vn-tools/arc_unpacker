@@ -3461,4 +3461,13 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=ouma-no-shoku']},
 
+{ dev: 'Erectlip',
+  date: '2012-02-24',
+  title: 'Furyou ni Hamerarete Jusei Suru Kyonyuu Okaa-san ~Iki Jigoku ni Ochita Kazoku no Game~',
+  title_orig: '不良にハメられて受精する巨乳お母さん ～イキ地獄に堕ちた家族のゲーム～',
+  vndb: 9643,
+  fmt: {archives: ['pac'], gfx: ['pgd-ge', 'bmp'], audio: ['ogg']},
+  args: ['--dec=amuse-craft/pac']},
+
+
 ];
