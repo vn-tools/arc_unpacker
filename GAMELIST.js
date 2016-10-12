@@ -3382,7 +3382,7 @@ var games = [
 
 { dev: 'onomatope*Raspberry',
   date: '2016-04-28',
-  title: 'Bitch Nee-chan ga Seijun na Hazu ga Nai!',
+  title: 'B☆☆☆h Nee-chan ga Seijun na Hazu ga Nai!',
   title_orig: 'ビッチ姉ちゃんが清純なはずがないっ！',
   vndb: 18781,
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogv'], video: ['mpg']},
@@ -3390,7 +3390,7 @@ var games = [
 
 { dev: 'Valkyria',
   date: '2014-09-26',
-  title: 'Gachinko! Bitch Club',
+  title: 'Gachinko! B☆☆☆h Club',
   title_orig: 'ガチンコ！ビッチクラブ',
   vndb: 15662,
   fmt: {archives: ['odn'], gfx: ['odn'], audio: ['ogg'], video: ['mpg']},
