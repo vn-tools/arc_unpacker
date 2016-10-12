@@ -124,4 +124,18 @@ void common::register_plugins(PluginManager<DatPlugin> &plugin_manager)
             {4, 5, _, _, _, _, _, _, _, _, 3, _, _, 0, _, _, _, 7, _, _},
             false,
         });
+
+    plugin_manager.add(
+        "inyou-rei-1",
+        "In'youchuu Rei ~Ryoujoku Shiro Taima Emaki~ (Miyuki Hen)",
+        {
+            {
+                {"Arc01.dat", {"Arc04.dat"}},
+                {"Arc02.dat", {"Arc05.dat"}},
+                {"Arc03.dat", {"Arc06.dat"}},
+            },
+            {0xE9, 0xEF, 0xFB},
+            {4, 5, _, _, _, _, _, _, _, _, _, 3, _, 0, _, _, _, 7, _, _},
+            false,
+        });
 }
