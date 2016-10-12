@@ -3478,4 +3478,13 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=inyou-goku']},
 
+{ dev: 'TinkerBell',
+  date: '2016-04-28',
+  title: "In'youchuu Rei ~Ryoujoku Shiro Taima Emaki~",
+  title_orig: '淫妖蟲 零～凌触城退魔絵巻～',
+  vndb: 18745,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=inyou-rei-1', '--dec=cyberworks/dat --plugin=inyou-rei-2']},
+
 ];
