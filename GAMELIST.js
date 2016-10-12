@@ -3469,5 +3469,13 @@ var games = [
   fmt: {archives: ['pac'], gfx: ['pgd-ge', 'bmp'], audio: ['ogg']},
   args: ['--dec=amuse-craft/pac']},
 
+{ dev: 'TinkerBell',
+  date: '2016-04-28',
+  title: "In'youchuu Goku ~Ryoujoku Jigoku Taimaroku~",
+  title_orig: '淫妖蟲 獄～凌触地獄退魔録～',
+  vndb: 18918,
+  fmt: {archives: ['dat'], gfx: ['dat'], audio: ['ogg']},
+  info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
+  args: ['--dec=cyberworks/dat --plugin=inyou-goku']},
 
 ];
