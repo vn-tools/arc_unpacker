@@ -42,14 +42,7 @@ static int detect_version(io::BaseByteStream &input_stream)
 
     try
     {
-        input_stream.seek(magic.size() + 4);
-        const auto file_count = input_stream.read_le<u32>();
-        input_stream.seek(0x804);
-        input_stream.skip((file_count - 1) * (32 + 8));
-        input_stream.skip(32);
-        const auto last_entry_offset = input_stream.read_le<u32>();
-        const auto last_entry_size = input_stream.read_le<u32>();
-        if (last_entry_offset + last_entry_size == input_stream.size())
+        if (input_stream.seek(0).read(magic.size()) == magic)
             return 2;
     }
     catch (...) {}
