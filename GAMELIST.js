@@ -3519,4 +3519,12 @@ var games = [
   fmt: {archives: ['lpk'], gfx: ['elg'], audio: ['ogg'], video: ['mpg']},
   args: ['--dec=lucifen/lpk --plugin=renai-harem']},
 
+{ dev: 'Leaf',
+  date: '2003-09-26',
+  title: 'Tenshi no Inai 12-gatsu',
+  title_orig: '天使のいない12月',
+  vndb: 21,
+  fmt: {archives: ['a'], gfx: ['px'], audio: ['w', 'g']},
+  args: ['--dec=leaf/a']},
+
 ];
