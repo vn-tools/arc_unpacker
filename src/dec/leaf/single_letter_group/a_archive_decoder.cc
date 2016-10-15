@@ -138,7 +138,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AArchiveDecoder::get_linked_formats() const
 {
-    return {"leaf/w", "leaf/px"};
+    return {"leaf/w", "leaf/g", "leaf/px"};
 }
 
 static auto _ = dec::register_decoder<AArchiveDecoder>("leaf/a");
