@@ -94,7 +94,8 @@ std::unique_ptr<dec::ArchiveMeta> AArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<CustomArchiveEntry>();
-        entry->path = input_file.stream.read_to_zero(23).str();
+        entry->path = algo::sjis_to_utf8(
+            input_file.stream.read_to_zero(23)).str();
         entry->flags = input_file.stream.read<u8>();
         entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.read_le<u32>() + offset_to_data;
