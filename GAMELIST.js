@@ -3503,4 +3503,12 @@ var games = [
   fmt: {archives: ['xp3'], gfx: ['tlg', 'png'], audio: ['ogg', 'wav'], video: ['wmv']},
   args: ['--dec=kirikiri/xp3 --plugin=noop']},
 
+{ dev: 'Eroitto',
+  date: '2015-02-27',
+  title: 'Kaa-san no Otoko ~Yajuu no You na Otoko ni Mesu no Yorokobi o Oboesaserareru Saiai no Haha~',
+  title_orig: '母さんのオトコ ～野獣のような男に牝の悦びを覚えさせられる最愛の母～',
+  vndb: 16720,
+  fmt: {archives: ['gamedat'], gfx: ['ep'], audio: ['ogg', 'wav']},
+  args: ['--dec=pajamas/gamedat']},
+
 ];
