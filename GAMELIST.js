@@ -3495,4 +3495,12 @@ var games = [
   fmt: {archives: ['dat'], gfx: ['gwd'], audio: ['ogg', 'wma']},
   args: ['--dec=tabito/dat']},
 
+{ dev: 'Black Lilith',
+  date: '2016-07-29',
+  title: 'Ochiru Hitozuma',
+  title_orig: '堕ちる人妻',
+  vndb: 8606,
+  fmt: {archives: ['xp3'], gfx: ['tlg', 'png'], audio: ['ogg', 'wav'], video: ['wmv']},
+  args: ['--dec=kirikiri/xp3 --plugin=noop']},
+
 ];
