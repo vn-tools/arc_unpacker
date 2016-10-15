@@ -3487,4 +3487,12 @@ var games = [
   info: 'arc_unpacker should be used on Arc01-03.dat. Arc04-06.dat contain only raw data, which is extracted using Arc01-03.dat.',
   args: ['--dec=cyberworks/dat --plugin=inyou-rei-1', '--dec=cyberworks/dat --plugin=inyou-rei-2']},
 
+{ dev: 'Tabito',
+  date: '2013-01-31',
+  title: 'Okami Tsuma ~Ryokan Baito de no Himitsu~',
+  title_orig: '女将妻～旅館バイトでの秘密～',
+  vndb: 9694,
+  fmt: {archives: ['dat'], gfx: ['gwd'], audio: ['ogg', 'wma']},
+  args: ['--dec=tabito/dat']},
+
 ];
