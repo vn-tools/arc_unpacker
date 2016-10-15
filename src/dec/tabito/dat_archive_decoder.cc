@@ -72,4 +72,9 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     return ret;
 }
 
+std::vector<std::string> DatArchiveDecoder::get_linked_formats() const
+{
+    return {"tabito/gwd"};
+}
+
 static auto _ = dec::register_decoder<DatArchiveDecoder>("tabito/dat");
