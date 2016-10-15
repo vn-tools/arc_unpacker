@@ -17,7 +17,7 @@
 
 #include "dec/leaf/single_letter_group/px_image_archive_decoder.h"
 #include <array>
-#include "algo/call_stack_keeper.h"
+#include <set>
 #include "algo/format.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
@@ -312,9 +312,9 @@ static bstr read_blocks(
 }
 
 static void read_meta(
-    algo::CallStackKeeper &keeper,
     io::BaseByteStream &input_stream,
-    dec::ArchiveMeta &meta)
+    dec::ArchiveMeta &meta,
+    std::set<uoff_t> &known_offsets)
 {
     const auto base_offset = input_stream.pos();
     const auto table_offset = input_stream.pos() + 32;
@@ -328,10 +328,12 @@ static void read_meta(
         {
             input_stream.seek(data_offset
                 + input_stream.seek(table_offset + i * 4).read_le<u32>());
-            keeper.recurse([&]()
-                {
-                    read_meta(keeper, input_stream, meta);
-                });
+
+            if (known_offsets.find(input_stream.pos()) != known_offsets.end())
+                continue;
+            known_offsets.insert(input_stream.pos());
+
+            read_meta(input_stream, meta, known_offsets);
         }
         return;
     }
@@ -353,16 +355,22 @@ static void read_meta(
             entry->block_offsets.push_back(offset);
         if (!entry->block_offsets.empty())
             meta.entries.push_back(std::move(entry));
+        return;
     }
 
-    else
-    {
-        auto entry = std::make_unique<CustomArchiveEntry>();
-        entry->width = input_stream.seek(base_offset + 20).read_le<u32>();
-        entry->height = input_stream.seek(base_offset + 24).read_le<u32>();
-        entry->block_offsets.push_back(base_offset);
-        meta.entries.push_back(std::move(entry));
-    }
+    auto entry = std::make_unique<CustomArchiveEntry>();
+    entry->width = input_stream.seek(base_offset + 20).read_le<u32>();
+    entry->height = input_stream.seek(base_offset + 24).read_le<u32>();
+    entry->block_offsets.push_back(base_offset);
+    meta.entries.push_back(std::move(entry));
+}
+
+static void read_meta(
+    io::BaseByteStream &input_stream,
+    dec::ArchiveMeta &meta)
+{
+    std::set<uoff_t> known_offsets;
+    ::read_meta(input_stream, meta, known_offsets);
 }
 
 bool PxImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -375,8 +383,7 @@ std::unique_ptr<dec::ArchiveMeta> PxImageArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
-    algo::CallStackKeeper keeper;
-    ::read_meta(keeper, input_file.stream, *meta);
+    ::read_meta(input_file.stream, *meta);
     return std::move(meta);
 }
 
