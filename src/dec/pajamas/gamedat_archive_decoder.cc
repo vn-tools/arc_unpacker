@@ -89,5 +89,10 @@ std::unique_ptr<io::File> GamedatArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> GamedatArchiveDecoder::get_linked_formats() const
+{
+    return {"pajamas/ep"};
+}
+
 static auto _
     = dec::register_decoder<GamedatArchiveDecoder>("pajamas/gamedat");
