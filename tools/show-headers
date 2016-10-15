@@ -1,6 +1,6 @@
 #!/bin/sh
 max_file_name_size=$(find "$@" -type f | while read x; do echo ${#x}; done | sort -nr | head -n1)
-find "$@" -type f | while read x; do
-    printf '%+'$max_file_name_size's ' "$x"
+find "$@" -type f | sort -h | while read x; do
+    printf '%-'$max_file_name_size's ' "$x"
     xxd -l16 "$x"
 done
