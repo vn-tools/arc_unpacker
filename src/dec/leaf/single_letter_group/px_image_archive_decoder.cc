@@ -44,7 +44,6 @@ namespace
     {
         size_t position;
         size_t block_size;
-        bool is_garbage;
     };
 
     struct CustomArchiveEntry final : dec::ArchiveEntry
@@ -61,10 +60,6 @@ static ProceedResult proceed_and_get_block_size(
     context.block_x %= max_block_size;
 
     ProceedResult result;
-    result.is_garbage
-        = context.block_x >= static_cast<int>(context.image_width)
-        || context.block_y >= static_cast<int>(context.image_height);
-
     result.block_size = std::min(left, context.image_width - context.block_x);
     if (!result.block_size)
         throw err::BadDataSizeError();
@@ -79,14 +74,14 @@ static void decode_1_8(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
+    const auto output_start = output.get<const u32>();
     const auto output_end = output.end<const u32>();
     for (const auto y : algo::range(context.block_height))
     for (const auto x : algo::range(context.block_width))
     {
-        if (output_ptr >= output_end)
-            break;
         const auto tmp = input_stream.read<u8>();
-        *output_ptr++ = 0xFF000000 | (tmp << 16) | (tmp << 8) | tmp;
+        if (output_ptr < output_end && output_ptr >= output_start)
+            *output_ptr++ = 0xFF000000 | (tmp << 16) | (tmp << 8) | tmp;
     }
 }
 
@@ -94,21 +89,23 @@ static void decode_1_32(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
+    const auto output_start = output.get<const u32>();
     const auto output_end = output.end<const u32>();
     for (const auto y : algo::range(context.block_height))
     for (const auto x : algo::range(context.block_width))
     {
-        if (output_ptr >= output_end)
-            break;
         const auto tmp = input_stream.read_le<u32>();
-        if (tmp & 0xFF000000)
+        if (output_ptr < output_end && output_ptr >= output_start)
         {
-            const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-            *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-        }
-        else
-        {
-            *output_ptr++ = tmp | 0xFF000000;
+            if (tmp & 0xFF000000)
+            {
+                const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
+            }
+            else
+            {
+                *output_ptr++ = tmp | 0xFF000000;
+            }
         }
     }
 }
@@ -116,6 +113,8 @@ static void decode_1_32(
 static void decode_4_9(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
+    const auto output_start = output.get<const u32>();
+    const auto output_end = output.end<const u32>();
     bool use_alpha = true;
     while (true)
     {
@@ -130,11 +129,6 @@ static void decode_4_9(
         while (left)
         {
             const auto result = proceed_and_get_block_size(context, left);
-            if (result.is_garbage)
-            {
-                input_stream.skip((use_alpha ? 2 : 1) * result.block_size);
-                continue;
-            }
             auto output_ptr = output.get<u32>() + result.position;
             for (const auto i : algo::range(result.block_size))
             {
@@ -142,7 +136,8 @@ static void decode_4_9(
                     ? (input_stream.read<u8>() << 25) - 0x1000000
                     : 0xFF000000;
                 const auto tmp = context.palette[input_stream.read<u8>()];
-                *output_ptr++ = tmp | alpha;
+                if (output_ptr < output_end && output_ptr >= output_start)
+                    *output_ptr++ = tmp | alpha;
             }
         }
     }
@@ -151,6 +146,8 @@ static void decode_4_9(
 static void decode_4_32(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
+    const auto output_start = output.get<const u32>();
+    const auto output_end = output.end<const u32>();
     while (true)
     {
         const int control = input_stream.read_le<u32>();
@@ -164,23 +161,21 @@ static void decode_4_32(
         while (left)
         {
             const auto result = proceed_and_get_block_size(context, left);
-            if (result.is_garbage)
-            {
-                input_stream.skip(4 * result.block_size);
-                continue;
-            }
             auto output_ptr = output.get<u32>() + result.position;
             for (const auto i : algo::range(result.block_size))
             {
                 const auto tmp = input_stream.read_le<u32>();
-                if (tmp & 0xFF000000)
+                if (output_ptr < output_end && output_ptr >= output_start)
                 {
-                    const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-                    *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-                }
-                else
-                {
-                    *output_ptr++ = tmp | 0xFF000000;
+                    if (tmp & 0xFF000000)
+                    {
+                        const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                        *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
+                    }
+                    else
+                    {
+                        *output_ptr++ = tmp | 0xFF000000;
+                    }
                 }
             }
         }
@@ -190,6 +185,8 @@ static void decode_4_32(
 static void decode_4_48(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
+    const auto output_start = output.get<const u32>();
+    const auto output_end = output.end<const u32>();
     while (true)
     {
         const int control = input_stream.read_le<u32>();
@@ -203,25 +200,23 @@ static void decode_4_48(
         while (left)
         {
             const auto result = proceed_and_get_block_size(context, left);
-            if (result.is_garbage)
-            {
-                input_stream.skip(4 * result.block_size);
-                continue;
-            }
             auto output_ptr = output.get<u32>() + result.position;
             for (const auto i : algo::range(result.block_size))
             {
                 const auto tmp = input_stream.read_le<u32>();
                 input_stream.skip(1);
                 input_stream.skip(1);
-                if (tmp & 0xFF000000)
+                if (output_ptr < output_end && output_ptr >= output_start)
                 {
-                    const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-                    *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-                }
-                else
-                {
-                    *output_ptr++ = 0x00000000;
+                    if (tmp & 0xFF000000)
+                    {
+                        const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                        *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
+                    }
+                    else
+                    {
+                        *output_ptr++ = 0x00000000;
+                    }
                 }
             }
         }
@@ -232,6 +227,7 @@ static void decode_7(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
+    const auto output_start = output.get<const u32>();
     const auto output_end = output.end<const u32>();
     std::array<u32, 256> palette;
     for (const auto i : algo::range(256))
@@ -239,17 +235,18 @@ static void decode_7(
     for (const auto y : algo::range(context.block_height))
     for (const auto x : algo::range(context.block_width))
     {
-        if (output_ptr >= output_end)
-            break;
         const auto tmp = palette[input_stream.read<u8>()];
-        if (tmp & 0xFF000000)
+        if (output_ptr < output_end && output_ptr >= output_start)
         {
-            const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-            *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-        }
-        else
-        {
-            *output_ptr++ = tmp | 0xFF000000;
+            if (tmp & 0xFF000000)
+            {
+                const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
+            }
+            else
+            {
+                *output_ptr++ = tmp | 0xFF000000;
+            }
         }
     }
 }
