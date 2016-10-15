@@ -244,7 +244,7 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
         else if (entry_magic == hnfn_entry_magic)
             read_hnfn_entry(entry_stream, fn_map);
         else
-            throw err::NotSupportedError("Unknown entry");
+            throw err::NotSupportedError("Unknown entry: " + entry_magic.str());
     }
     return std::move(meta);
 }
