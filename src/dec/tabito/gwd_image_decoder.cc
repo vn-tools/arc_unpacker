@@ -102,34 +102,66 @@ static void transform_row(bstr &row)
         row[i] = transform_table[row[i]][row[i - 1]];
 }
 
-res::Image GwdImageDecoder::decode_impl(
-    const Logger &logger, io::File &input_file) const
+static res::Image read_gwd_stream(io::BaseByteStream &input_stream)
 {
-    input_file.stream.seek(4 + magic.size());
-    const auto width = input_file.stream.read_be<u16>();
-    const auto height = input_file.stream.read_be<u16>();
-    const auto depth = input_file.stream.read<u8>();
-    const auto channels = depth / 8;
-
-    res::Image image(width, height);
-    for (const auto y : algo::range(height))
-    for (const auto x : algo::range(width))
-        image.at(x, y) = {0,0,0,0xFF};
+    const auto base_pos = input_stream.pos();
+    const auto stream_size = input_stream.read_le<u32>();
+    if (input_stream.read(magic.size()) != magic)
+        throw err::RecognitionError();
+    const auto width = input_stream.read_be<u16>();
+    const auto height = input_stream.read_be<u16>();
+    const auto depth = input_stream.read<u8>();
 
     init_transform_table();
 
     bstr decoded_row(width);
-    io::MsbBitStream bit_stream(input_file.stream);
-    for (const auto y : algo::range(height))
-    for (const auto channel : algo::range(channels))
-    {
-        decode_row(bit_stream, decoded_row);
-        transform_row(decoded_row);
+    io::MsbBitStream bit_stream(input_stream);
 
-        for (const auto x : algo::range(width))
-            image.at(x, y)[channel] = decoded_row[x];
+    if (depth == 8)
+    {
+        bstr data(width * height);
+        u8 *data_ptr = data.get<u8>();
+        for (const auto y : algo::range(height))
+        {
+            decode_row(bit_stream, decoded_row);
+            transform_row(decoded_row);
+            for (const auto x : algo::range(width))
+                *data_ptr++ = decoded_row[x];
+        }
+        return res::Image(width, height, data, res::PixelFormat::Gray8);
     }
 
+    if (depth == 24)
+    {
+        bstr data(width * height * 3);
+        for (const auto y : algo::range(height))
+        for (const auto channel : algo::range(3))
+        {
+            decode_row(bit_stream, decoded_row);
+            transform_row(decoded_row);
+            u8 *data_ptr = data.get<u8>() + y * width * 3 + channel;
+            for (const auto x : algo::range(width))
+            {
+                *data_ptr = decoded_row[x];
+                data_ptr += 3;
+            }
+        }
+        return res::Image(width, height, data, res::PixelFormat::BGR888);
+    }
+
+    throw err::UnsupportedBitDepthError(depth);
+}
+
+res::Image GwdImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
+{
+    auto image = read_gwd_stream(input_file.stream.seek(0));
+    if (input_file.stream.read<u8>())
+    {
+        image.apply_mask(read_gwd_stream(input_file.stream));
+        for (auto &c : image)
+            c.a = 255 - c.a;
+    }
     return image;
 }
 
