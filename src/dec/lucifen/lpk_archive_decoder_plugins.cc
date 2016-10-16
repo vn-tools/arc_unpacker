@@ -60,6 +60,25 @@ LpkArchiveDecoder::LpkArchiveDecoder()
             }
         });
 
+    plugin_manager.add(
+        "renai-harem",
+        "Ren'ai Harem ~Daisuki tte Iwasete~",
+        {
+            {0xA5B9AC6B, 0x9A639DE5},
+            0x5D,
+            0x31746285,
+            {
+                {"script",  {0x00000000, 0x00000000}},
+                {"sys",     {0x8EADF1AB, 0x4B234AC8}},
+                {"chr",     {0xA65B783D, 0xF65E5A19}},
+                {"pic",     {0x36AC5DBA, 0xD19741AD}},
+                {"bgm",     {0x6BEA5B7E, 0x293F96B8}},
+                {"se",      {0xC1464E68, 0xBA9E4C96}},
+                {"voice",   {0x8435DCF3, 0xBEAD69E3}},
+                {"data",    {0xDA75B679, 0xBAED5AC2}},
+            }
+        });
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects LPK decryption routine."));
