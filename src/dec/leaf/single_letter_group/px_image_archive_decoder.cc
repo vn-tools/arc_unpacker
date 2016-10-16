@@ -40,34 +40,11 @@ namespace
         std::array<u32, 256> palette;
     };
 
-    struct ProceedResult final
-    {
-        size_t position;
-        size_t block_size;
-    };
-
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         size_t width, height;
         std::vector<uoff_t> block_offsets;
     };
-}
-
-static ProceedResult proceed_and_get_block_size(
-    DecoderContext &context, size_t &left)
-{
-    context.block_y += context.block_x / max_block_size;
-    context.block_x %= max_block_size;
-
-    ProceedResult result;
-    result.block_size = std::min(left, context.image_width - context.block_x);
-    if (!result.block_size)
-        throw err::BadDataSizeError();
-    left -= result.block_size;
-
-    result.position = context.block_x + context.block_y * context.image_width;
-    context.block_x += result.block_size;
-    return result;
 }
 
 static void decode_1_8(
@@ -113,113 +90,134 @@ static void decode_1_32(
 static void decode_4_9(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
-    const auto output_start = output.get<const u32>();
-    const auto output_end = output.end<const u32>();
+    std::vector<u32> block(max_block_size * max_block_size);
+    size_t block_idx = 0;
+
     bool use_alpha = true;
     while (true)
     {
         const int control = input_stream.read_le<u32>();
         if (control == -1)
-            return;
+            break;
         if (control & 0x180000)
             use_alpha = !use_alpha;
-        context.block_x += control >> 21;
-        context.block_y += control % (max_block_size / 2);
-        size_t left = (control >> 9) % max_block_size;
-        while (left)
+        block_idx += max_block_size * (control & 0x1FF) + (control >> 21);
+
+        const auto size = (control >> 9) % max_block_size;
+        for (const auto i : algo::range(size))
         {
-            const auto result = proceed_and_get_block_size(context, left);
-            auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : algo::range(result.block_size))
-            {
-                const auto alpha = use_alpha
-                    ? (input_stream.read<u8>() << 25) - 0x1000000
-                    : 0xFF000000;
-                const auto tmp = context.palette[input_stream.read<u8>()];
-                if (output_ptr < output_end && output_ptr >= output_start)
-                    *output_ptr++ = tmp | alpha;
-            }
+            const auto alpha = use_alpha
+                ? (input_stream.read<u8>() << 25) - 0x1000000
+                : 0xFF000000;
+            const auto tmp = context.palette[input_stream.read<u8>()];
+            if (block_idx < block.size())
+                block[block_idx] = tmp | alpha;
+            block_idx++;
         }
+    }
+
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
+    {
+        const auto image_x = context.block_x + x;
+        const auto image_y = context.block_y + y;
+        const auto image_idx = image_x + image_y * context.image_width;
+        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
     }
 }
 
 static void decode_4_32(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
-    const auto output_start = output.get<const u32>();
-    const auto output_end = output.end<const u32>();
+    std::vector<u32> block(max_block_size * max_block_size);
+    size_t block_idx = 0;
+
     while (true)
     {
-        const int control = input_stream.read_le<u32>();
-        if (control == -1)
-            return;
-        if (control & 0xFF000000)
+        const auto delta = input_stream.read_le<s32>();
+        if (delta == -1)
+            break;
+        if (delta & 0xFF000000)
             continue;
-        context.block_x += control >> 2;
+        block_idx += delta / 4;
+
         input_stream.skip(4);
-        size_t left = input_stream.read_le<u32>();
-        while (left)
+
+        const auto size = input_stream.read_le<u32>();
+        for (const auto i : algo::range(size))
         {
-            const auto result = proceed_and_get_block_size(context, left);
-            auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : algo::range(result.block_size))
+            const auto tmp = input_stream.read_le<u32>();
+            if (block_idx < block.size())
             {
-                const auto tmp = input_stream.read_le<u32>();
-                if (output_ptr < output_end && output_ptr >= output_start)
+                if (tmp & 0xFF000000)
                 {
-                    if (tmp & 0xFF000000)
-                    {
-                        const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-                        *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-                    }
-                    else
-                    {
-                        *output_ptr++ = tmp | 0xFF000000;
-                    }
+                    const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                    block[block_idx] = (tmp & 0xFFFFFF) | alpha;
+                }
+                else
+                {
+                    block[block_idx] = tmp | 0xFF000000;
                 }
             }
+            block_idx++;
         }
+    }
+
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
+    {
+        const auto image_x = context.block_x + x;
+        const auto image_y = context.block_y + y;
+        const auto image_idx = image_x + image_y * context.image_width;
+        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
     }
 }
 
 static void decode_4_48(
     DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
-    const auto output_start = output.get<const u32>();
-    const auto output_end = output.end<const u32>();
+    std::vector<u32> block(max_block_size * max_block_size);
+    size_t block_idx = 0;
+
     while (true)
     {
-        const int control = input_stream.read_le<u32>();
-        if (control == -1)
-            return;
-        if (control & 0xFF000000)
+        const int delta = input_stream.read_le<u32>();
+        if (delta == -1)
+            break;
+        if (delta & 0xFF000000)
             continue;
-        context.block_x += control >> 2;
+        block_idx += delta / 4;
+
         input_stream.skip(4);
-        size_t left = input_stream.read_le<u32>();
-        while (left)
+
+        const auto size = input_stream.read_le<u32>();
+        for (const auto i : algo::range(size))
         {
-            const auto result = proceed_and_get_block_size(context, left);
-            auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : algo::range(result.block_size))
+            const auto tmp = input_stream.read_le<u32>();
+            input_stream.skip(2);
+            if (block_idx < block.size())
             {
-                const auto tmp = input_stream.read_le<u32>();
-                input_stream.skip(1);
-                input_stream.skip(1);
-                if (output_ptr < output_end && output_ptr >= output_start)
+                if (tmp & 0xFF000000)
                 {
-                    if (tmp & 0xFF000000)
-                    {
-                        const auto alpha = ((tmp >> 23) + 0xFF) << 24;
-                        *output_ptr++ = (tmp & 0xFFFFFF) | alpha;
-                    }
-                    else
-                    {
-                        *output_ptr++ = 0x00000000;
-                    }
+                    const auto alpha = ((tmp >> 23) + 0xFF) << 24;
+                    block[block_idx] = (tmp & 0xFFFFFF) | alpha;
+                }
+                else
+                {
+                    block[block_idx] = 0x00000000;
                 }
             }
+            block_idx++;
         }
+    }
+
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
+    {
+        const auto image_x = context.block_x + x;
+        const auto image_y = context.block_y + y;
+        const auto image_idx = image_x + image_y * context.image_width;
+        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
     }
 }
 
