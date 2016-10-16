@@ -3511,4 +3511,12 @@ var games = [
   fmt: {archives: ['gamedat'], gfx: ['ep'], audio: ['ogg', 'wav']},
   args: ['--dec=pajamas/gamedat']},
 
+{ dev: 'Pajamas Soft',
+  date: '2014-04-25',
+  title: "Ren'ai Harlem ~Daisuki tte Iwasete~",
+  title_orig: '恋愛はーれむ ～大好きって言わせて～',
+  vndb: 13841,
+  fmt: {archives: ['lpk'], gfx: ['elg'], audio: ['ogg'], video: ['mpg']},
+  args: ['--dec=lucifen/lpk --plugin=renai-harem']},
+
 ];
