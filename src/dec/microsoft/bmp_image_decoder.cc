@@ -21,6 +21,7 @@
 #include "err.h"
 #include "io/memory_byte_stream.h"
 #include "io/msb_bit_stream.h"
+#include <cmath>
 
 using namespace au;
 using namespace au::dec::microsoft;
@@ -91,7 +92,7 @@ static Header read_header(io::BaseByteStream &input_stream)
         h.palette_size = header_stream.read_le<u32>();
         h.important_colors = header_stream.read_le<u32>();
     }
-    h.height = std::abs(height);
+    h.height = std::fabs(height);
     h.flip = height > 0;
 
     if (h.depth <= 8 && !h.palette_size)

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include "algo/crypt/sha1.h"
 #include "algo/range.h"
+#include <array>
 
 using namespace au;
 using namespace au::dec::dogenzaka;

@@ -17,6 +17,7 @@
 
 #include "algo/call_stack_keeper.h"
 #include "err.h"
+#include <string>
 
 using namespace au::algo;
 
@@ -46,8 +47,9 @@ bool CallStackKeeper::recursion_limit_reached() const
 
 void CallStackKeeper::recurse(const std::function<void()> &action)
 {
+    const std::string recursion_error = std::string("Recursion limit reached");
     if (recursion_limit_reached())
-        throw err::GeneralError("Recursion limit reached");
+        throw err::GeneralError(recursion_error);
     p->depth++;
     try
     {

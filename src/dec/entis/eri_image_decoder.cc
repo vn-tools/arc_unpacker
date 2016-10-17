@@ -29,6 +29,7 @@
 #include "dec/entis/image/lossless.h"
 #include "err.h"
 #include "virtual_file_system.h"
+#include <cmath>
 
 using namespace au;
 using namespace au::dec::entis;
@@ -58,8 +59,8 @@ static image::EriHeader read_header(
 
     const s32 width         = input_stream.read_le<u32>();
     const s32 height        = input_stream.read_le<u32>();
-    header.width            = std::abs(width);
-    header.height           = std::abs(height);
+    header.width            = std::fabs(width);
+    header.height           = std::fabs(height);
     header.flip             = height > 0;
     header.bit_depth        = input_stream.read_le<u32>();
     header.clipped_pixel    = input_stream.read_le<u32>();
