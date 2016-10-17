@@ -27,34 +27,50 @@ using namespace au;
 using namespace au::dec::leaf;
 
 static const bstr magic = "LeafAquaPlus"_b;
-static const size_t max_block_size = 1024;
 
 namespace
 {
-    struct DecoderContext final
+    struct SharedContext final
     {
-        size_t image_width, image_height;
-        int block_x, block_y; // these CAN be negative
-        size_t block_width, block_height;
-        size_t block_depth;
+        size_t max_block_size;
+        size_t image_width;
+        size_t image_height;
+
         std::array<u32, 256> palette;
+    };
+
+    struct BlockInfo final
+    {
+        // these CAN be zero
+        const size_t width;
+        const size_t height;
+        // these CAN be negative
+        const int x;
+        const int y;
+
+        const u16 type;
+        const u16 subtype;
     };
 
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
-        size_t width, height;
+        size_t width;
+        size_t height;
         std::vector<uoff_t> block_offsets;
     };
 }
 
 static void decode_1_8(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_start = output.get<const u32>();
     const auto output_end = output.end<const u32>();
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
         const auto tmp = input_stream.read<u8>();
         if (output_ptr < output_end && output_ptr >= output_start)
@@ -63,13 +79,16 @@ static void decode_1_8(
 }
 
 static void decode_1_32(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_start = output.get<const u32>();
     const auto output_end = output.end<const u32>();
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
         const auto tmp = input_stream.read_le<u32>();
         if (output_ptr < output_end && output_ptr >= output_start)
@@ -88,9 +107,12 @@ static void decode_1_32(
 }
 
 static void decode_4_9(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
-    std::vector<u32> block(max_block_size * max_block_size);
+    std::vector<u32> block(context.max_block_size * context.max_block_size);
     size_t block_idx = 0;
 
     bool use_alpha = true;
@@ -101,9 +123,9 @@ static void decode_4_9(
             break;
         if (control & 0x180000)
             use_alpha = !use_alpha;
-        block_idx += max_block_size * (control & 0x1FF) + (control >> 21);
+        block_idx += context.max_block_size * (control & 0x1FF) + (control >> 21);
 
-        const auto size = (control >> 9) % max_block_size;
+        const auto size = (control >> 9) % context.max_block_size;
         for (const auto i : algo::range(size))
         {
             const auto alpha = use_alpha
@@ -116,20 +138,26 @@ static void decode_4_9(
         }
     }
 
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
-        const auto image_x = context.block_x + x;
-        const auto image_y = context.block_y + y;
+        const auto image_x = block_info.x + x;
+        const auto image_y = block_info.y + y;
         const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
+        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
     }
 }
 
 static void decode_4_32(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
-    std::vector<u32> block(max_block_size * max_block_size);
+    std::vector<u32> block(context.max_block_size * context.max_block_size);
+    if (block_info.width > context.max_block_size
+    || block_info.height > context.max_block_size)
+        throw err::BadDataSizeError();
     size_t block_idx = 0;
 
     while (true)
@@ -163,20 +191,23 @@ static void decode_4_32(
         }
     }
 
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
-        const auto image_x = context.block_x + x;
-        const auto image_y = context.block_y + y;
+        const auto image_x = block_info.x + x;
+        const auto image_y = block_info.y + y;
         const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
+        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
     }
 }
 
 static void decode_4_48(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
-    std::vector<u32> block(max_block_size * max_block_size);
+    std::vector<u32> block(context.max_block_size * context.max_block_size);
     size_t block_idx = 0;
 
     while (true)
@@ -211,18 +242,21 @@ static void decode_4_48(
         }
     }
 
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
-        const auto image_x = context.block_x + x;
-        const auto image_y = context.block_y + y;
+        const auto image_x = block_info.x + x;
+        const auto image_y = block_info.y + y;
         const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * max_block_size);
+        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
     }
 }
 
 static void decode_7(
-    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_start = output.get<const u32>();
@@ -230,8 +264,8 @@ static void decode_7(
     std::array<u32, 256> palette;
     for (const auto i : algo::range(256))
         palette[i] = input_stream.read_le<u32>();
-    for (const auto y : algo::range(context.block_height))
-    for (const auto x : algo::range(context.block_width))
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
     {
         const auto tmp = palette[input_stream.read<u8>()];
         if (output_ptr < output_end && output_ptr >= output_start)
@@ -249,64 +283,79 @@ static void decode_7(
     }
 }
 
+static void read_block(
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
+{
+    if (block_info.type == 0)
+    {
+        for (const auto i : algo::range(256))
+            context.palette[i] = input_stream.read_le<u32>();
+        return;
+    }
+
+    std::function<void(
+            SharedContext &,
+            const BlockInfo &,
+            io::BaseByteStream &,
+            bstr &)>
+        decoder;
+
+    if (block_info.type == 1)
+    {
+        if (block_info.subtype == 8)
+            decoder = decode_1_8;
+        else if (block_info.subtype == 32)
+            decoder = decode_1_32;
+    }
+    else if (block_info.type == 4)
+    {
+        if (block_info.subtype == 0x09)
+            decoder = decode_4_9;
+        else if (block_info.subtype == 0x20)
+            decoder = decode_4_32;
+        else if (block_info.subtype == 0x30)
+            decoder = decode_4_48;
+    }
+    else if (block_info.type == 7)
+        decoder = decode_7;
+
+    if (!decoder)
+    {
+        throw err::NotSupportedError(
+            algo::format(
+                "Unknown block type: %d.%x",
+                block_info.type,
+                block_info.subtype));
+    }
+
+    decoder(context, block_info, input_stream, output);
+}
+
 static bstr read_blocks(
-    DecoderContext &context,
+    SharedContext &context,
     io::BaseByteStream &input_stream,
     const std::vector<uoff_t> &block_offsets)
 {
-    bstr data(context.image_width * context.image_height * 4);
+    bstr output(context.image_width * context.image_height * 4);
     for (const auto block_offset : block_offsets)
     {
         input_stream.seek(block_offset);
-
-        context.block_width = input_stream.read_le<u32>();
-        context.block_height = input_stream.read_le<u32>();
-        context.block_x = input_stream.read_le<u32>();
-        context.block_y = input_stream.read_le<u32>();
-
-        const auto block_type = input_stream.read_le<u16>();
-        const auto block_subtype = input_stream.read_le<u16>();
-
+        const BlockInfo block_info =
+        {
+            input_stream.read_le<u32>(), // width
+            input_stream.read_le<u32>(), // height
+            input_stream.read_le<s32>(), // x
+            input_stream.read_le<s32>(), // y
+            input_stream.read_le<u16>(), // type
+            input_stream.read_le<u16>(), // subtype
+        };
         input_stream.seek(block_offset + 32);
-
-        if (block_type == 0)
-        {
-            for (const auto i : algo::range(256))
-                context.palette[i] = input_stream.read_le<u32>();
-        }
-        else
-        {
-            std::function<void(DecoderContext &, io::BaseByteStream &, bstr &)>
-                decoder;
-            if (block_type == 1)
-            {
-                if (block_subtype == 8)
-                    decoder = decode_1_8;
-                else if (block_subtype == 32)
-                    decoder = decode_1_32;
-            }
-            else if (block_type == 4)
-            {
-                if (block_subtype == 0x09)
-                    decoder = decode_4_9;
-                else if (block_subtype == 0x20)
-                    decoder = decode_4_32;
-                else if (block_subtype == 0x30)
-                    decoder = decode_4_48;
-            }
-            else if (block_type == 7)
-                decoder = decode_7;
-
-            if (!decoder)
-            {
-                throw err::NotSupportedError(algo::format(
-                    "Unknown block type: %d.%x", block_type, block_subtype));
-            }
-            decoder(context, input_stream, data);
-        }
+        read_block(context, block_info, input_stream, output);
     }
-
-    return data;
+    return output;
 }
 
 static void read_meta(
@@ -393,9 +442,13 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const CustomArchiveEntry*>(&e);
 
-    DecoderContext context;
-    context.image_width = entry->width;
-    context.image_height = entry->height;
+    SharedContext context =
+    {
+        1024,          // max_block_size
+        entry->width,  // image_width
+        entry->height, // image_height
+        {},            // palette
+    };
 
     const auto data = read_blocks(
         context, input_file.stream, entry->block_offsets);
