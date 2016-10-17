@@ -183,7 +183,8 @@ static void decode_4_9(
             break;
         if (control & 0x180000)
             use_alpha = !use_alpha;
-        block_idx += context.max_block_size * (control & 0x1FF) + (control >> 21);
+        block_idx += (control & 0x1FF) * context.max_block_size;
+        block_idx += (control >> 21);
 
         const auto size = (control >> 9) % context.max_block_size;
         for (const auto i : algo::range(size))
