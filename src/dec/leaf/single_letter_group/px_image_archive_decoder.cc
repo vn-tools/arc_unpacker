@@ -106,6 +106,46 @@ static void decode_1_32(
     }
 }
 
+static void decode_4_8(
+    SharedContext &context,
+    const BlockInfo &block_info,
+    io::BaseByteStream &input_stream,
+    bstr &output)
+{
+    std::vector<u32> block(context.max_block_size * context.max_block_size);
+    size_t block_idx = 0;
+
+    const auto output_start = output.get<const u32>();
+    const auto output_end = output.end<const u32>();
+    while (true)
+    {
+        const int delta = input_stream.read_le<u32>();
+        if (delta == -1)
+            break;
+        block_idx += delta / 4;
+
+        input_stream.skip(4);
+
+        const auto size = input_stream.read_le<u32>();
+        for (const auto i : algo::range(size))
+        {
+            const auto color = context.palette[input_stream.read<u8>()];
+            if (block_idx < block.size())
+                block[block_idx] = color | 0xFF000000;
+            block_idx++;
+        }
+    }
+
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
+    {
+        const auto image_x = block_info.x + x;
+        const auto image_y = block_info.y + y;
+        const auto image_idx = image_x + image_y * context.image_width;
+        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
+    }
+}
+
 static void decode_4_9(
     SharedContext &context,
     const BlockInfo &block_info,
@@ -312,7 +352,9 @@ static void read_block(
     }
     else if (block_info.type == 4)
     {
-        if (block_info.subtype == 0x09)
+        if (block_info.subtype == 0x08)
+            decoder = decode_4_8;
+        else if (block_info.subtype == 0x09)
             decoder = decode_4_9;
         else if (block_info.subtype == 0x20)
             decoder = decode_4_32;
