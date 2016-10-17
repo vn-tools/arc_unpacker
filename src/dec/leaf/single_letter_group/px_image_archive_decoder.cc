@@ -60,6 +60,32 @@ namespace
     };
 }
 
+static void transcribe_block(
+    const SharedContext &context,
+    const BlockInfo &block_info,
+    const std::vector<u32> &block,
+    const size_t max_block_size,
+    bstr &output)
+{
+    for (const auto y : algo::range(block_info.height))
+    for (const auto x : algo::range(block_info.width))
+    {
+        const auto image_x = block_info.x + x;
+        const auto image_y = block_info.y + y;
+
+        if (image_x < 0
+        || image_y < 0
+        || image_x >= static_cast<int>(context.image_width)
+        || image_y >= static_cast<int>(context.image_height))
+        {
+            continue;
+        }
+
+        const auto image_idx = image_x + image_y * context.image_width;
+        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
+    }
+}
+
 static void decode_1_8(
     SharedContext &context,
     const BlockInfo &block_info,
@@ -136,14 +162,8 @@ static void decode_4_8(
         }
     }
 
-    for (const auto y : algo::range(block_info.height))
-    for (const auto x : algo::range(block_info.width))
-    {
-        const auto image_x = block_info.x + x;
-        const auto image_y = block_info.y + y;
-        const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
-    }
+    transcribe_block(
+        context, block_info, block, context.max_block_size, output);
 }
 
 static void decode_4_9(
@@ -178,14 +198,8 @@ static void decode_4_9(
         }
     }
 
-    for (const auto y : algo::range(block_info.height))
-    for (const auto x : algo::range(block_info.width))
-    {
-        const auto image_x = block_info.x + x;
-        const auto image_y = block_info.y + y;
-        const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
-    }
+    transcribe_block(
+        context, block_info, block, context.max_block_size, output);
 }
 
 static void decode_4_32(
@@ -231,14 +245,8 @@ static void decode_4_32(
         }
     }
 
-    for (const auto y : algo::range(block_info.height))
-    for (const auto x : algo::range(block_info.width))
-    {
-        const auto image_x = block_info.x + x;
-        const auto image_y = block_info.y + y;
-        const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
-    }
+    transcribe_block(
+        context, block_info, block, context.max_block_size, output);
 }
 
 static void decode_4_48(
@@ -282,14 +290,8 @@ static void decode_4_48(
         }
     }
 
-    for (const auto y : algo::range(block_info.height))
-    for (const auto x : algo::range(block_info.width))
-    {
-        const auto image_x = block_info.x + x;
-        const auto image_y = block_info.y + y;
-        const auto image_idx = image_x + image_y * context.image_width;
-        output.get<u32>()[image_idx] = block.at(x + y * context.max_block_size);
-    }
+    transcribe_block(
+        context, block_info, block, context.max_block_size, output);
 }
 
 static void decode_7(
