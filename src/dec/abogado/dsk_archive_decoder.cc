@@ -69,4 +69,9 @@ std::unique_ptr<io::File> DskArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> DskArchiveDecoder::get_linked_formats() const
+{
+    return {"abogado/kg"};
+}
+
 static auto _ = dec::register_decoder<DskArchiveDecoder>("abogado/dsk");
