@@ -210,7 +210,7 @@ res::Image KgImageDecoder::decode_impl(
             res::Image mask(width, height, data, res::PixelFormat::Gray8);
             image->apply_mask(mask);
         }
-        catch (err::EofError)
+        catch (const err::EofError)
         {
             // PCLICK and FRAME for "Pigeon Blood" seem to contain garbage here
             // (the game hardcodes decoding of these files and simply doesn't
