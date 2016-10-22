@@ -3527,4 +3527,12 @@ var games = [
   fmt: {archives: ['a'], gfx: ['px'], audio: ['w', 'g']},
   args: ['--dec=leaf/a']},
 
+{ dev: 'Abogado Powers',
+  date: '2002-08-30',
+  title: 'Pigeon Blood',
+  vndb: 752,
+  info: 'The game sometimes uses corrupt alpha channel which it ignores, but arc_unpacker has no way to distinguish it from other images and thus renders what it sees. To obtain correct image, you need to discard the mask manually in any graphic program.',
+  fmt: {archives: ['dsk'], gfx: ['kg'], audio: ['ogg', 'wav']},
+  args: ['--dec=abogado/dsk', '--dec=abogado/v']},
+
 ];
