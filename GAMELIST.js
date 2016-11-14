@@ -3535,4 +3535,12 @@ var games = [
   fmt: {archives: ['dsk'], gfx: ['kg'], audio: ['ogg', 'wav']},
   args: ['--dec=abogado/dsk', '--dec=abogado/v']},
 
+{ dev: 'Trumple',
+  date: '2010-11-26',
+  title: 'Ushinawareta Mirai o Motomete',
+  title_orig: '失われた未来を求めて',
+  vndb: 4880,
+  fmt: {archives: ['xp3'], gfx: ['png'], audio: ['ogg']},
+  args: ['--dec=kirikiri/xp3 --plugin=waremete']},
+
 ];
