@@ -150,6 +150,11 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
             0x190, 0x4A7, {1,0,2}, {2,0,7,3,5,1,4,6}, {2,1,0,5,4,3},
             read_etc_file("karakara.dat")));
 
+    plugin_manager.add(
+        "waremete", "Ushinawareta Mirai o Motomete",
+        create_cxdec_plugin(
+            0x23C, 0x60F, {2,0,1}, {1,5,0,3,2,7,6,4}, {4,5,2,1,0,3}));
+
     add_arg_parser_decorator(
         plugin_manager.create_arg_parser_decorator(
             "Selects XP3 decryption routine."));
