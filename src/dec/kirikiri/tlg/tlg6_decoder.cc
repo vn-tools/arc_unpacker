@@ -379,7 +379,7 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
                     n = golomb_n_count - 1;
                 }
             }
-            while (--count);
+            while (--count && pixel_buf < limit);
         }
 
         zero ^= 1;
