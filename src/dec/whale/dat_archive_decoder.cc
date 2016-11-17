@@ -166,7 +166,10 @@ static u32 read_file_count(io::BaseByteStream &input_stream)
     return input_stream.read_le<u32>() ^ file_count_hash;
 }
 
-static void dump(const CustomArchiveMeta &meta, const std::string &dump_path)
+static void dump(
+    const Logger &logger,
+    const CustomArchiveMeta &meta,
+    const std::string &dump_path)
 {
     // make it static, so that ./au *.dat --dump=x doesn't write info only
     // about the last archive
@@ -180,6 +183,18 @@ static void dump(const CustomArchiveMeta &meta, const std::string &dump_path)
             stream.write(entry->path.str() + "\n");
         else
             stream.write(algo::format("unk:%016llx\n", entry->hash));
+
+        logger.info(
+            "%d 0x%016llxull 0x%08x/%d 0x%08x/%d 0x%08x/%d %s\n",
+            entry->type,
+            entry->hash,
+            entry->offset,
+            entry->offset_valid,
+            entry->size_comp,
+            entry->size_comp_valid,
+            entry->size_orig,
+            entry->size_orig_valid,
+            entry->path.c_str());
     }
 }
 
@@ -327,7 +342,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
 
     if (!dump_path.empty())
     {
-        dump(*meta, dump_path);
+        dump(logger, *meta, dump_path);
         meta->entries.clear();
     }
 
