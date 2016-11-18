@@ -3543,4 +3543,12 @@ var games = [
   fmt: {archives: ['xp3'], gfx: ['png'], audio: ['ogg']},
   args: ['--dec=kirikiri/xp3 --plugin=waremete']},
 
+{ dev: 'Minato Soft',
+  date: '2015-05-20',
+  title: 'Yuuki Yuuna wa Yuusha de Aru S',
+  title_orig: '結城友奈は勇者であるS',
+  vndb: 16682,
+  fmt: {archives: ['dat'], gfx: ['tlg', 'png'], audio: ['ogg'], video: ['avi']},
+  args: ['--dec=whale/dat --file-names=etc/yuyuyu-s-file-names.lst']},
+
 ];
