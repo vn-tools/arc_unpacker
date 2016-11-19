@@ -3301,7 +3301,7 @@ var games = [
   title: 'Tenmon Dokei no Aria',
   title_orig: '天文時計のアリア',
   vndb: 18376,
-  fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg'], audio: ['ogg'], video: ['webm']},
+  fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg', 'dzi'], audio: ['ogg'], video: ['webm']},
   args: ['--dec=malie/libp --plugin=tenmon-dokei']},
 
 { dev: 'Dogenzaka Lab & HuneX & Smart Kareshi',
@@ -3550,5 +3550,13 @@ var games = [
   vndb: 16682,
   fmt: {archives: ['dat'], gfx: ['tlg', 'png'], audio: ['ogg'], video: ['avi']},
   args: ['--dec=whale/dat --file-names=etc/yuyuyu-s-file-names.lst']},
+
+{ dev: 'Campus',
+  date: '2016-10-28',
+  title: 'Deep Love Diary -Koibito Nikki-',
+  title_orig: 'Deep Love Diary -恋人日記-',
+  vndb: 19719,
+  fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg', 'dzi'], audio: ['ogg'], video: ['webm']},
+  args: ['--dec=malie/libp --plugin=deep-love-diary']},
 
 ];
