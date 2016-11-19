@@ -248,12 +248,14 @@ class GplPreambleCheck(Check):
     def scan(self, file):
         if 'tests/' in file.name:
             return
-        found = False
+        count = False
         for line in file.lines:
-            if 'Copyright' in line:
-                found = True
-        if not found:
+            if re.search('Copyright.*rr-', line):
+                count += 1
+        if count == 0:
             yield Problem(file, 'Missing copyright preamble')
+        if count > 1:
+            yield Problem(file, 'Duplicated copyright preamble')
 
 def main():
     checks = [cls() for cls in Check.__subclasses__()]
