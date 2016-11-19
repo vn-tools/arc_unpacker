@@ -18,6 +18,7 @@
 #pragma once
 
 #include "dec/base_archive_decoder.h"
+#include "dec/malie/common/lib_plugin.h"
 #include "plugin_manager.h"
 
 namespace au {
@@ -44,7 +45,7 @@ namespace malie {
             const ArchiveEntry &e) const override;
 
     public:
-        PluginManager<std::vector<u32>> plugin_manager;
+        PluginManager<common::LibPlugin> plugin_manager;
     };
 
 } } }

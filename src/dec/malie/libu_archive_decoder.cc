@@ -29,7 +29,7 @@ namespace
 {
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
-        std::vector<u32> plugin;
+        common::LibPlugin plugin;
     };
 }
 
@@ -37,7 +37,7 @@ bool LibuArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     for (const auto &plugin : plugin_manager.get_all())
     {
-        common::CamelliaStream camellia_stream(input_file.stream, plugin);
+        common::CamelliaStream camellia_stream(input_file.stream, plugin.key);
         const auto maybe_magic = camellia_stream.seek(0).read(4);
         if (maybe_magic == magic)
             return true;
@@ -55,7 +55,7 @@ std::unique_ptr<dec::ArchiveMeta> LibuArchiveDecoder::read_meta_impl(
         ? plugin_manager.get("noop")
         : plugin_manager.get();
 
-    common::CamelliaStream camellia_stream(input_file.stream, meta->plugin);
+    common::CamelliaStream camellia_stream(input_file.stream, meta->plugin.key);
     camellia_stream.seek(magic.size());
     const auto version = camellia_stream.read_le<u32>();
     const auto file_count = camellia_stream.read_le<u32>();
@@ -84,7 +84,7 @@ std::unique_ptr<io::File> LibuArchiveDecoder::read_file_impl(
         entry->path,
         std::make_unique<common::CamelliaStream>(
             input_file.stream,
-            meta->plugin,
+            meta->plugin.key,
             entry->offset,
             entry->size));
 }

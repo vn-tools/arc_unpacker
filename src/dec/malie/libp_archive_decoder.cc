@@ -29,7 +29,7 @@ namespace
 {
     struct CustomArchiveMeta final : dec::ArchiveMeta
     {
-        std::vector<u32> plugin;
+        common::LibPlugin plugin;
     };
 }
 
@@ -78,7 +78,7 @@ bool LibpArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     for (const auto &plugin : plugin_manager.get_all())
     {
-        common::CamelliaStream camellia_stream(input_file.stream, plugin);
+        common::CamelliaStream camellia_stream(input_file.stream, plugin.key);
         const auto maybe_magic = camellia_stream.seek(0).read(4);
         if (maybe_magic == magic)
             return true;
@@ -96,7 +96,7 @@ std::unique_ptr<dec::ArchiveMeta> LibpArchiveDecoder::read_meta_impl(
         ? plugin_manager.get("noop")
         : plugin_manager.get();
 
-    common::CamelliaStream camellia_stream(input_file.stream, meta->plugin);
+    common::CamelliaStream camellia_stream(input_file.stream, meta->plugin.key);
     camellia_stream.seek(magic.size());
     const auto entry_count = camellia_stream.read_le<u32>();
     const auto offset_count = camellia_stream.read_le<u32>();
@@ -106,7 +106,8 @@ std::unique_ptr<dec::ArchiveMeta> LibpArchiveDecoder::read_meta_impl(
     std::vector<uoff_t> offsets;
     for (const auto i : algo::range(offset_count))
         offsets.push_back(camellia_stream.read_le<u32>());
-    const auto base_offset = (camellia_stream.pos() + 0xFFF) & ~0xFFF;
+    const auto mask = meta->plugin.data_alignment - 1;
+    const auto base_offset = (camellia_stream.pos() + mask) & ~mask;
     read_dir(table, base_offset, offsets, *meta);
     return std::move(meta);
 }
@@ -123,7 +124,7 @@ std::unique_ptr<io::File> LibpArchiveDecoder::read_file_impl(
         entry->path,
         std::make_unique<common::CamelliaStream>(
             input_file.stream,
-            meta->plugin,
+            meta->plugin.key,
             entry->offset,
             entry->size));
 }
