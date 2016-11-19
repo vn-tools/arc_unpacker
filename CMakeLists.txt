@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.8.8)
 project (arc_unpacker)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake")
 
 # -------
 # Version
@@ -38,6 +39,10 @@ find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIBRARY_DIRS})
 
+find_package(WebP)
+include_directories(${WEBP_INCLUDE_DIR})
+link_directories(${WEBP_LIBRARY_DIRS})
+
 # --------------------
 # Global build options
 # --------------------
@@ -72,6 +77,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 add_definitions(-D_FILE_OFFSET_BITS=64) # 64-bit off_t
+
+if (WEBP_FOUND)
+    add_definitions(-DWEBP_FOUND=1)
+else()
+    add_definitions(-DWEBP_FOUND=0)
+endif()
 
 # ------------
 # Source files
@@ -170,10 +181,10 @@ endif()
 add_library(libau OBJECT ${au_sources} ${au_headers})
 
 add_executable(arc_unpacker "${CMAKE_SOURCE_DIR}/src/main.cc" $<TARGET_OBJECTS:libau>)
-target_link_libraries(arc_unpacker ${unicode} ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
+target_link_libraries(arc_unpacker ${unicode} ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES} ${WEBP_LIBRARIES})
 
 add_executable(run_tests ${test_sources} ${test_headers} "${CMAKE_SOURCE_DIR}/tests/main.cc" $<TARGET_OBJECTS:libau>)
-target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
+target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES} ${WEBP_LIBRARIES})
 
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")

@@ -24,6 +24,7 @@ Libraries:
 5. `zlib` (comes with `libpng`)
 6. `iconv` (comes with POSIX)
 7. `openssl`
+8. `libwebp` (optional)
 
 
 
@@ -56,7 +57,7 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 variable):
 
         cd mxe
-        make libiconv zlib libpng jpeg boost openssl -j8 JOBS=8 MXE_GCC_THREADS=posix
+        make libiconv zlib libpng jpeg boost openssl libwebp -j8 JOBS=8 MXE_GCC_THREADS=posix
 
 3. In the `arc_unpacker`'s directory run following:
 
