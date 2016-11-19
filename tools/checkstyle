@@ -246,8 +246,6 @@ class CommentWhitespaceCheck(Check):
 
 class GplPreambleCheck(Check):
     def scan(self, file):
-        if 'tests/' in file.name:
-            return
         count = False
         for line in file.lines:
             if re.search('Copyright.*rr-', line):
