@@ -19,7 +19,6 @@ addons:
             - libssl-dev
             - libpng-dev
             - libjpeg-dev
-            - libwebp-dev
             - clang-3.8
             - g++-5
             - gcc-5

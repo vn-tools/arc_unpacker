@@ -38,5 +38,9 @@ static void do_test(
 
 TEST_CASE("Google WEBP images", "[dec]")
 {
+#if WEBP_FOUND
     do_test(tests::file_from_path(dir / "00.webp"), "00-out.png");
+#else
+    WARN("webp not available, test not conducted");
+#endif
 }
