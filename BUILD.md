@@ -57,7 +57,9 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 variable):
 
         cd mxe
-        make libiconv zlib libpng jpeg boost openssl libwebp -j8 JOBS=8 MXE_GCC_THREADS=posix
+        MXE_GCC_THREADS=posix \
+        MXE_PLUGIN_DIRS=plugins/gcc6/ \
+            make libiconv zlib libpng jpeg boost openssl libwebp -j8 JOBS=8
 
 3. In the `arc_unpacker`'s directory run following:
 
