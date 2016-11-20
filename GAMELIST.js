@@ -3559,4 +3559,12 @@ var games = [
   fmt: {archives: ['libp'], gfx: ['webp', 'png', 'svg', 'dzi'], audio: ['ogg'], video: ['webm']},
   args: ['--dec=malie/libp --plugin=deep-love-diary']},
 
+{ dev: 'Youkai Tamanokoshi',
+  date: '2011-12-31',
+  title: 'Tsumadori',
+  title_orig: 'つまどり',
+  vndb: 13390,
+  fmt: {archives: ['dat'], gfx: ['png', 'jpeg'], audio: ['wav']},
+  args: ['--dec=chanchan/dat']},
+
 ];
