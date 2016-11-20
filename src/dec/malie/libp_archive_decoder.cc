@@ -131,7 +131,7 @@ std::unique_ptr<io::File> LibpArchiveDecoder::read_file_impl(
 
 std::vector<std::string> LibpArchiveDecoder::get_linked_formats() const
 {
-    return {"malie/libp", "malie/mgf"};
+    return {"malie/libp", "malie/mgf", "malie/dzi"};
 }
 
 static auto _ = dec::register_decoder<LibpArchiveDecoder>("malie/libp");

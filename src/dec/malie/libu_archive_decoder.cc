@@ -91,7 +91,7 @@ std::unique_ptr<io::File> LibuArchiveDecoder::read_file_impl(
 
 std::vector<std::string> LibuArchiveDecoder::get_linked_formats() const
 {
-    return {"malie/libu", "malie/mgf"};
+    return {"malie/libu", "malie/mgf", "malie/dzi"};
 }
 
 static auto _ = dec::register_decoder<LibuArchiveDecoder>("malie/libu");
