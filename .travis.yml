@@ -5,6 +5,7 @@ env: CMAKE_BUILD_TYPE=RELEASE
 branches:
     only:
         - master
+        - travis
 
 os:
     - linux
