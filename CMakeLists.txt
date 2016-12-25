@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8.8)
-project (arc_unpacker)
+cmake_minimum_required(VERSION 2.8.8)
+project(arc_unpacker)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake")
@@ -78,7 +78,7 @@ endif()
 
 add_definitions(-D_FILE_OFFSET_BITS=64) # 64-bit off_t
 
-if (WEBP_FOUND)
+if(WEBP_FOUND)
     add_definitions(-DWEBP_FOUND=1)
 else()
     add_definitions(-DWEBP_FOUND=0)
@@ -134,7 +134,7 @@ macro(group_source_files PARENT_DIR FILES)
         get_filename_component(GROUP "${GROUP}" PATH)
         string(REPLACE "/" "\\" GROUP "${GROUP}")
 
-        if ("${FILE}" MATCHES ".*\\.cc")
+        if("${FILE}" MATCHES ".*\\.cc")
             set(GROUP "Source Files\\${GROUP}")
         elseif("${FILE}" MATCHES ".*\\.h")
             set(GROUP "Header Files\\${GROUP}")
@@ -153,7 +153,7 @@ group_source_files("${CMAKE_SOURCE_DIR}/tests" "${test_sources};${test_headers}"
 
 # Catch
 set(CATCH_PATH "${CMAKE_SOURCE_DIR}/tests/test_support/catch.h")
-if (NOT EXISTS "${CATCH_PATH}")
+if(NOT EXISTS "${CATCH_PATH}")
     message("Downloading Catch...")
     file(DOWNLOAD "http://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp" "${CATCH_PATH}")
 endif()
@@ -183,10 +183,16 @@ endif()
 add_library(libau OBJECT ${au_sources} ${au_headers})
 
 add_executable(arc_unpacker "${CMAKE_SOURCE_DIR}/src/main.cc" $<TARGET_OBJECTS:libau>)
-target_link_libraries(arc_unpacker ${unicode} ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES} ${WEBP_LIBRARIES})
+target_link_libraries(arc_unpacker ${unicode} ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
+if(WEBP_FOUND)
+    target_link_libraries(arc_unpacker ${WEBP_LIBRARIES})
+endif()
 
 add_executable(run_tests ${test_sources} ${test_headers} "${CMAKE_SOURCE_DIR}/tests/main.cc" $<TARGET_OBJECTS:libau>)
-target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES} ${WEBP_LIBRARIES})
+target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
+if(WEBP_FOUND)
+    target_link_libraries(run_tests ${WEBP_LIBRARIES})
+endif()
 
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
