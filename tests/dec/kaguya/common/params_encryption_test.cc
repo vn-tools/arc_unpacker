@@ -550,7 +550,9 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
 
         const auto params = parse_params_file(output_stream);
         REQUIRE(params.key == key);
-        REQUIRE(params.game_title == game_title);
+        REQUIRE(
+            algo::normalize_sjis(params.game_title)
+            == algo::normalize_sjis(game_title));
     }
 
     SECTION("Version 2 - variant B")

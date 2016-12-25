@@ -28,4 +28,6 @@ namespace algo {
     bstr utf8_to_sjis(const bstr &input);
     bstr utf8_to_utf16(const bstr &input);
 
+    bstr normalize_sjis(const bstr &utf8_input);
+
 } }

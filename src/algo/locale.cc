@@ -1,4 +1,4 @@
-// Copyright (C) 2016 by rr-
+﻿// Copyright (C) 2016 by rr-
 //
 // This file is part of arc_unpacker.
 //
@@ -22,6 +22,21 @@
 #include "err.h"
 
 using namespace au;
+
+static bstr replace(const bstr &input, const bstr &from, const bstr &to)
+{
+    bstr output(input);
+    size_t index = 0;
+    while (true)
+    {
+        index = output.find(from, index);
+        if (index == bstr::npos)
+            break;
+        output.replace(index, from.size(), to);
+        index += to.size();
+    }
+    return output;
+}
 
 static bstr convert_locale(
     const bstr &input, const std::string &from, const std::string &to)
@@ -89,4 +104,10 @@ bstr algo::utf8_to_sjis(const bstr &input)
 bstr algo::utf8_to_utf16(const bstr &input)
 {
     return convert_locale(input, "utf-8", "utf-16le");
+}
+
+bstr algo::normalize_sjis(const bstr &utf8_input)
+{
+    // WAVE DASH to FULLWIDTH TILDE
+    return replace(utf8_input, "〜"_b, "～"_b);
 }

@@ -24,6 +24,11 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
+static bool compare_sjis(const bstr &input1, const bstr &input2)
+{
+    return algo::normalize_sjis(input1) == algo::normalize_sjis(input2);
+}
+
 static bstr read_binary_string(io::BaseByteStream &input_stream)
 {
     return input_stream.read(input_stream.read<u8>());
@@ -145,8 +150,8 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
 
     size_t key_size;
 
-    if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b
-        || game_title == "艶女医"_b)
+    if (compare_sjis(game_title, "幼なじみと甘～くエッチに過ごす方法"_b)
+        || compare_sjis(game_title, "艶女医"_b))
     {
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
@@ -164,13 +169,13 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
             read_binary_string(input_stream);
 
         key_size = input_stream.read_le<u32>();
-        if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
+        if (compare_sjis(game_title, "幼なじみと甘～くエッチに過ごす方法"_b))
             key_size = 240000;
     }
 
-    else if (game_title == "新妻イカせてミルク！"_b
-        || game_title == "毎日がＭ！"_b
-        || game_title == "ちゅぱしてあげる"_b)
+    else if (compare_sjis(game_title, "新妻イカせてミルク！"_b)
+        || compare_sjis(game_title, "毎日がＭ！"_b)
+        || compare_sjis(game_title, "ちゅぱしてあげる"_b))
     {
         for (const auto i : algo::range(input_stream.read<u8>()))
         {

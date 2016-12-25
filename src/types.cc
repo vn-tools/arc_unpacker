@@ -82,6 +82,16 @@ size_t bstr::find(const bstr &other) const
     return pos - v.begin();
 }
 
+size_t bstr::find(const bstr &other, const size_t start_pos) const
+{
+    const auto pos = std::search(
+        v.begin() + start_pos, v.end(),
+        other.get<u8>(), other.get<u8>() + other.size());
+    if (pos == v.end())
+        return bstr::npos;
+    return pos - v.begin();
+}
+
 bstr bstr::substr(int start) const
 {
     if (start > static_cast<int>(size()))
@@ -105,6 +115,27 @@ bstr bstr::substr(int start, int size) const
         return substr(start, v.size() - start);
     }
     return bstr(get<const u8>() + start, size);
+}
+
+void bstr::replace(int start, int size, const bstr &what)
+{
+    while (size < 0)
+        size += v.size();
+    while (start < 0)
+        start += v.size();
+    if (start > static_cast<int>(v.size()))
+    {
+        v.insert(v.end(), what.begin(), what.end());
+        return;
+    }
+    if (start + size > static_cast<int>(v.size()))
+    {
+        replace(start, v.size() - start, what);
+        return;
+    }
+    if (size > 0)
+        v.erase(v.begin() + start, v.begin() + start + size);
+    v.insert(v.begin() + start, what.begin(), what.end());
 }
 
 void bstr::resize(const size_t how_much)

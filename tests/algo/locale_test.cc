@@ -51,3 +51,12 @@ TEST_CASE("Converting text encoding", "[algo]")
         tests::compare_binary(algo::utf8_to_sjis(utf8), sjis);
     }
 }
+
+TEST_CASE("Normalizing SJIS strings", "[algo]")
+{
+    const auto wave_dash = "\xE3\x80\x9C"_b;
+    const auto fullwidth_tilde = "\xEF\xBD\x9E"_b;
+    tests::compare_binary(
+        algo::normalize_sjis(wave_dash),
+        algo::normalize_sjis(fullwidth_tilde));
+}

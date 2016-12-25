@@ -116,7 +116,44 @@ TEST_CASE("bstr", "[core][types]")
         REQUIRE(x.find("y"_b) == bstr::npos);
         REQUIRE(x.find("e"_b) != bstr::npos);
         REQUIRE(x.find("e"_b) == 1);
+        REQUIRE(x.find("e"_b, 1) == 1);
+        REQUIRE(x.find("e"_b, 2) == bstr::npos);
         REQUIRE(x.find("\x00\x01"_b) == 4);
+        REQUIRE(x.find("\x00\x01"_b) == 4);
+    }
+
+    SECTION("Replacing substrings")
+    {
+        SECTION("Inside bounds")
+        {
+            auto x = "test\x00\x01"_b;
+            x.replace(2, 2, "x"_b);
+            REQUIRE(x == "tex\x00\x01"_b);
+        }
+        SECTION("Offset out of bounds")
+        {
+            auto x = "test\x00\x01"_b;
+            x.replace(7, 0, "x"_b);
+            REQUIRE(x == "test\x00\x01x"_b);
+        }
+        SECTION("Size out of bounds")
+        {
+            auto x = "test\x00\x01"_b;
+            x.replace(5, 2, "x"_b);
+            REQUIRE(x == "test\x00x"_b);
+        }
+        SECTION("Negative offset")
+        {
+            auto x = "test\x00\x01"_b;
+            x.replace(-1, 1, "x"_b);
+            REQUIRE(x == "test\x00x"_b);
+        }
+        SECTION("Negative size")
+        {
+            auto x = "test\x00\x01"_b;
+            x.replace(1, -1, "x"_b);
+            REQUIRE(x == "tx"_b);
+        }
     }
 
     SECTION("Extracting substrings")
@@ -130,6 +167,10 @@ TEST_CASE("bstr", "[core][types]")
             REQUIRE(x.substr(1) == "est\x00\x01"_b);
             REQUIRE(x.substr(2) == "st\x00\x01"_b);
             REQUIRE(x.substr(1, 0) == ""_b);
+        }
+        SECTION("Offset out of bounds")
+        {
+            REQUIRE(x.substr(7) == ""_b);
         }
         SECTION("Size out of bounds")
         {
