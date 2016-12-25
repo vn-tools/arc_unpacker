@@ -109,11 +109,10 @@ bstr bstr::substr(int start, int size) const
         size += v.size();
     while (start < 0)
         start += v.size();
-    if (size > static_cast<int>(v.size())
-    || start + size > static_cast<int>(v.size()))
-    {
+    if (start > static_cast<int>(v.size()))
+        return ""_b;
+    if (start + size > static_cast<int>(v.size()))
         return substr(start, v.size() - start);
-    }
     return bstr(get<const u8>() + start, size);
 }
 
