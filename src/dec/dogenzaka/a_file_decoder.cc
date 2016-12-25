@@ -17,6 +17,7 @@
 
 #include "dec/dogenzaka/a_file_decoder.h"
 #include <algorithm>
+#include <array>
 #include "algo/crypt/sha1.h"
 #include "algo/range.h"
 

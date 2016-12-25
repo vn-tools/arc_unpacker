@@ -16,6 +16,7 @@
 // along with arc_unpacker. If not, see <http://www.gnu.org/licenses/>.
 
 #include "dec/fc01/mcg_image_decoder.h"
+#include <cstdlib>
 #include "algo/format.h"
 #include "algo/range.h"
 #include "algo/str.h"

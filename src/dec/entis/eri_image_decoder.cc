@@ -16,6 +16,7 @@
 // along with arc_unpacker. If not, see <http://www.gnu.org/licenses/>.
 
 #include "dec/entis/eri_image_decoder.h"
+#include <cstdlib>
 #include <map>
 #include "algo/format.h"
 #include "algo/locale.h"

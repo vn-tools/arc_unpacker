@@ -16,6 +16,7 @@
 // along with arc_unpacker. If not, see <http://www.gnu.org/licenses/>.
 
 #include "dec/microsoft/bmp_image_decoder.h"
+#include <cstdlib>
 #include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"

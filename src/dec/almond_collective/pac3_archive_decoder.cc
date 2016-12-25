@@ -16,6 +16,7 @@
 // along with arc_unpacker. If not, see <http://www.gnu.org/licenses/>.
 
 #include "dec/almond_collective/pac3_archive_decoder.h"
+#include <array>
 #include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/range.h"

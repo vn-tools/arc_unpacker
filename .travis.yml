@@ -1,9 +1,18 @@
+language: c++
+compiler: clang
+env: CMAKE_BUILD_TYPE=RELEASE
+
 branches:
     only:
         - master
-language: c++
-compiler: clang
+
+os:
+    - linux
+    - osx
+
+osx_image: xcode8.2
 sudo: true
+
 addons:
     apt:
         sources:
@@ -22,11 +31,32 @@ addons:
             - clang-3.8
             - g++-5
             - gcc-5
-env: CMAKE_BUILD_TYPE=RELEASE
-before_install:
-    - sudo apt-get update -qq
-install:
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
-script:
-    - mkdir build && cd build && cmake .. && cmake --build . && cd .. && ./build/run_tests
+
+before_install: |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        brew update
+        brew install openssl
+        brew install jpeg-turbo
+        export OPENSSL_ROOT_DIR=/usr/local/opt/openssl/
+    fi
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        sudo apt-get update -qq
+    fi
+
+install: |
+    if [ "$CXX" = "g++" ]; then
+        export CXX="g++-5"
+        export CC="gcc-5"
+    fi
+    if [[ "$TRAVIS_OS_NAME" == "linux" && "$CXX" == "clang++" ]]; then
+        export CXX="clang++-3.8"
+        export CC="clang-3.8"
+    fi
+
+script: |
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+    cd ..
+    ./build/run_tests
