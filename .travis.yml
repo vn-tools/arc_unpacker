@@ -14,50 +14,37 @@ os:
 osx_image: xcode8.2
 sudo: true
 
-addons:
-    apt:
-        sources:
-            - ubuntu-toolchain-r-test
-            - kalakris-cmake
-            - llvm-toolchain-precise-3.8
-            - boost-latest
-        packages:
-            - cmake
-            - libboost1.55-dev
-            - libboost-filesystem1.55-dev
-            - libboost-locale1.55-dev
-            - libssl-dev
-            - libpng-dev
-            - libjpeg-dev
-            - clang-3.8
-            - g++-5
-            - gcc-5
-
 before_install: |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update
         brew install openssl
         brew install jpeg-turbo
         export OPENSSL_ROOT_DIR=/usr/local/opt/openssl/
+        export CMAKE_CXX_COMPILER=clang++
     fi
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        sudo apt-get update -qq
-    fi
-
-install: |
-    if [ "$CXX" = "g++" ]; then
-        export CXX="g++-5"
-        export CC="gcc-5"
-    fi
-    if [[ "$TRAVIS_OS_NAME" == "linux" && "$CXX" == "clang++" ]]; then
-        export CXX="clang++-3.8"
-        export CC="clang-3.8"
+        curl -sSL 'http://llvm.org/apt/llvm-snapshot.gpg.key' | sudo -E apt-key add -
+        echo 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.8 main' | sudo tee -a /etc/apt/sources.list > /dev/null
+        sudo -E apt-add-repository -y 'ppa:ubuntu-toolchain-r/test'
+        sudo -E apt-add-repository -y 'ppa:kalakris/cmake'
+        sudo -E apt-add-repository -y "ppa:boost-latest/ppa"
+        sudo apt-get update
+        sudo apt-get install --force-yes \
+            cmake \
+            clang-3.8 \
+            libboost1.55-dev \
+            libboost-filesystem1.55-dev \
+            libboost-locale1.55-dev \
+            libssl-dev \
+            libpng-dev \
+            libjpeg-dev
+        export CMAKE_CXX_COMPILER=clang++-3.8
     fi
 
 script: |
     mkdir build
     cd build
-    cmake ..
-    cmake --build .
+    cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} .. || exit 1
+    cmake --build . || exit 1
     cd ..
     ./build/run_tests
