@@ -23,7 +23,7 @@ Libraries:
 4. `libjpeg`
 5. `zlib` (comes with `libpng`)
 6. `iconv` (comes with POSIX)
-7. `openssl`
+7. `openssl` 1.1.0+
 8. `libwebp` (optional)
 
 
