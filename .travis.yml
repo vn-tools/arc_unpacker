@@ -15,11 +15,17 @@ osx_image: xcode8.2
 sudo: true
 
 before_install: |
+    wget http://www.openssl.org/source/openssl-1.1.0e.tar.gz
+    tar xzvf openssl-1.1.0e.tar.gz
+    cd openssl-1.1.0e
+    ./config
+    make
+    sudo make install
+    cd ..
+
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update
-        brew install openssl
         brew install jpeg-turbo
-        export OPENSSL_ROOT_DIR=/usr/local/opt/openssl/
         export CMAKE_CXX_COMPILER=clang++
     fi
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
