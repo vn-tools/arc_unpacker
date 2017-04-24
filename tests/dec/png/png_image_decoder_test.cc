@@ -71,27 +71,30 @@ TEST_CASE("PNG images with extra chunks", "[dec]")
     SECTION("Default chunk handler")
     {
         REQUIRE_NOTHROW(
+            [&]()
             {
                 Logger dummy_logger;
                 dummy_logger.mute();
                 decoder.decode(dummy_logger, *input_file);
-            });
+            }());
     }
+
     SECTION("Custom chunk handler")
     {
         std::map<std::string, bstr> chunks;
         REQUIRE_NOTHROW(
+            [&]()
             {
                 Logger dummy_logger;
                 dummy_logger.mute();
                 decoder.decode(
                     dummy_logger,
                     *input_file,
-                    [&](const std::string &name, const bstr &data)
-                        {
-                            chunks[name] = data;
-                        });
-            });
+                    [&chunks](const std::string &name, const bstr &data)
+                    {
+                        chunks[name] = data;
+                    });
+            }());
         REQUIRE(chunks.size() == 1);
         REQUIRE(chunks["POSn"] == "\x00\x00\x00\x6C\x00\x00\x00\x60"_b);
     }
