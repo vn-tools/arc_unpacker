@@ -20,6 +20,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
+#include <stdexcept>
 #include "err.h"
 
 using namespace au;
@@ -35,19 +36,28 @@ struct Rsa::Priv final
 
 Rsa::Priv::Priv(const RsaKey &key) : key_impl(RSA_new())
 {
+    if (!key_impl)
+        throw std::bad_alloc();
+
     BIGNUM *bn_modulus = BN_new();
+    if (!bn_modulus)
+        throw std::bad_alloc();
+
     BIGNUM *bn_exponent = BN_new();
+    if (!bn_exponent)
+    {
+        BN_free(bn_modulus);
+        throw std::bad_alloc();
+    }
+
     BN_set_word(bn_exponent, key.exponent);
     BN_bin2bn(key.modulus.data(), key.modulus.size(), bn_modulus);
 
-    key_impl->e = bn_exponent;
-    key_impl->n = bn_modulus;
+    RSA_set0_key(key_impl, bn_modulus, bn_exponent, NULL);
 }
 
 Rsa::Priv::~Priv()
 {
-    // BN_free(key_impl->e)?
-    // BN_free(key_impl->n)?
     RSA_free(key_impl);
 }
 

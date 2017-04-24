@@ -153,7 +153,9 @@ class WhitespaceAroundBracesCheck(Check):
 class SloppyExceptionsCheck(Check):
     def scan(self, file):
         for i, line in enumerate(file.lines):
-            if 'throw std::' in line and 'logic_error' not in line:
+            if 'throw std::' in line \
+            and 'logic_error' not in line \
+            and 'bad_malloc' not in line:
                 yield Problem(file, 'Use better exceptions', i, line)
 
 class NonFinalObjectsCheck(Check):

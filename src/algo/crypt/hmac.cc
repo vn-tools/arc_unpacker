@@ -18,6 +18,7 @@
 #include "algo/crypt/hmac.h"
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <stdexcept>
 #include "err.h"
 
 using namespace au;
@@ -35,12 +36,21 @@ bstr algo::crypt::hmac(
     unsigned int final_size;
     bstr output(EVP_MAX_MD_SIZE);
 
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
-    HMAC_Init_ex(&ctx, key.get<const u8>(), key.size(), md, NULL);
-    HMAC_Update(&ctx, input.get<const u8>(), input.size());
-    HMAC_Final(&ctx, output.get<u8>(), &final_size);
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_CTX *ctx = HMAC_CTX_new();
+    if (!ctx)
+        throw std::bad_alloc();
+
+    try
+    {
+        HMAC_Init_ex(ctx, key.get<const u8>(), key.size(), md, NULL);
+        HMAC_Update(ctx, input.get<const u8>(), input.size());
+        HMAC_Final(ctx, output.get<u8>(), &final_size);
+        HMAC_CTX_free(ctx);
+    }
+    catch (...)
+    {
+        HMAC_CTX_free(ctx);
+    }
 
     return output.substr(0, final_size);
 }
