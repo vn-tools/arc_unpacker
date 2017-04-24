@@ -40,7 +40,7 @@ res::Image JpegImageDecoder::decode_impl(
     info.err = jpeg_std_error(&err);
     jpeg_create_decompress(&info);
     jpeg_mem_src(&info, source.get<u8>(), source.size());
-    jpeg_read_header(&info, true);
+    jpeg_read_header(&info, TRUE);
     jpeg_start_decompress(&info);
 
     const auto width = info.output_width;
