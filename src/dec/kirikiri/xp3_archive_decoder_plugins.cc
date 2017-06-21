@@ -88,6 +88,22 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
             while (data_ptr.left())
                 *data_ptr++ -= 54 * key;
         }));
+    
+    plugin_manager.add(
+        "moteyaba", "Imouto no Okage de Motesugite Yabai.",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            for (const auto i : algo::range(data.size()))
+                data[i] ^= 0xCD ^ key;
+        }));
+
+    plugin_manager.add(
+        "kamiyaba", "Kamidanomi Shisugite Ore no Mirai ga Yabai.",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            for (const auto i : algo::range(data.size()))
+                data[i] ^= 0xCD;
+        }));
 
     plugin_manager.add(
         "rebirth", "Re:birth colony ~Lost azurite~",
