@@ -3591,4 +3591,11 @@ var games = [
   fmt: {archives: ['dat'], gfx: ['png', 'jpeg'], audio: ['wav']},
   args: ['--dec=chanchan/dat']},
 
+{ dev: 'Key',
+  date: '2005-11-25',
+  title: 'Tomoyo After ~It\'s a Wonderful Life~',
+  title_orig: '智代アフター ～It’s a Wonderful Life～',
+  vndb: 12,
+  args: ['--dec=real-live/g00', '--dec=real-live/nwa']},
+
 ];
