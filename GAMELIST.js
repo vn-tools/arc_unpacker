@@ -1440,6 +1440,13 @@ var games = [
   info: 'To unpack correctly, sprites need palettes, and to discover which palette to use, full file paths need to be known. Because a few directory names in the archive are unknown, some of the graphic files will appear gray after unpacking.',
   args: ['--dec=twilight-frontier/tfpk --file-names=etc/th145-file-names.lst']},
 
+{ dev: 'Tasofro & Team Shanghai Alice',
+  date: '2017-12-29',
+  title: 'Touhou 15.5 - Antinomy of Common Flowers',
+  title_orig: '東方憑依華',
+  info: 'To unpack correctly, sprites need palettes, and to discover which palette to use, full file paths need to be known. Because a few directory names in the archive are unknown, some of the graphic files will appear gray after unpacking.',
+  args: ['--dec=twilight-frontier/tfpk --file-names=etc/th155-file-names.lst']},
+
 { dev: 'Team Shanghai Alice',
   date: '2002-08-11',
   title: 'Touhou 06 - The Embodiment of Scarlet Devil',
