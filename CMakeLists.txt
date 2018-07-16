@@ -155,7 +155,7 @@ group_source_files("${CMAKE_SOURCE_DIR}/tests" "${test_sources};${test_headers}"
 set(CATCH_PATH "${CMAKE_SOURCE_DIR}/tests/test_support/catch.h")
 if(NOT EXISTS "${CATCH_PATH}")
     message("Downloading Catch...")
-    file(DOWNLOAD "http://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp" "${CATCH_PATH}")
+    file(DOWNLOAD "https://raw.githubusercontent.com/catchorg/Catch2/master/single_include/catch2/catch.hpp" "${CATCH_PATH}")
 endif()
 
 # -------------------
