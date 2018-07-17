@@ -33,7 +33,7 @@ struct Listener final : Catch::TestEventListenerBase
     }
 };
 
-INTERNAL_CATCH_REGISTER_LISTENER(Listener)
+CATCH_REGISTER_LISTENER(Listener)
 
 int main(int argc, char *argv[])
 {
