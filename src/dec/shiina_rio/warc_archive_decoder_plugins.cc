@@ -100,6 +100,27 @@ namespace
         }
     };
 
+    struct NukiTashiExtraCrypt final : public warc::BaseExtraCrypt
+    {
+        size_t min_size() const override
+        {
+            return 0x100;
+        }
+
+        void pre_decrypt(bstr &data) const override
+        {
+        }
+
+        void post_decrypt(bstr &data) const override
+        {
+            u32 key = 0x5EA13181;
+            for (const auto i : algo::range(0x40))
+            {
+                data.get<u32>()[i] ^= key;
+            }
+        }
+    };
+
     struct TableExtraCrypt final : public warc::BaseExtraCrypt
     {
         TableExtraCrypt(const bstr &table, const u32 seed)
@@ -370,6 +391,23 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->initial_crypt_base_keys
                 = {0x0FEE1FEE, 0x02E30DEE, 0x8CEFD2EF, 0xC7EF9CEF, 0xEEE2D9FD};
             p->extra_crypt = std::make_unique<BitchNeechanExtraCrypt>();
+            p->crc_crypt_source = read_etc_file("table4.bin");
+            return p;
+        });
+
+    plugin_manager.add(
+        "nukitashi",
+        "Nukige Mitai na Shima ni Sunderu Watashi wa Dou Surya Ii Desu ka?",
+        []()
+        {
+            auto p = std::make_shared<warc::Plugin>();
+            p->version = 2500;
+            p->entry_name_size = 0x20;
+            p->region_image = read_etc_image("region.png");
+            p->logo_data = read_etc_file("logo_nukitashi.jpg");
+            p->initial_crypt_base_keys
+                = {0x90B989AF, 0x60BA6AB8, 0x86B9E6B9, 0xF3B999B9, 0xF2B9BCA8};
+            p->extra_crypt = std::make_unique<NukiTashiExtraCrypt>();
             p->crc_crypt_source = read_etc_file("table4.bin");
             return p;
         });
