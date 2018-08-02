@@ -3605,4 +3605,12 @@ var games = [
   vndb: 12,
   args: ['--dec=real-live/g00', '--dec=real-live/nwa']},
 
+{ dev: 'Qruppo',
+  date: '2018-07-27',
+  title: 'Nukige Mitai na Shima ni Sunderu Watashi wa Dou Surya Ii Desu ka?',
+  title_orig: '抜きゲーみたいな島に住んでる貧乳はどうすりゃいいですか？',
+  vndb: 22899,
+  fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogg', 'ogv'], video: ['mpg', 'wmv']},
+  args: ['--dec=shiina-rio/warc --plugin=nukitashi']},
+
 ];
