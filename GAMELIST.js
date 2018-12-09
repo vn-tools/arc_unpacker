@@ -3612,5 +3612,12 @@ var games = [
   vndb: 22899,
   fmt: {archives: ['warc'], gfx: ['s25'], audio: ['ogg', 'ogv'], video: ['mpg', 'wmv']},
   args: ['--dec=shiina-rio/warc --plugin=nukitashi']},
+  
+{ dev: 'Liar-soft',
+  date: '2012-03-30',
+  title: 'Okujou no Yurirei-san',
+  title_orig: '屋上の百合霊さん',
+  vndb: 8508,
+  args: ['--dec=liar-soft/xfl']},
 
 ];
