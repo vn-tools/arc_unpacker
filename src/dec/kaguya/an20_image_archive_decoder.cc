@@ -30,6 +30,7 @@ namespace
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         uoff_t offset;
+        size_t x_offset, y_offset;
         size_t x, y;
         size_t width, height;
         size_t channels;
@@ -70,15 +71,15 @@ std::unique_ptr<dec::ArchiveMeta> An20ImageArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u16>();
     if (!file_count)
         return meta;
-    const auto base_x = input_file.stream.read_le<u32>();
-    const auto base_y = input_file.stream.read_le<u32>();
+    const auto base_x_offset = input_file.stream.read_le<u32>();
+    const auto base_y_offset = input_file.stream.read_le<u32>();
     const auto base_width = input_file.stream.read_le<u32>();
     const auto base_height = input_file.stream.read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<CustomArchiveEntry>();
-        entry->x = input_file.stream.read_le<u32>();
-        entry->y = input_file.stream.read_le<u32>();
+        entry->x_offset = base_x_offset + input_file.stream.read_le<u32>();
+        entry->y_offset = base_y_offset + input_file.stream.read_le<u32>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
         entry->channels = input_file.stream.read_le<u32>();
@@ -104,6 +105,7 @@ std::unique_ptr<io::File> An20ImageArchiveDecoder::read_file_impl(
             ? res::PixelFormat::BGR888
             : res::PixelFormat::BGRA8888);
     image.flip_vertically();
+    image.offset(entry->x_offset, entry->y_offset);
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);
 }
 
