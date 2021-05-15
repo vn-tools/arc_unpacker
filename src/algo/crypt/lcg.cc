@@ -17,6 +17,7 @@
 
 #include "algo/crypt/lcg.h"
 #include <functional>
+#include <stdexcept>
 
 using namespace au;
 using namespace au::algo::crypt;
