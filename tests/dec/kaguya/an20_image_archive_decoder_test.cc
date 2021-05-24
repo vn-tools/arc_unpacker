@@ -63,8 +63,8 @@ TEST_CASE("Atelier Kaguya AN20 image archives", "[dec]")
     input_file.stream.write_le<u32>(expected_images.at(0).height());
     for (const auto &image : expected_images)
     {
-        input_file.stream.write_le<u32>('?');
-        input_file.stream.write_le<u32>('?');
+        input_file.stream.write_le<u32>(0);
+        input_file.stream.write_le<u32>(0);
         input_file.stream.write_le<u32>(image.width());
         input_file.stream.write_le<u32>(image.height());
         res::Image flipped_image(image);

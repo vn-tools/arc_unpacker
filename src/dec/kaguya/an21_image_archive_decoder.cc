@@ -31,6 +31,7 @@ namespace
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         bstr data;
+        size_t x_offset, y_offset;
         size_t x, y;
         size_t width, height;
         size_t channels;
@@ -73,12 +74,14 @@ std::unique_ptr<dec::ArchiveMeta> An21ImageArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u16>();
     if (!file_count)
         return meta;
-    const auto base_x = input_file.stream.read_le<u32>();
-    const auto base_y = input_file.stream.read_le<u32>();
+    const auto base_x_offset = input_file.stream.read_le<u32>();
+    const auto base_y_offset = input_file.stream.read_le<u32>();
     const auto base_width = input_file.stream.read_le<u32>();
     const auto base_height = input_file.stream.read_le<u32>();
 
     auto base_entry = std::make_unique<CustomArchiveEntry>();
+    base_entry->x_offset = base_x_offset;
+    base_entry->y_offset = base_y_offset;
     base_entry->x = input_file.stream.read_le<u32>();
     base_entry->y = input_file.stream.read_le<u32>();
     base_entry->width = input_file.stream.read_le<u32>();
@@ -104,6 +107,8 @@ std::unique_ptr<dec::ArchiveMeta> An21ImageArchiveDecoder::read_meta_impl(
             output[i] += last_entry->data[i];
 
         auto sub_entry = std::make_unique<CustomArchiveEntry>();
+        sub_entry->x_offset = last_entry->x_offset;
+        sub_entry->y_offset = last_entry->y_offset;
         sub_entry->x = last_entry->x;
         sub_entry->y = last_entry->y;
         sub_entry->width = last_entry->width;
@@ -132,6 +137,7 @@ std::unique_ptr<io::File> An21ImageArchiveDecoder::read_file_impl(
             ? res::PixelFormat::BGR888
             : res::PixelFormat::BGRA8888);
     image.flip_vertically();
+    image.offset(entry->x_offset, entry->y_offset);
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);
 }
 
