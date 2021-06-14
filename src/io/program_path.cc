@@ -38,6 +38,12 @@ io::path io::get_program_path()
 
 io::path io::get_assets_dir_path()
 {
+#if defined(ASSETS_TARGET)
+    const auto path = ASSETS_TARGET;
+    if (io::is_directory(path))
+        return path;
+    throw err::FileNotFoundError("Can't locate assets directory!");
+#else
     auto dir = program_path.parent();
     do
     {
@@ -48,4 +54,5 @@ io::path io::get_assets_dir_path()
     }
     while (!dir.is_root());
     throw err::FileNotFoundError("Can't locate 'etc/' assets directory!");
+#endif
 }

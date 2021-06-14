@@ -84,6 +84,10 @@ else()
     add_definitions(-DWEBP_FOUND=0)
 endif()
 
+if(UNIX)
+    option(PACKAGE_MODE "Package mode" OFF)
+endif()
+
 # ------------
 # Source files
 # ------------
@@ -201,3 +205,10 @@ target_include_directories(arc_unpacker BEFORE PUBLIC "${CMAKE_BINARY_DIR}/gener
 target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/tests")
 target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
+
+if(UNIX AND PACKAGE_MODE)
+    install(TARGETS arc_unpacker DESTINATION "bin")
+    install(FILES "GAMELIST.htm" "GAMELIST.js" DESTINATION "share/arc_unpacker")
+    install(DIRECTORY "etc" DESTINATION "share/arc_unpacker")
+    add_definitions(-DASSETS_TARGET=\"${CMAKE_INSTALL_PREFIX}/share/arc_unpacker/etc\")
+endif()
