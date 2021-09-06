@@ -3350,6 +3350,14 @@ var games = [
   vndb: 562,
   fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
   args: ['--dec=bgi/arc']},
+  
+{ dev: 'Makura',
+  date: '2013-03-29',
+  title: 'Himawari no Kyoukai to Nagai Natsuyasumi',
+  title_orig: '向日葵の教会と長い夏休み',
+  vndb: 10557,
+  fmt: {archives: ['arc'], gfx: ['cbg'], audio: ['bgi'], misc: ['dsc'], video: ['mpg']},
+  args: ['--dec=bgi/arc']},
 
 { dev: 'Nitroplus & 5pb. Games',
   date: '2016-09-09',
