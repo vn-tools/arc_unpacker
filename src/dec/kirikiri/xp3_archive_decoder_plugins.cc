@@ -126,6 +126,16 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         }));
 
     plugin_manager.add(
+        "gsenjou", "G-Senjou No Maou",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            key >>= 12;
+
+            for (int i = 5; i < data.size(); i++)
+                data[i] ^= key;
+        }));
+
+    plugin_manager.add(
         "fha", "Fate/Hollow Ataraxia",
         create_cxdec_plugin(
             0x143, 0x787, {0,1,2}, {0,1,2,3,4,5,6,7}, {0,1,2,3,4,5}));
