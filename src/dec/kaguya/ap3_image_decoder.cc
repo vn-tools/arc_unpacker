@@ -32,8 +32,8 @@ res::Image Ap3ImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto x = input_file.stream.read_le<u32>();
-    const auto y = input_file.stream.read_le<u32>();
+    const auto x_offset = input_file.stream.read_le<u32>();
+    const auto y_offset = input_file.stream.read_le<u32>();
     const auto width = input_file.stream.read_le<u32>();
     const auto height = input_file.stream.read_le<u32>();
     const auto depth = input_file.stream.read_le<u32>();
@@ -41,7 +41,8 @@ res::Image Ap3ImageDecoder::decode_impl(
         throw err::UnsupportedBitDepthError(depth);
     const auto data = input_file.stream.read_to_eof();
     return res::Image(width, height, data, res::PixelFormat::BGR888)
-        .flip_vertically();
+        .flip_vertically()
+        .offset(x_offset, y_offset);
 }
 
 static auto _ = dec::register_decoder<Ap3ImageDecoder>("kaguya/ap3");

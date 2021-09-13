@@ -29,6 +29,7 @@ namespace
     struct CustomArchiveEntry final : dec::ArchiveEntry
     {
         uoff_t offset;
+        size_t x_offset, y_offset;
         size_t x, y;
         size_t width, height;
     };
@@ -48,8 +49,8 @@ std::unique_ptr<dec::ArchiveMeta> An00ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto base_x = input_file.stream.read_le<u32>();
-    const auto base_y = input_file.stream.read_le<u32>();
+    const auto base_x_offset = input_file.stream.read_le<u32>();
+    const auto base_y_offset = input_file.stream.read_le<u32>();
     const auto base_width = input_file.stream.read_le<u32>();
     const auto base_height = input_file.stream.read_le<u32>();
     const auto unk_count = input_file.stream.read_le<u16>();
@@ -60,6 +61,8 @@ std::unique_ptr<dec::ArchiveMeta> An00ImageArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<CustomArchiveEntry>();
+        entry->x_offset = base_x_offset;
+        entry->y_offset = base_y_offset;
         entry->x = input_file.stream.read_le<u32>();
         entry->y = input_file.stream.read_le<u32>();
         entry->width = input_file.stream.read_le<u32>();
@@ -84,6 +87,7 @@ std::unique_ptr<io::File> An00ImageArchiveDecoder::read_file_impl(
         input_file.stream.seek(entry->offset),
         res::PixelFormat::BGRA8888);
     image.flip_vertically();
+    image.offset(entry->x_offset, entry->y_offset);
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);
 }
 
