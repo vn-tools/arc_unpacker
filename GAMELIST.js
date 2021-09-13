@@ -3627,5 +3627,14 @@ var games = [
   title_orig: '屋上の百合霊さん',
   vndb: 8508,
   args: ['--dec=liar-soft/xfl']},
-
+  
+{ dev: 'Nitroplus & 5pb. Games',
+  date: '2019-02-19',
+  title: 'STEINS;GATE: Linear Bounded Phenogram',
+  title_orig: 'STEINS;GATE 線形拘束のフェノグラム',
+  vndb: 11660,
+  info: 'Steam version',
+  fmt: {archives: ['mpk'], gfx: ['dds', 'png'], audio: ['ogg'], video: ['bk2'], misc: ['scx']},
+  args: ['--dec=mages/mpk']},
+  
 ];
