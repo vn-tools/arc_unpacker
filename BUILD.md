@@ -101,8 +101,8 @@ variable):
             -DJPEG_INCLUDE_DIR="C:/pkg/libjpeg-turbo/include" \
             -DOPENSSL_ROOT_DIR="C:/pkg/OpenSSL-Win32" \
             -DOPENSSL_INCLUDE_DIR="C:/pkg/OpenSSL-Win32/include" \
-            -DICONV_LIBRARY="C:/pkg/win-iconv/build/Debug/iconv.lib" \
-            -DICONV_INCLUDE_DIR="C:/pkg/win-iconv" \
+            -DIconv_LIBRARIES="C:/pkg/win-iconv/build/Debug/iconv.lib" \
+            -DIconv_INCLUDE_DIRS="C:/pkg/win-iconv" \
             ..
 
     The paths in `-D` switches should refer to locations where you installed

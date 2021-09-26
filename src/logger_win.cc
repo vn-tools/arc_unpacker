@@ -17,6 +17,7 @@
 
 #include "logger.h"
 #include <windows.h>
+#include <stdexcept>
 
 using namespace au;
 

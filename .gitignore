@@ -2,3 +2,6 @@
 *.so
 *~
 /build
+/out
+/.vs
+CMakeSettings.json
