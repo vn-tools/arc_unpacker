@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake")
 
 # -------
+# Options
+# -------
+option(BUILD_TESTS "Build test programs" OFF)
+
+# -------
 # Version
 # -------
 execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION_SHORT OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -39,7 +44,7 @@ find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIBRARY_DIRS})
 
-find_package(WebP)
+find_package(WEBP)
 include_directories(${WEBP_INCLUDE_DIR})
 link_directories(${WEBP_LIBRARY_DIRS})
 
@@ -90,7 +95,6 @@ endif()
 configure_file("${CMAKE_SOURCE_DIR}/src/version.h.in" "${CMAKE_BINARY_DIR}/generated/version.h" @ONLY)
 include_directories(${CMAKE_BINARY_DIR}/generated)
 
-set(CMAKE_SOURCE_DIR "${CMAKE_BINARY_DIR}/../")
 file(GLOB_RECURSE au_sources "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE au_headers "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE test_sources "${CMAKE_SOURCE_DIR}/tests/*.cc")
@@ -175,9 +179,10 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(iconv iconv)
 else()
-    set(iconv ${ICONV_LIBRARY})
+    find_package(Iconv REQUIRED)
+    set(iconv ${Iconv_LIBRARIES})
     set(unicode "")
-    include_directories(${ICONV_INCLUDE_DIR})
+    include_directories(${Iconv_INCLUDE_DIRS})
 endif()
 
 add_library(libau OBJECT ${au_sources} ${au_headers})
@@ -188,16 +193,19 @@ if(WEBP_FOUND)
     target_link_libraries(arc_unpacker ${WEBP_LIBRARIES})
 endif()
 
-add_executable(run_tests ${test_sources} ${test_headers} "${CMAKE_SOURCE_DIR}/tests/main.cc" $<TARGET_OBJECTS:libau>)
-target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
-if(WEBP_FOUND)
-    target_link_libraries(run_tests ${WEBP_LIBRARIES})
-endif()
-
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(libau BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
 target_include_directories(arc_unpacker BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(arc_unpacker BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
-target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/tests")
-target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
+
+if (BUILD_TESTS)
+    add_executable(run_tests ${test_sources} ${test_headers} "${CMAKE_SOURCE_DIR}/tests/main.cc" $<TARGET_OBJECTS:libau>)
+    target_link_libraries(run_tests ${iconv} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARIES} ${OPENSSL_LIBRARIES})
+    if(WEBP_FOUND)
+        target_link_libraries(run_tests ${WEBP_LIBRARIES})
+    endif()
+
+    target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src")
+    target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/tests")
+    target_include_directories(run_tests BEFORE PUBLIC "${CMAKE_BINARY_DIR}/generated")
+endif()
