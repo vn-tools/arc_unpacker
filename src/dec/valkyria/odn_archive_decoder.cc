@@ -113,6 +113,7 @@ static void read_meta_v1(
     dec::ArchiveMeta *meta,
     io::BaseByteStream &input_stream)
 {
+    input_stream.seek(0);
     while (true)
     {
         auto entry = std::make_unique<dec::PlainArchiveEntry>();
