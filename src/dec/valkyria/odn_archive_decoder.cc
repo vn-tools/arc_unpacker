@@ -21,6 +21,7 @@
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_byte_stream.h"
+#include "io/xor_byte_stream.h"
 
 using namespace au;
 using namespace au::dec::valkyria;
@@ -30,8 +31,14 @@ namespace
     enum class OdnVariant : u8
     {
         Variant1,
+        Variant1XOR,
         Variant2,
         Variant3,
+    };
+
+    struct OdnArchiveMeta final : dec::ArchiveMeta
+    {
+        OdnVariant variant;
     };
 }
 
@@ -64,8 +71,11 @@ bool OdnArchiveDecoder::is_recognized_impl(io::File &input_file) const
 
 static OdnVariant guess_odn_variant(io::BaseByteStream &input_stream)
 {
-    if (input_stream.seek(8).read(8) == "00000000"_b)
+    const auto likely_file1_offset = input_stream.seek(8).read(8);
+    if (likely_file1_offset == "00000000"_b)
         return OdnVariant::Variant1;
+    else if (likely_file1_offset == "\xc7\xc6\xc5\xc4\xc3\xc2\xc1\xc0"_b)
+        return OdnVariant::Variant1XOR;
 
     const auto likely_file1_prefix = input_stream.seek(0).read(4);
     const auto maybe_file2_prefix1 = input_stream.seek(16).read(4);
@@ -99,16 +109,17 @@ static void fill_sizes(
     last_entry->size = input_stream.size() - last_entry->offset;
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(
+static void read_meta_v1(
+    dec::ArchiveMeta *meta,
     io::BaseByteStream &input_stream)
 {
-    auto meta = std::make_unique<dec::ArchiveMeta>();
+    input_stream.seek(0);
     while (true)
     {
         auto entry = std::make_unique<dec::PlainArchiveEntry>();
         entry->path = input_stream.read(8).str();
         entry->offset = hex_to_int(input_stream.read(8));
-        if (entry->path.str().substr(0, 4) == "END_")
+        if (entry->path == "END_ffff" || entry->path == "ffffffff")
             break;
         meta->entries.push_back(std::move(entry));
     }
@@ -118,13 +129,12 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(
         entry->offset += input_stream.pos();
     }
     fill_sizes(input_stream, meta->entries);
-    return meta;
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta_v2(
+static void read_meta_v2(
+    dec::ArchiveMeta* meta,
     io::BaseByteStream &input_stream)
 {
-    auto meta = std::make_unique<dec::ArchiveMeta>();
     const auto data_pos = hex_to_int(input_stream.seek(8).read(8));
     input_stream.seek(0);
     while (input_stream.pos() < data_pos)
@@ -135,13 +145,12 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v2(
         meta->entries.push_back(std::move(entry));
     }
     fill_sizes(input_stream, meta->entries);
-    return meta;
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta_v3(
+static void read_meta_v3(
+    dec::ArchiveMeta* meta,
     io::BaseByteStream &input_stream)
 {
-    auto meta = std::make_unique<dec::ArchiveMeta>();
     const auto data_pos = hex_to_int(input_stream.seek(8).read(8));
     input_stream.seek(0);
     while (input_stream.pos() < data_pos)
@@ -153,7 +162,6 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v3(
         meta->entries.push_back(std::move(entry));
     }
     fill_sizes(input_stream, meta->entries);
-    return meta;
 }
 
 static bstr decompress(const bstr &input, const size_t chunk_size)
@@ -222,18 +230,26 @@ static bstr decompress_bgra(const Logger &logger, const bstr &input)
 std::unique_ptr<dec::ArchiveMeta> OdnArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto variant = guess_odn_variant(input_file.stream);
-    switch (variant)
+    auto meta = std::make_unique<OdnArchiveMeta>();
+    meta->variant = guess_odn_variant(input_file.stream);
+    switch (meta->variant)
     {
         case OdnVariant::Variant1:
-            return read_meta_v1(input_file.stream);
+            read_meta_v1(meta.get(), input_file.stream);
+            break;
+        case OdnVariant::Variant1XOR:
+            read_meta_v1(meta.get(), io::XORByteStream(input_file.stream));
+            break;
         case OdnVariant::Variant2:
-            return read_meta_v2(input_file.stream);
+            read_meta_v2(meta.get(), input_file.stream);
+            break;
         case OdnVariant::Variant3:
-            return read_meta_v3(input_file.stream);
+            read_meta_v3(meta.get(), input_file.stream);
+            break;
         default:
             throw std::logic_error("Invalid archive type");
     }
+    return meta;
 }
 
 std::unique_ptr<io::File> OdnArchiveDecoder::read_file_impl(
@@ -242,9 +258,12 @@ std::unique_ptr<io::File> OdnArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
+    const auto meta = static_cast<const OdnArchiveMeta*>(&m);
     const auto entry = static_cast<const PlainArchiveEntry*>(&e);
     const auto prefix = entry->path.str().substr(0, 4);
-    auto data = input_file.stream.seek(entry->offset).read(entry->size);
+    io::XORByteStream xorstream(input_file.stream);
+    io::BaseByteStream& stream = meta->variant == OdnVariant::Variant1XOR ? xorstream : input_file.stream;
+    auto data = stream.seek(entry->offset).read(entry->size);
     if (prefix == "back")
         data = decompress_bgr(logger, data);
     if (prefix == "codn" || prefix == "cccc")
