@@ -1,4 +1,4 @@
-// Copyright (C) 2016 by rr-
+// Copyright (C) 2016 by rr-, 2018 by notkyon
 //
 // This file is part of arc_unpacker.
 //
@@ -17,6 +17,7 @@
 
 #include "dec/nscripter/nsa_archive_decoder.h"
 #include "algo/pack/lzss.h"
+#include "algo/pack/bzip2.h"
 #include "algo/range.h"
 #include "dec/nscripter/nsa_encrypted_stream.h"
 #include "dec/nscripter/spb_image_decoder.h"
@@ -33,6 +34,7 @@ namespace
         None    = 0,
         Spb     = 1,
         Lzss    = 2,
+        Nbz     = 4
     };
 
     struct CustomArchiveEntry final : dec::CompressedArchiveEntry
@@ -120,6 +122,13 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
         io::File spb_file("dummy.bmp", data);
         return encoder.encode(
             logger, decoder.decode(logger, spb_file), entry->path);
+    }
+
+    if (entry->compression_type == CompressionType::Nbz)
+    {
+        return std::make_unique<io::File>(
+            entry->path,
+            algo::pack::bz2_inflate(data.substr(4)));
     }
 
     throw err::NotSupportedError("Unknown compression type");
